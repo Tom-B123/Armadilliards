@@ -49,14 +49,14 @@ function Command:compile(operation,balls)
     elseif operation == "update" then out = out.."1:"
     else return nil,"Operation Error" end
     for i,ball in ipairs(balls) do
-        out = out..ball.id.."-"
-        out = out..round(ball.x,1)  .."-"
-        out = out..round(ball.y,1)  .."-"
-        out = out..round(ball.vx,1) .."-"
-        out = out..round(ball.vy,1) .."-"
-        out = out..round(ball.lx,3) .."-"
-        out = out..round(ball.ly,3) .."-"
-        out = out..round(ball.lvx,3).."-"
+        out = out..ball.id.."_"
+        out = out..round(ball.x,1)  .."_"
+        out = out..round(ball.y,1)  .."_"
+        out = out..round(ball.vx,1) .."_"
+        out = out..round(ball.vy,1) .."_"
+        out = out..round(ball.lx,3) .."_"
+        out = out..round(ball.ly,3) .."_"
+        out = out..round(ball.lvx,3).."_"
         out = out..round(ball.lvy,3)
         if i < #balls then out = out.."," end
     end
@@ -76,7 +76,7 @@ function Command:decompile(string)
 
         local tempArr = {}
 
-        local dashDiv = split(ball,"-")
+        local dashDiv = split(ball,"_")
         --Create a dictionary from the ball ID to the ball stats.
         tempArr = {
             x = dashDiv[2],
@@ -132,8 +132,8 @@ function World:verlet(dt)
         ball.x = nextX
         ball.y = nextY
 
-        ball.lvx = ball.vx * 0.99
-        ball.lvy = ball.vy * 0.99
+        ball.lvx = ball.vx
+        ball.lvy = ball.vy
 
         ball.vx = nextVX
         ball.vy = nextVY
@@ -147,40 +147,52 @@ function World:verlet(dt)
 end
 
 function World:constraint()
+    --Only updates client side balls when a collision takes place.
+    local ballsToUpdate = {}
     for i,ball in ipairs(self.balls) do
         ball.vx = ball.vx
         ball.vy = ball.vy
-        if ball.x < ball.radius then 
+        if ball.x < ball.radius then
+            table.insert(ballsToUpdate,ball)
             ball.x = ball.radius
             ball.vx = - ball.vx
             ball.lvx = - ball.lvx
         end
-        if ball.y < ball.radius then 
+        if ball.y < ball.radius then
+            table.insert(ballsToUpdate,ball)
             ball.y = ball.radius
             ball.vy = - ball.vy
             ball.lvy = - ball.lvy
         end
-        if ball.x > love.graphics.getWidth() - ball.radius then 
+        if ball.x > love.graphics.getWidth() - ball.radius then
+            table.insert(ballsToUpdate,ball)
             ball.x = love.graphics.getWidth() - ball.radius
             ball.vx = - ball.vx
             ball.lvx = - ball.lvx
         end
-        if ball.y > love.graphics.getHeight() - ball.radius then 
+        if ball.y > love.graphics.getHeight() - ball.radius then
+            table.insert(ballsToUpdate,ball)
             ball.y = love.graphics.getHeight() - ball.radius
             ball.vy = - ball.vy
             ball.lvy = - ball.lvy
         end
-
     end
+    Server:update(ballsToUpdate)
 end
 
-function Server:update(dt)
+function Server:updateConnections()
     
     local newClient = server:accept()
     if newClient then
         table.insert(self.clients, newClient)
+        Server:update(World.balls)
         -- newClient:send(#self.clients+1)
     end
+end
+
+function Server:update(balls)
+    local message = Command:compile("update",balls)
+    self:sendToClient(message)
 end
 
 function Server:sendToClient(message)
@@ -217,22 +229,15 @@ end
 
 function love.update(dt)
     tick = tick + 1
+    Server:updateConnections()
     World:verlet(dt)
     World:constraint()
-    Server:update()
+    
     local data = Server:receiveFromClient()
     if data ~= nil then Recieved = data end
-    
-    if tick % 2 == 0 then
-        local ball = World.balls[1]
-        local message = Command:compile("update",World.balls)
-        Server:sendToClient(message)
-    end
 end
 
 function love.draw()
-    local data,err = Command:decompile("0:id1-1-2-3-4-5-6-7-8,id2-9-10-11-12-13-14-15-16")
-    if data then love.graphics.print(data.balls["id1"].lvy,200,0) end
     for i,ball in ipairs(World.balls) do
         love.graphics.setColor(ball.team)
         love.graphics.circle(

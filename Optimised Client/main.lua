@@ -47,14 +47,14 @@ function Command:compile(operation,balls)
     elseif operation == "update" then out = out.."1:"
     else return nil,"Operation Error" end
     for i,ball in ipairs(balls) do
-        out = out..ball.id.."-"
-        out = out..round(ball.x,1)  .."-"
-        out = out..round(ball.y,1)  .."-"
-        out = out..round(ball.lx,1) .."-"
-        out = out..round(ball.ly,1) .."-"
-        out = out..round(ball.vx,3) .."-"
-        out = out..round(ball.vy,3) .."-"
-        out = out..round(ball.lvx,3).."-"
+        out = out..ball.id.."_"
+        out = out..round(ball.x,1)  .."_"
+        out = out..round(ball.y,1)  .."_"
+        out = out..round(ball.lx,1) .."_"
+        out = out..round(ball.ly,1) .."_"
+        out = out..round(ball.vx,3) .."_"
+        out = out..round(ball.vy,3) .."_"
+        out = out..round(ball.lvx,3).."_"
         out = out..round(ball.lvy,3)
         if i < #balls then out = out.."," end
     end
@@ -74,7 +74,7 @@ function Command:decompile(string)
 
         local tempArr = {}
 
-        local dashDiv = split(ball,"-")
+        local dashDiv = split(ball,"_")
         --Create a dictionary from the ball ID to the ball stats.
         tempArr = {
             x = dashDiv[2],
@@ -130,14 +130,17 @@ function World:verlet(dt)
         ball.x = nextX
         ball.y = nextY
 
-        ball.lvx = ball.vx * 0.99
-        ball.lvy = ball.vy * 0.99
+        ball.lvx = ball.vx
+        ball.lvy = ball.vy
 
         ball.vx = nextVX
         ball.vy = nextVY
 
         ball.ax = 0
         ball.ay = 0
+
+        if math.abs(ball.vx) < 0.02 then ball.vx = 0 end
+        if math.abs(ball.vy) < 0.02 then ball.vy = 0 end
     end
 end
 
@@ -166,7 +169,7 @@ function love.quit()
 end
 
 function love.update(dt)
-    World:verlet(dt)
+    
     
     tick = tick + 1
     local data = receiveFromServer()
@@ -177,17 +180,20 @@ function love.update(dt)
             local splitData,err = Command:decompile(data)
             if splitData then
                 local ballData = splitData.balls[ball.id]
-                ball.x = ballData.x
-                ball.y = ballData.y
-                ball.vx = ballData.vx
-                ball.vy = ballData.vy
-                ball.lx = ballData.lx
-                ball.ly = ballData.ly
-                ball.lvy = ballData.lvx
-                ball.lvy = ballData.lvy
+                if ballData then
+                    ball.x = ballData.x
+                    ball.y = ballData.y
+                    ball.vx = ballData.vx
+                    ball.vy = ballData.vy
+                    ball.lx = ballData.lx
+                    ball.ly = ballData.ly
+                    ball.lvx = ballData.lvx
+                    ball.lvy = ballData.lvy
+                end
             end
         end
     end
+    World:verlet(dt)
     if tick % 2 == 0 then
         local message = tick
         sendToServer(message.."\n")
@@ -205,7 +211,7 @@ function love.draw()
         )
     end
     love.graphics.setColor(1,1,1)
-    love.graphics.print(split(Out,"-"),20,0)
+    love.graphics.print(split(Out,"_"),20,0)
     love.graphics.print("local tick: "..tick,20,20)
     love.graphics.print("id: "..id,20,40)
 end
