@@ -32,6 +32,14 @@ function love.keypressed(key)
 	end
 end
 
+local function split(str,sep)
+    local out = {}
+    for i in string.gmatch(str,"([^"..sep.."]+)") do
+        table.insert(out,i)
+    end
+    return out
+end
+
 --==Main functions==--
 
 function Command:compile(type,balls)

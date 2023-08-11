@@ -18,6 +18,12 @@ World = {balls = {}}
 
 --==Helper functions==--
 
+function love.keypressed(key)
+	if key == "escape" then
+	  love.event.quit()
+	end
+end
+
 local function split(str,sep)
     local out = {}
     for i in string.gmatch(str,"([^"..sep.."]+)") do
@@ -96,12 +102,6 @@ World:new(1,{1,1,1},25,100,100,0,0,0,0)
 World:new(2,{1,1,1},25,200,100,0,0,0,0)
 
 --==love functions==--
-
-function love.keypressed(key)
-	if key == "escape" then
-	  love.event.quit()
-	end
-end
 
 function love.quit()
     -- Cleanup when quitting the application
