@@ -49,15 +49,17 @@ function Command:compile(operation,balls)
     elseif operation == "update" then out = out.."1:"
     else return nil,"Operation Error" end
     for i,ball in ipairs(balls) do
+        local posPlaces = 1
+        local velPlaces = 4
         out = out..ball.id.."_"
-        out = out..round(ball.x,1)  .."_"
-        out = out..round(ball.y,1)  .."_"
-        out = out..round(ball.vx,1) .."_"
-        out = out..round(ball.vy,1) .."_"
-        out = out..round(ball.lx,3) .."_"
-        out = out..round(ball.ly,3) .."_"
-        out = out..round(ball.lvx,3).."_"
-        out = out..round(ball.lvy,3)
+        out = out..round(ball.x,  posPlaces)  .."_"
+        out = out..round(ball.y,  posPlaces)  .."_"
+        out = out..round(ball.vx, velPlaces) .."_"
+        out = out..round(ball.vy, velPlaces) .."_"
+        out = out..round(ball.lx, posPlaces) .."_"
+        out = out..round(ball.ly, posPlaces) .."_"
+        out = out..round(ball.lvx,velPlaces).."_"
+        out = out..round(ball.lvy,velPlaces)
         if i < #balls then out = out.."," end
     end
     return out, nil
