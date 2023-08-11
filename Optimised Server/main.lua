@@ -13,6 +13,7 @@ World = {balls = {}}
 
 Command = {}
 
+local ids = {"1","2"}
 --Do some custom switch case
 
 -- Switch = {dict = {}}
@@ -51,10 +52,10 @@ function Command:compile(operation,balls)
         out = out..ball.id.."-"
         out = out..round(ball.x,1)  .."-"
         out = out..round(ball.y,1)  .."-"
-        out = out..round(ball.lx,1) .."-"
-        out = out..round(ball.ly,1) .."-"
-        out = out..round(ball.vx,3) .."-"
-        out = out..round(ball.vy,3) .."-"
+        out = out..round(ball.vx,1) .."-"
+        out = out..round(ball.vy,1) .."-"
+        out = out..round(ball.lx,3) .."-"
+        out = out..round(ball.ly,3) .."-"
         out = out..round(ball.lvx,3).."-"
         out = out..round(ball.lvy,3)
         if i < #balls then out = out.."," end
@@ -205,8 +206,8 @@ function Server:receiveFromClient(clients)
     return dataOut
 end
 
-World:new(1,{1,1,1},25,100,100,10,10,0,0)
-World:new(2,{1,0,1},25,200,100,0,0,0,0)
+World:new(ids[1],{1,1,1},25,100,100,10,10,0,0)
+World:new(ids[2],{1,0,1},25,200,100,-10,0,0,0)
 
 --==love functions==
 
@@ -222,18 +223,9 @@ function love.update(dt)
     local data = Server:receiveFromClient()
     if data ~= nil then Recieved = data end
     
-    if tick % 4 == 0 then
+    if tick % 2 == 0 then
         local ball = World.balls[1]
-        local toSend = {
-            round(ball.x,1),
-            round(ball.y,1),
-            round(ball.vx,2),
-            round(ball.vy,2)
-        }
-        local message = ""
-        for i, at in ipairs(toSend) do
-            message = message..at.."-"
-        end
+        local message = Command:compile("update",World.balls)
         Server:sendToClient(message)
     end
 end

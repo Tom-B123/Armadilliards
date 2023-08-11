@@ -16,7 +16,14 @@ client:settimeout(0)
 
 World = {balls = {}}
 
+Command = {}
+
+local ids = {"1","2"}
 --==Helper functions==--
+
+local function round(n,p)
+    return math.floor((10^p*n)+0.5) / 10^p
+end
 
 function love.keypressed(key)
 	if key == "escape" then
@@ -33,6 +40,56 @@ local function split(str,sep)
 end
 
 --==Main functions==--
+
+function Command:compile(operation,balls)
+    local out = ""
+    if operation == "initiate"   then out = out.."0:"
+    elseif operation == "update" then out = out.."1:"
+    else return nil,"Operation Error" end
+    for i,ball in ipairs(balls) do
+        out = out..ball.id.."-"
+        out = out..round(ball.x,1)  .."-"
+        out = out..round(ball.y,1)  .."-"
+        out = out..round(ball.lx,1) .."-"
+        out = out..round(ball.ly,1) .."-"
+        out = out..round(ball.vx,3) .."-"
+        out = out..round(ball.vy,3) .."-"
+        out = out..round(ball.lvx,3).."-"
+        out = out..round(ball.lvy,3)
+        if i < #balls then out = out.."," end
+    end
+    return out, nil
+end
+
+function Command:decompile(string)
+    --Split the operation from the ball data
+    local colonDiv = split(string,":")
+    --return error if there are multiple colons in the string
+    if #colonDiv ~= 2 then return nil,"Colon error" end
+
+    local operation,balls = colonDiv[1],colonDiv[2]
+    --initialise the output table
+    local out = {operation = operation, balls = {}}
+    for i,ball in ipairs(split(balls,",")) do
+
+        local tempArr = {}
+
+        local dashDiv = split(ball,"-")
+        --Create a dictionary from the ball ID to the ball stats.
+        tempArr = {
+            x = dashDiv[2],
+            y = dashDiv[3],
+            vx = dashDiv[4],
+            vy = dashDiv[5],
+            lx = dashDiv[6],
+            ly = dashDiv[7],
+            lvx = dashDiv[8],
+            lvy = dashDiv[9]
+        }
+        out.balls[dashDiv[1]] = tempArr
+    end
+    return out
+end
 
 function World:new(id,team,radius,x,y,vx,vy,ax,ay)
     local ball = {}
@@ -98,8 +155,8 @@ local function receiveFromServer()
     end
 end
 
-World:new(1,{1,1,1},25,100,100,0,0,0,0)
-World:new(2,{1,1,1},25,200,100,0,0,0,0)
+World:new(ids[1],{1,1,1},25,100,100,0,0,0,0)
+World:new(ids[2],{1,1,1},25,200,100,0,0,0,0)
 
 --==love functions==--
 
@@ -117,11 +174,18 @@ function love.update(dt)
         if id == "none" then id = data end
         Out = data 
         for i, ball in ipairs(World.balls) do
-            local splitData = split(data,"-")
-            ball.x = splitData[1]
-            ball.y = splitData[2]
-            ball.vx = splitData[3]
-            ball.vy = splitData[4]
+            local splitData,err = Command:decompile(data)
+            if splitData then
+                local ballData = splitData.balls[ball.id]
+                ball.x = ballData.x
+                ball.y = ballData.y
+                ball.vx = ballData.vx
+                ball.vy = ballData.vy
+                ball.lx = ballData.lx
+                ball.ly = ballData.ly
+                ball.lvy = ballData.lvx
+                ball.lvy = ballData.lvy
+            end
         end
     end
     if tick % 2 == 0 then
