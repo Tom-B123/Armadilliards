@@ -16,6 +16,18 @@ client:settimeout(0)
 
 World = {balls = {}}
 
+--==Helper functions==--
+
+local function split(str,sep)
+    local out = {}
+    for i in string.gmatch(str,"([^"..sep.."]+)") do
+        table.insert(out,i)
+    end
+    return out
+end
+
+--==Main functions==--
+
 function World:new(id,team,radius,x,y,vx,vy,ax,ay)
     local ball = {}
     ball.id = id
@@ -66,36 +78,23 @@ function World:verlet(dt)
     end
 end
 
-
--- Function to send data to the server
 local function sendToServer(data)
     client:send(data .. "\n")
 end
 
--- Function to receive data from the server
 local function receiveFromServer()
     
     local data, err = client:receive()
     if data then
-        if id == "none" then id = data end
-        -- Process the received data here
         return data
     elseif err == "closed" then
-        -- Server closed the connection
         client:close()
     end
 end
 
-local function split(str,sep)
-    local out = {}
-    for i in string.gmatch(str,"([^"..sep.."]+)") do
-        table.insert(out,i)
-    end
-    return out
-end
-
 World:new(1,{1,1,1},25,100,100,0,0,0,0)
 World:new(2,{1,1,1},25,200,100,0,0,0,0)
+
 --==love functions==--
 
 function love.keypressed(key)
@@ -115,6 +114,7 @@ function love.update(dt)
     tick = tick + 1
     local data = receiveFromServer()
     if data then 
+        if id == "none" then id = data end
         Out = data 
         for i, ball in ipairs(World.balls) do
             local splitData = split(data,"-")

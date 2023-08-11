@@ -20,7 +20,7 @@ Command = {}
 -- function Switch:new(values)
 -- end
 
---==Helper functions==
+--==Helper functions==--
 
 local function round(n,p)
     return math.floor((10^p*n)+0.5) / 10^p
@@ -32,7 +32,7 @@ function love.keypressed(key)
 	end
 end
 
---==Main functions==
+--==Main functions==--
 
 function Command:compile(type,balls)
     local out = ""
