@@ -42,24 +42,54 @@ end
 
 --==Main functions==--
 
-function Command:compile(type,balls)
+function Command:compile(operation,balls)
     local out = ""
-    if type == "initiate"   then out = out.."0:"
-    elseif type == "update" then out = out.."1:"
-    else return nil,"Type Error" end
+    if operation == "initiate"   then out = out.."0:"
+    elseif operation == "update" then out = out.."1:"
+    else return nil,"Operation Error" end
     for i,ball in ipairs(balls) do
         out = out..ball.id.."-"
-        out = out..round(ball.x,1) .."-"
-        out = out..round(ball.y,1) .."-"
+        out = out..round(ball.x,1)  .."-"
+        out = out..round(ball.y,1)  .."-"
         out = out..round(ball.lx,1) .."-"
         out = out..round(ball.ly,1) .."-"
-        out = out..round(ball.vx,3).."-"
-        out = out..round(ball.vy,3).."-"
+        out = out..round(ball.vx,3) .."-"
+        out = out..round(ball.vy,3) .."-"
         out = out..round(ball.lvx,3).."-"
         out = out..round(ball.lvy,3)
         if i < #balls then out = out.."," end
     end
     return out, nil
+end
+
+function Command:decompile(string)
+    --Split the operation from the ball data
+    local colonDiv = split(string,":")
+    --return error if there are multiple colons in the string
+    if #colonDiv ~= 2 then return nil,"Colon error" end
+
+    local operation,balls = colonDiv[1],colonDiv[2]
+    --initialise the output table
+    local out = {operation = operation, balls = {}}
+    for i,ball in ipairs(split(balls,",")) do
+
+        local tempArr = {}
+
+        local dashDiv = split(ball,"-")
+        --Create a dictionary from the ball ID to the ball stats.
+        tempArr = {
+            x = dashDiv[2],
+            y = dashDiv[3],
+            vx = dashDiv[4],
+            vy = dashDiv[5],
+            lx = dashDiv[6],
+            ly = dashDiv[7],
+            lvx = dashDiv[8],
+            lvy = dashDiv[9]
+        }
+        out.balls[dashDiv[1]] = tempArr
+    end
+    return out
 end
 
 function World:new(id,team,radius,x,y,vx,vy,ax,ay)
@@ -209,8 +239,8 @@ function love.update(dt)
 end
 
 function love.draw()
-    local data,err = Command:compile("update",World.balls)
-    if data then love.graphics.print(data,200,0) end
+    local data,err = Command:decompile("0:id1-1-2-3-4-5-6-7-8,id2-9-10-11-12-13-14-15-16")
+    if data then love.graphics.print(data.balls["id1"].lvy,200,0) end
     for i,ball in ipairs(World.balls) do
         love.graphics.setColor(ball.team)
         love.graphics.circle(
