@@ -158,8 +158,9 @@ local function receiveFromServer()
     end
 end
 
-World:new(ids[1],{1,1,1},25,100,100,0,0,0,0)
-World:new(ids[2],{1,1,1},25,200,100,0,0,0,0)
+for i = 1,5 do
+    World:new(tostring(i),{1,1,1},25,100,100,0,0,0,0)
+end
 
 --==love functions==--
 
