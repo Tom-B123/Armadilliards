@@ -329,10 +329,25 @@ function love.update(dt)
     tick = tick + 1
     Server:updateConnections()
     
+    if tick % 20 == 0 then Server:update(World.balls) end
+
     World:update(dt)
+
+    if tick % 2 == 0 then
+        local data = Server:receiveFromClient()
     
-    local data = Server:receiveFromClient()
-    if data ~= nil then Recieved = data end
+        if data ~= nil then
+            Recieved = data
+            for i = 1,#data do
+                local splitData = split(data[i],"_")
+                World.balls[1].vx = World.balls[1].vx + splitData[1]
+                World.balls[1].vy = World.balls[1].vy + splitData[2]
+                if splitData[1] ~= "0" or splitData[2] ~= "0" then
+                    Server:update(World.balls)
+                end
+            end
+        end 
+    end
 end
 
 function love.draw()

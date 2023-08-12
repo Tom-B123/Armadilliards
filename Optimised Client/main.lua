@@ -170,9 +170,16 @@ function love.quit()
 end
 
 function love.update(dt)
-    
-    
     tick = tick + 1
+    if tick % 2 == 0 then
+        local dx = 0
+        local dy = 0
+        if love.keyboard.isDown("w") then dy = dy - 1 end
+        if love.keyboard.isDown("a") then dx = dx - 1 end
+        if love.keyboard.isDown("s") then dy = dy + 1 end
+        if love.keyboard.isDown("d") then dx = dx + 1 end
+        sendToServer(dx.."_"..dy)
+    end
     local data = receiveFromServer()
     if data then 
         if id == "none" then id = data end
@@ -195,10 +202,6 @@ function love.update(dt)
         end
     end
     World:verlet(dt)
-    if tick % 2 == 0 then
-        local message = tick
-        sendToServer(message.."\n")
-    end
 end
 
 function love.draw()
