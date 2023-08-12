@@ -272,7 +272,7 @@ end
 function World:update(dt)
     --Add a queue system to update a ball n times after it collides
     self.ballsToUpdate = {}
-    self:substep(dt,7)
+    self:substep(dt,1)
     Server:update(self.ballsToUpdate)
 end
 
