@@ -180,28 +180,30 @@ function love.update(dt)
         if love.keyboard.isDown("d") then dx = dx + 1 end
         sendToServer(dx.."_"..dy)
     end
-    local data = receiveFromServer()
-    if data then 
-        if id == "none" then id = data end
-        Out = data 
-        for i, ball in ipairs(World.balls) do
-            local splitData,err = Command:decompile(data)
-            if splitData then
-                local ballData = splitData.balls[ball.id]
-                if ballData then
-                    ball.x = ballData.x
-                    ball.y = ballData.y
-                    ball.vx = ballData.vx
-                    ball.vy = ballData.vy
-                    ball.lx = ballData.lx
-                    ball.ly = ballData.ly
-                    ball.lvx = ballData.lvx
-                    ball.lvy = ballData.lvy
+    for i = 1,2 do
+        local data = receiveFromServer()
+        if data then 
+            if id == "none" then id = data end
+            Out = data 
+            for i, ball in ipairs(World.balls) do
+                local splitData,err = Command:decompile(data)
+                if splitData then
+                    local ballData = splitData.balls[ball.id]
+                    if ballData then
+                        ball.x = ballData.x
+                        ball.y = ballData.y
+                        ball.vx = ballData.vx
+                        ball.vy = ballData.vy
+                        ball.lx = ballData.lx
+                        ball.ly = ballData.ly
+                        ball.lvx = ballData.lvx
+                        ball.lvy = ballData.lvy
+                    end
                 end
             end
         end
+        World:verlet(dt)
     end
-    World:verlet(dt)
 end
 
 function love.draw()

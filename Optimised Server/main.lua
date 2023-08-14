@@ -22,7 +22,7 @@ for i = 1,yLen do
     end
 end
 
-World.ropes = {{1,2},{1,3},{1,4},{1,5}}
+World.ropes = {{1,2}}
 
 Command = {}
 
@@ -271,7 +271,7 @@ function World:constraint()
             self.balls[rope[2]]
         }
 
-        local center = {
+        local centre = {
             x = (balls[1].x + balls[2].x) / 2,
             y = (balls[1].y + balls[2].y) / 2
         }
@@ -279,16 +279,18 @@ function World:constraint()
             local obj = balls[ball]
 
             local toObj = {x=0,y=0}
-            toObj.x = obj.x - center.x
-            toObj.y = obj.y - center.y
+            toObj.x = obj.x - centre.x
+            toObj.y = obj.y - centre.y
             local distance = math.sqrt(toObj.x^2 + toObj.y^2)
 
             if distance > ropeRadius - obj.radius then
-                local n = {x=0,y=0}
-                n.x = toObj.x / distance
-                n.y = toObj.y / distance
-                obj.x = center.x + n.x * (ropeRadius - obj.radius)
-                obj.y = center.y + n.y * (ropeRadius - obj.radius)
+                -- local n = {x=0,y=0}
+                -- n.x = toObj.x / distance
+                -- n.y = toObj.y / distance
+                -- obj.x = center.x + n.x * (ropeRadius - obj.radius)
+                -- obj.y = center.y + n.y * (ropeRadius - obj.radius)
+                obj.vx = obj.vx + (centre.x - obj.x) / 50
+                obj.vy = obj.vy + (centre.y - obj.y) / 50
             end
         end
         
@@ -360,15 +362,23 @@ function love.load()
     love.window.setTitle("Server")
 end
 
+function love.keyreleased(key)
+    if key == "space" then
+        if #World.ropes == 0 then World.ropes = {{1,2}}
+        else World.ropes = {} end
+    end
+end
+
 function love.update(dt)
     tick = tick + 1
+
     Server:updateConnections()
     
     if tick % 1 == 0 then Server:update(World.balls) end
 
     World:update(dt)
 
-    if tick % 1 == 0 then
+    if tick % 2 == 0 then
         local data = Server:receiveFromClient()
     
         if data ~= nil then
@@ -395,12 +405,20 @@ function love.draw()
         love.graphics.line(b1.x,b1.y,b2.x,b2.y)
     end
     for i,ball in ipairs(World.balls) do
-        love.graphics.setColor(ball.team)
+        love.graphics.setColor(1,1,1)
         love.graphics.circle(
             "line",
             ball.x,
             ball.y,
             ball.radius
+        )
+        local mag = 0.1 + ((ball.vx^2 + ball.vy^2)^0.5 / 20)
+        love.graphics.setColor(mag,mag,mag)
+        love.graphics.circle(
+            "fill",
+            ball.x,
+            ball.y,
+            ball.radius-1
         )
     end
     love.graphics.setColor(1,1,1)
