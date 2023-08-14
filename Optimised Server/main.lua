@@ -22,7 +22,7 @@ for i = 1,yLen do
     end
 end
 
-World.ropes = {{1,2},{2,3}}
+World.ropes = {{1,2},{1,3},{1,4},{1,5}}
 
 Command = {}
 
@@ -375,8 +375,8 @@ function love.update(dt)
             Recieved = data
             for i = 1,#data do
                 local splitData = split(data[i],"_")
-                World.balls[i].vx = World.balls[i].vx + splitData[i]
-                World.balls[i].vy = World.balls[i].vy + splitData[i]
+                World.balls[i].vx = World.balls[i].vx + splitData[1]
+                World.balls[i].vy = World.balls[i].vy + splitData[2]
                 if splitData[1] ~= "0" or splitData[2] ~= "0" then
                     -- Server:update(World.balls)
                 end
@@ -386,6 +386,14 @@ function love.update(dt)
 end
 
 function love.draw()
+    for i,rope in ipairs(World.ropes) do
+        love.graphics.setColor(1,1,1)
+        local b1,b2 = 
+            World.balls[rope[1]],
+            World.balls[rope[2]]
+
+        love.graphics.line(b1.x,b1.y,b2.x,b2.y)
+    end
     for i,ball in ipairs(World.balls) do
         love.graphics.setColor(ball.team)
         love.graphics.circle(
