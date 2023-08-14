@@ -22,7 +22,7 @@ for i = 1,yLen do
     end
 end
 
-World.ropes = {{1,2}}
+World.ropes = {}
 
 Command = {}
 
@@ -231,35 +231,7 @@ function World:updateGrid()
     end
 end
 
-function World:constraint()
-    --Only updates client side balls when a collision takes place.
-    for i,ball in ipairs(self.balls) do
-        if ball.x < ball.radius then
-            table.insert(self.ballsToUpdate,ball)
-            ball.x = ball.radius
-            ball.vx = - ball.vx
-            ball.lvx = - ball.lvx
-        end
-        if ball.y < ball.radius then
-            table.insert(self.ballsToUpdate,ball)
-            ball.y = ball.radius
-            ball.vy = - ball.vy
-            ball.lvy = - ball.lvy
-        end
-        if ball.x > love.graphics.getWidth() - ball.radius - divider then
-            table.insert(self.ballsToUpdate,ball)
-            ball.x = love.graphics.getWidth() - ball.radius - divider
-            ball.vx = - ball.vx
-            ball.lvx = - ball.lvx
-        end
-        if ball.y > love.graphics.getHeight() - ball.radius - divider then
-            table.insert(self.ballsToUpdate,ball)
-            ball.y = love.graphics.getHeight() - ball.radius - divider
-            ball.vy = - ball.vy
-            ball.lvy = - ball.lvy
-        end
-    end
-    
+function World:ropeConstriant()
     for i = 1,#self.ropes do
 
         local ropeRadius = divider * 1.5
@@ -293,8 +265,38 @@ function World:constraint()
                 obj.vy = obj.vy + (centre.y - obj.y) / 50
             end
         end
-        
     end
+end
+
+function World:constraint()
+    --Only updates client side balls when a collision takes place.
+    for i,ball in ipairs(self.balls) do
+        if ball.x < ball.radius then
+            table.insert(self.ballsToUpdate,ball)
+            ball.x = ball.radius
+            ball.vx = - ball.vx
+            ball.lvx = - ball.lvx
+        end
+        if ball.y < ball.radius then
+            table.insert(self.ballsToUpdate,ball)
+            ball.y = ball.radius
+            ball.vy = - ball.vy
+            ball.lvy = - ball.lvy
+        end
+        if ball.x > love.graphics.getWidth() - ball.radius - divider then
+            table.insert(self.ballsToUpdate,ball)
+            ball.x = love.graphics.getWidth() - ball.radius - divider
+            ball.vx = - ball.vx
+            ball.lvx = - ball.lvx
+        end
+        if ball.y > love.graphics.getHeight() - ball.radius - divider then
+            table.insert(self.ballsToUpdate,ball)
+            ball.y = love.graphics.getHeight() - ball.radius - divider
+            ball.vy = - ball.vy
+            ball.lvy = - ball.lvy
+        end
+    end
+    self:ropeConstriant()
 end
 
 function World:substep(dt,n)
@@ -355,18 +357,27 @@ for i = 1,5 do
     World:new(i,{1,1,1},100+1.5*divider*i,100 + i,2,2,0,0)
 end
 
+local function toggleRope()
+    if #World.ropes == 0 then
+        local closestDist = 1000
+        local closestBall = 3
+        for i = 2,#World.balls do
+            local ball1 = World.balls[1]
+            local ball2 = World.balls[i]
+            local dist = ((ball1.x - ball2.x)^2 + (ball1.y - ball2.y)^2)^0.5
+            if dist < closestDist then 
+                closestDist = dist
+                closestBall = i
+            end
+        end
+        World.ropes = {{1,closestBall}}
+    else World.ropes = {} end
+end
 
 --==love functions==
 
 function love.load()
     love.window.setTitle("Server")
-end
-
-function love.keyreleased(key)
-    if key == "space" then
-        if #World.ropes == 0 then World.ropes = {{1,2}}
-        else World.ropes = {} end
-    end
 end
 
 function love.update(dt)
@@ -387,6 +398,7 @@ function love.update(dt)
                 local splitData = split(data[i],"_")
                 World.balls[i].vx = World.balls[i].vx + splitData[1]
                 World.balls[i].vy = World.balls[i].vy + splitData[2]
+                if splitData[3] == "1" then toggleRope() end
                 if splitData[1] ~= "0" or splitData[2] ~= "0" then
                     -- Server:update(World.balls)
                 end

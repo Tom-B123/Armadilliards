@@ -169,16 +169,25 @@ function love.quit()
     client:close()
 end
 
+local m1, m2 = 0, 0
+
 function love.update(dt)
     tick = tick + 1
     if tick % 2 == 0 then
-        local dx = 0
-        local dy = 0
+        local dx, dy = 0, 0
+        
+
         if love.keyboard.isDown("w") then dy = dy - 1 end
         if love.keyboard.isDown("a") then dx = dx - 1 end
         if love.keyboard.isDown("s") then dy = dy + 1 end
         if love.keyboard.isDown("d") then dx = dx + 1 end
-        sendToServer(dx.."_"..dy)
+
+        if love.mouse.isDown(1) then m1 = m1 + 1
+        else m1 = 0 end
+        if love.mouse.isDown(2) then m2 = m2 + 1
+        else m2 = 0 end
+
+        sendToServer(dx.."_"..dy.."_"..m1.."_"..m2)
     end
     for i = 1,2 do
         local data = receiveFromServer()
