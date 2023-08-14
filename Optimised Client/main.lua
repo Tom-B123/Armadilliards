@@ -159,7 +159,7 @@ local function receiveFromServer()
 end
 
 for i = 1,5 do
-    World:new(tostring(i),{1,1,1},25,100,100,0,0,0,0)
+    World:new(tostring(i),{1,1,1},15,100,100,0,0,0,0)
 end
 
 --==love functions==--

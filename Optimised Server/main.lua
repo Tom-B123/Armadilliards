@@ -3,9 +3,9 @@ local server = assert(socket.bind("*", 12345))
 
 local tick = 0
 
-local divider = 50
-local xLen = math.floor(love.graphics.getWidth() / divider)
-local yLen = math.floor(love.graphics.getHeight() / divider)
+local divider = 30
+local xLen = math.floor(love.graphics.getWidth() / divider) + 1
+local yLen = math.floor(love.graphics.getHeight() / divider) + 1
 
 Recieved = {}
 
@@ -21,6 +21,8 @@ for i = 1,yLen do
         World.grid[i][j] = {}
     end
 end
+
+World.ropes = {{1,2},{2,3}}
 
 Command = {}
 
@@ -258,6 +260,39 @@ function World:constraint()
         end
     end
     
+    for i = 1,#self.ropes do
+
+        local ropeRadius = divider * 1.5
+
+        local rope = self.ropes[i]
+
+        local balls = {
+            self.balls[rope[1]],
+            self.balls[rope[2]]
+        }
+
+        local center = {
+            x = (balls[1].x + balls[2].x) / 2,
+            y = (balls[1].y + balls[2].y) / 2
+        }
+        for ball = 1,2 do
+            local obj = balls[ball]
+
+            local toObj = {x=0,y=0}
+            toObj.x = obj.x - center.x
+            toObj.y = obj.y - center.y
+            local distance = math.sqrt(toObj.x^2 + toObj.y^2)
+
+            if distance > ropeRadius - obj.radius then
+                local n = {x=0,y=0}
+                n.x = toObj.x / distance
+                n.y = toObj.y / distance
+                obj.x = center.x + n.x * (ropeRadius - obj.radius)
+                obj.y = center.y + n.y * (ropeRadius - obj.radius)
+            end
+        end
+        
+    end
 end
 
 function World:substep(dt,n)
@@ -329,21 +364,21 @@ function love.update(dt)
     tick = tick + 1
     Server:updateConnections()
     
-    if tick % 20 == 0 then Server:update(World.balls) end
+    if tick % 1 == 0 then Server:update(World.balls) end
 
     World:update(dt)
 
-    if tick % 2 == 0 then
+    if tick % 1 == 0 then
         local data = Server:receiveFromClient()
     
         if data ~= nil then
             Recieved = data
             for i = 1,#data do
                 local splitData = split(data[i],"_")
-                World.balls[1].vx = World.balls[1].vx + splitData[1]
-                World.balls[1].vy = World.balls[1].vy + splitData[2]
+                World.balls[i].vx = World.balls[i].vx + splitData[i]
+                World.balls[i].vy = World.balls[i].vy + splitData[i]
                 if splitData[1] ~= "0" or splitData[2] ~= "0" then
-                    Server:update(World.balls)
+                    -- Server:update(World.balls)
                 end
             end
         end 
