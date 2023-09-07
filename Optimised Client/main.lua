@@ -4,7 +4,7 @@ local tick = 0
 
 Out = "none"
 -- Replace "your_server_ip" with the IP address of your server
-local ips = {["local"] = "192.168.1.110", ["foreign"] = "192.168.1.79"}
+local ips = {["local"] = "localhost", ["foreign"] = "192.168.1.79"}
 
 local serverPort = 12345
 
