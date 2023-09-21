@@ -1,6 +1,6 @@
 local socket = require("socket")
 --The client of players, that will be connected to lobbies.
-local client = assert(socket.connect("localhost",1000))
+local client = assert(socket.connect("localhost",500))
 --The identifier of the client
 local clientID = nil
 --the last message recieved.
@@ -15,8 +15,19 @@ function love.keypressed(key)
 end
 
 function love.quit()
-    -- Cleanup when quitting the application
     client:close()
+end
+
+--split strings by a separator
+local function split (inputstr, sep)
+    if sep == nil then
+            sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+            table.insert(t, str)
+    end
+    return t
 end
 
 --Send message to server
@@ -38,7 +49,9 @@ end
 function love.update()
     
     serverMessage = receiveFromServer()
-    if serverMessage then clientID = serverMessage
+    if serverMessage then 
+        local splitMessage = split(serverMessage,":")
+        clientID = splitMessage[2]
     else clientID = "0" end
     
     if clientID then 
