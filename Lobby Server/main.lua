@@ -9,6 +9,13 @@ local players = {}
 --Displayed to the clients in the players list.
 local lobbies = {}
 
+function love.keypressed(key)
+	if key == "escape" then
+	  love.event.quit()
+	end
+end
+
+
 --Updates the players list of connected clients.
 function MainLobby:updateConnections()
     local newClient = self.server:accept()
@@ -21,7 +28,7 @@ end
 function MainLobby:sendToClient(client)
     if client == "all" then
         for i,clientToSend in ipairs(players) do
-            clientToSend:send("you are client number _"..i.."\n")
+            clientToSend:send(tostring(i).."\n")
         end
     end
 end
@@ -54,7 +61,7 @@ function love.draw()
     local data = MainLobby:receiveFromClient()
     if data then
         for i, message in ipairs(data) do
-            love.graphics.print(message)
+            love.graphics.print(message,0,i*15)
         end
     end
 end

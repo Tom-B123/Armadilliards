@@ -8,6 +8,17 @@ local serverMessage = ""
 
 client:settimeout(0)
 
+function love.keypressed(key)
+	if key == "escape" then
+	  love.event.quit()
+	end
+end
+
+function love.quit()
+    -- Cleanup when quitting the application
+    client:close()
+end
+
 --Send message to server
 local function sendToServer(data)
     client:send(data .. "\n")
@@ -27,7 +38,9 @@ end
 function love.update()
     
     serverMessage = receiveFromServer()
-    clientID = "1"
+    if serverMessage then clientID = serverMessage
+    else clientID = "0" end
+    
     if clientID then 
         sendToServer("hello server, I am the client number "..clientID)
     end
