@@ -21,19 +21,19 @@ end
 function MainLobby:sendToClient(client)
     if client == "all" then
         for i,clientToSend in ipairs(players) do
-            clientToSend:send("message to client number "..i.."\n")
+            clientToSend:send("you are client number _"..i.."\n")
         end
     end
 end
 
---Recieves data from all clients
-function MainLobby:recieveFromClient()
+--receives data from all clients
+function MainLobby:receiveFromClient()
     local dataOut = {}
-    for i,clientToRecieve in ipairs(players) do
-        local data,err = clientToRecieve:recieve()
+    for i,clientToReceive in ipairs(players) do
+        local data,err = clientToReceive:receive()
         if data then dataOut[i] = data
         elseif err == "closed" then
-            clientToRecieve:close()
+            clientToReceive:close()
             table.remove(players,i)
         end
     end
@@ -47,11 +47,11 @@ end
 
 function love.update()
     MainLobby:updateConnections()
-
+    MainLobby:sendToClient("all")
 end
 
 function love.draw()
-    local data = MainLobby:recieveFromClient()
+    local data = MainLobby:receiveFromClient()
     if data then
         for i, message in ipairs(data) do
             love.graphics.print(message)
