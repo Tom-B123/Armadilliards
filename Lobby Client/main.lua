@@ -1,6 +1,6 @@
 local socket = require("socket")
 --The client of players, that will be connected to lobbies.
-local client = assert(socket.connect("localhost",500))
+local client = assert(socket.connect("localhost",1000))
 --The identifier of the client
 local clientID = nil
 --the last message recieved.

@@ -1,4 +1,50 @@
 local socket = require("socket")
+
+Lobby = {}
+
+Lobby.__index = Lobby
+
+--Create a new lobby
+function Lobby:new(name,port)
+    local object = {}
+    setmetatable(Lobby,object)
+    object.name = name
+    object.clients = {}
+    object.server = assert(socket.bind("*",port))
+    return object
+end
+
+--Update connections coming into a lobby.
+function Lobby:updateConnections()
+    local newClient = self.server:accept()
+    if newClient then
+        table.insert(self.clients,newClient)
+    end
+end
+
+--Send to clients connected to a lobby.
+function Lobby:sendToClient(client)
+    if client == "all" then
+        for i,clientToSend in ipairs(self.clients) do
+            clientToSend:send(tostring(i).."\n")
+        end
+    end
+end
+
+--Receive from all clients of a lobby.
+function Lobby:receiveFromClient()
+    local dataOut = {}
+    for i,clientToReceive in ipairs(self.clients) do
+        local data,err = clientToReceive:receive()
+        if data then dataOut[i] = data
+        elseif err == "closed" then
+            clientToReceive:close()
+            table.remove(self.clients,i)
+        end
+    end
+    return dataOut
+end
+
 --The server that online players attempt to connect to.
 local MainLobby = {server = assert(socket.bind("*",500))}
 
@@ -8,6 +54,8 @@ local players = {}
 --A list of all active lobby servers. 
 --Displayed to the clients in the players list.
 local lobbies = {}
+
+lobbies[1] = Lobby:new("my lobby",1000)
 
 function love.keypressed(key)
 	if key == "escape" then
@@ -33,6 +81,7 @@ function MainLobby:sendToClient(client)
     end
 end
 
+
 --receives data from all clients
 function MainLobby:receiveFromClient()
     local dataOut = {}
@@ -46,8 +95,6 @@ function MainLobby:receiveFromClient()
     end
     return dataOut
 end
-
-
 
 function love.load()
 end
