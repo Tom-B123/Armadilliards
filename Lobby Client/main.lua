@@ -42,7 +42,7 @@ function love.update()
     else clientID = "0" end
     
     if clientID then 
-        sendToServer("hello server, I am the client number "..clientID)
+        sendToServer("client:"..clientID)
     end
 end
 
