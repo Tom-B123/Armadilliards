@@ -35,7 +35,7 @@ end
 function Lobby:sendToClient(client,data)
     if client == "all" then
         for i,clientToSend in ipairs(self.clients) do
-            clientToSend:send(self.name..":"..tostring(i).."\n")
+            clientToSend:send(data.."\n")
         end
     else
         if data then client:send(data.."\n") end
@@ -89,27 +89,28 @@ function love.update()
 
     --Proccess incoming requests
     for i, lobby in ipairs(lobbies) do
-        requests[i] = {}
         --Send data to and update active clients.
         clientMessages[i] = lobby:receiveFromClient()
-        --For every client in the lobby
-        for j, message in ipairs(clientMessages[i]) do
-            requests[i][j] = nil
-            --If there is a command sent, update the
-            --requests table,
-            if message ~= "ndat" then 
-                --splitting the command from the params
-                local commandData = split(message,":")
-                
-                --Join lobby request
-                if commandData[1] == "jlob" then
-                    requests[i][j] = {"join",commandData[2]}
+    end
 
-                --Create lobby request
-                elseif commandData[1] == "clob" then
-                    local lobbyData = split(commandData[2],"_")
-                    requests[i][j] = {"create",lobbyData[1],lobbyData[2]}
-                end
+    requests = {}
+    --process special requests to the main lobby
+    for i, message in ipairs(clientMessages[1]) do
+        requests[i] = nil
+        --If there is a command sent, update the
+        --requests table,
+        if message ~= "ndat" then 
+            --splitting the command from the params
+            local commandData = split(message,":")
+            
+            --Join lobby request
+            if commandData[1] == "jlob" then
+                requests[i] = {"join",commandData[2]}
+
+            --Create lobby request
+            elseif commandData[1] == "clob" then
+                local lobbyData = split(commandData[2],"_")
+                requests[i] = {"create",lobbyData[1],lobbyData[2]}
             end
         end
     end
@@ -117,35 +118,38 @@ function love.update()
     --{"create","my lobby","1005"}
     local toSend = {}
 
-    --Carry out incoming requests
-    for i,lobby in ipairs(requests) do
-        toSend[i] = {}
-        for j,request in ipairs(lobby) do
-            toSend[i][j] = nil
-            if request then
-                if request[1] == "create" then
-                    Lobby:new(request[2],tonumber(request[3]))
-                elseif request[1] == "join" then
-                    toSend[i][j] = request[2]
-                end
+    --Carry out incoming requests to the main server
+    for i,request in ipairs(requests) do
+        toSend[i] = nil
+        if request then
+            if request[1] == "create" then
+                Lobby:new(request[2],tonumber(request[3]))
+            elseif request[1] == "join" then
+                toSend[i] = request[2]
             end
         end
     end
+
     --Sends data to all clients that requested it.
     for i,lobby in ipairs(lobbies) do
         lobby:updateConnections()
-        for j, client in ipairs(lobby.clients) do
-            if toSend[i][j] then
-                local server = lobbiesDict[toSend[i][j]]
-                if server then 
-                    local serverInfo = server.port.."\n"
-                    lobby:sendToClient(client,"port:"..serverInfo)
-                else
-                    lobby:sendToClient(client,"invalid lobby name")
-                end
+        if i > 1 then
+            lobby:sendToClient("all","I am server "..i)
+            lobby:receiveFromClient()
+        end
+    end
+
+    for i, client in ipairs(lobbies[1].clients) do
+        if toSend[i] then
+            local server = lobbiesDict[toSend[i]]
+            if server then 
+                local serverInfo = server.port.."\n"
+                lobbies[1]:sendToClient(client,"port:"..serverInfo)
             else
-                lobby:sendToClient(client,"none")
+                lobbies[1]:sendToClient(client,"invalid lobby name")
             end
+        else
+            lobbies[1]:sendToClient(client,"none")
         end
     end
 end
