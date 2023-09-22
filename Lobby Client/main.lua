@@ -81,6 +81,18 @@ end
 function love.update()
     
     serverMessage = receiveFromServer()
+    --If a command is recieved from the server
+    if serverMessage and serverMessage ~= "none" then
+        --split the command
+        local commandData = split(serverMessage,":")
+        --If a port number is given, connect to that port.
+        if commandData[1] == "port" then
+            client:close()
+            client = assert(socket.connect("localhost",commandData[2]))
+        end
+    end
+
+    --Sends data to the server based on user input
     if lobbyToCreate ~= nil then
         sendToServer("clob"..":"..lobbyToCreate:send())
     elseif lobbyToJoin ~= nil then
@@ -93,7 +105,7 @@ end
 
 function love.draw()
     local data = serverMessage
-    if data then love.graphics.print(data) end
+    if data and data ~= "none" then love.graphics.print(data) end
     if lobbyToJoin then 
         love.graphics.print("attemped to join lobby: "..lobbyToJoin,0,200)
     end
