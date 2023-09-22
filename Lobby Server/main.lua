@@ -8,15 +8,19 @@ Lobby = {}
 
 Lobby.__index = Lobby
 
+local lobbies = {}
+local lobbiesDict = {}
 --Create a new lobby
 function Lobby:new(name,port)
     local object = {}
     setmetatable(object,Lobby)
     object.name = name
+    object.port = port
     object.clients = {}
     object.server = assert(socket.bind("*",port))
     object.server:settimeout(0)
-    return object
+    table.insert(lobbies,object)
+    lobbiesDict[name] = object
 end
 
 --Update connections coming into a lobby.
@@ -68,9 +72,9 @@ end
 local players = {}
 --A list of all active lobby servers,
 --Displayed to the clients in the players list.
-local lobbies = {}
+
 --The server that online players attempt to connect to.
-lobbies[1] = Lobby:new("Main Lobby",500)
+Lobby:new("Main Lobby",500)
 
 function love.keypressed(key)
 	if key == "escape" then
@@ -117,29 +121,40 @@ function love.update()
     for i,lobby in ipairs(requests) do
         toSend[i] = {}
         for j,request in ipairs(lobby) do
-            toSend[i][j] = "none"
+            toSend[i][j] = nil
             if request then
                 if request[1] == "create" then
-                    local nLobby = Lobby:new(request[2],tonumber(request[3]))
-                    lobbies[#lobbies+1] = nLobby
-                end
-                if request[1] == "join" then
+                    Lobby:new(request[2],tonumber(request[3]))
+                elseif request[1] == "join" then
                     toSend[i][j] = request[2]
                 end
             end
         end
     end
-
+    --Sends data to all clients that requested it.
     for i,lobby in ipairs(lobbies) do
         lobby:updateConnections()
         for j, client in ipairs(lobby.clients) do
-            if toSend[i] then
-                lobby:sendToClient(client,toSend[i][j])
+            if toSend[i][j] then
+                local server = lobbiesDict[toSend[i][j]]
+                if server then 
+                    local serverInfo = server.port.."\n"
+                    lobby:sendToClient(client,"port:"..serverInfo)
+                else
+                    lobby:sendToClient(client,"invalid lobby name")
+                end
+            else
+                lobby:sendToClient(client,"none")
             end
         end
     end
 end
 
+
+
+
+
+--Draw text, debugging for server
 function love.draw()
     love.graphics.print("lobby count: "..#lobbies)
     for x, lobby in ipairs(lobbies) do
