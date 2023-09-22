@@ -28,11 +28,13 @@ function Lobby:updateConnections()
 end
 
 --Send to clients connected to a lobby.
-function Lobby:sendToClient(client)
+function Lobby:sendToClient(client,data)
     if client == "all" then
         for i,clientToSend in ipairs(self.clients) do
             clientToSend:send(self.name..":"..tostring(i).."\n")
         end
+    else
+        if data then client:send(data.."\n") end
     end
 end
 
@@ -109,16 +111,30 @@ function love.update()
     end
     --Packet example = requests[lobby][client] = 
     --{"create","my lobby","1005"}
-    
+    local toSend = {}
 
     --Carry out incoming requests
     for i,lobby in ipairs(requests) do
+        toSend[i] = {}
         for j,request in ipairs(lobby) do
+            toSend[i][j] = "none"
             if request then
                 if request[1] == "create" then
                     local nLobby = Lobby:new(request[2],tonumber(request[3]))
                     lobbies[#lobbies+1] = nLobby
                 end
+                if request[1] == "join" then
+                    toSend[i][j] = request[2]
+                end
+            end
+        end
+    end
+
+    for i,lobby in ipairs(lobbies) do
+        lobby:updateConnections()
+        for j, client in ipairs(lobby.clients) do
+            if toSend[i] then
+                lobby:sendToClient(client,toSend[i][j])
             end
         end
     end
