@@ -1,5 +1,7 @@
 local socket = require("socket")
 
+local clientMessages = {}
+
 Lobby = {}
 
 Lobby.__index = Lobby
@@ -46,7 +48,17 @@ function Lobby:receiveFromClient()
     return dataOut
 end
 
-
+--splits string by a seperator
+local function split (inputstr, sep)
+    if sep == nil then
+            sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+            table.insert(t, str)
+    end
+    return t
+end
 
 --A list of all online players.
 local players = {}
@@ -71,12 +83,14 @@ function love.update()
     for i, lobby in ipairs(lobbies) do
         lobby:updateConnections()
         lobby:sendToClient("all")
+        clientMessages[i] = lobby:receiveFromClient()
+        local command_data = split(clientMEssages[i],":")
     end
 end
 
 function love.draw()
     for x, lobby in ipairs(lobbies) do
-        local data = lobby:receiveFromClient()
+        local data = clientMessages[x]
         if data then
             for y, message in ipairs(data) do
                 love.graphics.print(message,x*50,y*20)

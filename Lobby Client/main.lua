@@ -82,9 +82,11 @@ function love.update()
     
     serverMessage = receiveFromServer()
     if lobbyToCreate ~= nil then
-        sendToServer("clob"..":"..lobbyToCreate)
+        sendToServer("clob"..":"..lobbyToCreate:send())
     elseif lobbyToJoin ~= nil then
-        
+        sendToServer("jlob"..":"..lobbyToJoin)
+    else
+        sendToServer("ndat")
     end
 end
 
