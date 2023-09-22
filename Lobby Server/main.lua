@@ -70,8 +70,6 @@ local lobbies = {}
 --The server that online players attempt to connect to.
 lobbies[1] = Lobby:new("Main Lobby",500)
 
-lobbies[2] = Lobby:new("my lobby",1000)
-
 function love.keypressed(key)
 	if key == "escape" then
 	  love.event.quit()
@@ -82,29 +80,44 @@ function love.load()
 end
 
 function love.update()
-    --For each lobby
+
+    --Proccess incoming requests
     for i, lobby in ipairs(lobbies) do
         requests[i] = {}
         --Send data to and update active clients.
-        lobby:updateConnections()
-        lobby:sendToClient("all")
         clientMessages[i] = lobby:receiveFromClient()
         --For every client in the lobby
         for j, message in ipairs(clientMessages[i]) do
-            requests[i][j] = "none"
+            requests[i][j] = nil
             --If there is a command sent, update the
             --requests table,
             if message ~= "ndat" then 
                 --splitting the command from the params
                 local commandData = split(message,":")
+                
                 --Join lobby request
                 if commandData[1] == "jlob" then
-                    requests[i] = {"join",commandData[2]}
+                    requests[i][j] = {"join",commandData[2]}
 
                 --Create lobby request
                 elseif commandData[1] == "clob" then
                     local lobbyData = split(commandData[2],"_")
-                    requests[i] = {"create",lobbyData[1],lobbyData[2]}
+                    requests[i][j] = {"create",lobbyData[1],lobbyData[2]}
+                end
+            end
+        end
+    end
+    --Packet example = requests[lobby][client] = 
+    --{"create","my lobby","1005"}
+    
+
+    --Carry out incoming requests
+    for i,lobby in ipairs(requests) do
+        for j,request in ipairs(lobby) do
+            if request then
+                if request[1] == "create" then
+                    local nLobby = Lobby:new(request[2],tonumber(request[3]))
+                    lobbies[#lobbies+1] = nLobby
                 end
             end
         end
@@ -112,6 +125,7 @@ function love.update()
 end
 
 function love.draw()
+    love.graphics.print("lobby count: "..#lobbies)
     for x, lobby in ipairs(lobbies) do
         local data = clientMessages[x]
         if data then
@@ -122,7 +136,7 @@ function love.draw()
     end
     for i, lobby in ipairs(requests) do
         for j,request in ipairs(lobby) do
-            if request ~= "none" then
+            if request then
                 love.graphics.print(request,0,j*15)
             end
         end
