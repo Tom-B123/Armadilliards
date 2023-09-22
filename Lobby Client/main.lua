@@ -28,7 +28,7 @@ end
 
 --Sends the new lobby details to the server.
 function Lobby:send()
-    return self.name.."-"..self.port.."\n"
+    return self.name.."_"..self.port.."\n"
 end
 
 function love.keypressed(key)

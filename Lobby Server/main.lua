@@ -2,6 +2,8 @@ local socket = require("socket")
 
 local clientMessages = {}
 
+local requests = {}
+
 Lobby = {}
 
 Lobby.__index = Lobby
@@ -80,11 +82,32 @@ function love.load()
 end
 
 function love.update()
+    --For each lobby
     for i, lobby in ipairs(lobbies) do
+        requests[i] = {}
+        --Send data to and update active clients.
         lobby:updateConnections()
         lobby:sendToClient("all")
         clientMessages[i] = lobby:receiveFromClient()
-        local command_data = split(clientMEssages[i],":")
+        --For every client in the lobby
+        for j, message in ipairs(clientMessages[i]) do
+            requests[i][j] = "none"
+            --If there is a command sent, update the
+            --requests table,
+            if message ~= "ndat" then 
+                --splitting the command from the params
+                local commandData = split(message,":")
+                --Join lobby request
+                if commandData[1] == "jlob" then
+                    requests[i] = {"join",commandData[2]}
+
+                --Create lobby request
+                elseif commandData[1] == "clob" then
+                    local lobbyData = split(commandData[2],"_")
+                    requests[i] = {"create",lobbyData[1],lobbyData[2]}
+                end
+            end
+        end
     end
 end
 
@@ -93,7 +116,14 @@ function love.draw()
         local data = clientMessages[x]
         if data then
             for y, message in ipairs(data) do
-                love.graphics.print(message,x*50,y*20)
+                love.graphics.print(message,x*50,y*50)
+            end
+        end
+    end
+    for i, lobby in ipairs(requests) do
+        for j,request in ipairs(lobby) do
+            if request ~= "none" then
+                love.graphics.print(request,0,j*15)
             end
         end
     end
