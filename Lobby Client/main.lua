@@ -8,10 +8,43 @@ local serverMessage = ""
 
 client:settimeout(0)
 
+Lobby = {}
+
+--The lobby requests to send to the main lobby.
+local lobbyToJoin = nil
+
+local lobbyToCreate = nil
+
+Lobby.__index = Lobby
+
+--Creates a new lobby object
+function Lobby:new(name,port)
+    local object = {}
+    setmetatable(object,Lobby)
+    object.name = name
+    object.port = port
+    return object
+end
+
+--Sends the new lobby details to the server.
+function Lobby:send()
+    return self.name.."-"..self.port.."\n"
+end
+
 function love.keypressed(key)
 	if key == "escape" then
 	  love.event.quit()
 	end
+
+    for i = 0,9 do
+        if key == tostring(i) then
+            if love.keyboard.isDown("lctrl") then
+                lobbyToCreate = Lobby:new("lobby "..i,1000+i)
+            else
+                lobbyToJoin = "lobby "..i
+            end
+        end
+    end
 end
 
 function love.quit()
@@ -45,17 +78,13 @@ local function receiveFromServer()
     end
 end
 
-
 function love.update()
     
     serverMessage = receiveFromServer()
-    if serverMessage then 
-        local splitMessage = split(serverMessage,":")
-        clientID = splitMessage[2]
-    else clientID = "0" end
-    
-    if clientID then 
-        sendToServer("client:"..clientID)
+    if lobbyToCreate ~= nil then
+        sendToServer("clob"..":"..lobbyToCreate)
+    elseif lobbyToJoin ~= nil then
+        
     end
 end
 
@@ -63,4 +92,12 @@ end
 function love.draw()
     local data = serverMessage
     if data then love.graphics.print(data) end
+    if lobbyToJoin then 
+        love.graphics.print("attemped to join lobby: "..lobbyToJoin,0,200)
+    end
+    if lobbyToCreate then
+        love.graphics.print("attemped to create lobby: "..lobbyToCreate:send(),200,200)
+    end
+    lobbyToJoin = nil
+    lobbyToCreate = nil
 end
