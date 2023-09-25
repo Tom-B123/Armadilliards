@@ -1,6 +1,7 @@
 local socket = require("socket")
 --The client of players, that will be connected to lobbies.
 local client = assert(socket.connect("localhost",500))
+local server = nil
 --The identifier of the client
 local clientID = nil
 --the last message recieved.
@@ -18,11 +19,16 @@ local lobbyToCreate = nil
 Lobby.__index = Lobby
 
 --Creates a new lobby object
-function Lobby:new(name,port)
+function Lobby:new(name,port,tmp)
     local object = {}
     setmetatable(object,Lobby)
     object.name = name
     object.port = port
+    if tmp == nil then
+        object.clients = {}
+        object.server = assert(socket.bind("*",port))
+        object.server:settimeout(0)
+    end
     return object
 end
 
@@ -39,7 +45,7 @@ function love.keypressed(key)
     for i = 0,9 do
         if key == tostring(i) then
             if love.keyboard.isDown("lctrl") then
-                lobbyToCreate = Lobby:new("lobby "..i,1000+i)
+                lobbyToCreate = Lobby:new("lobby "..i,1000+i,true)
             else
                 lobbyToJoin = "lobby "..i
             end
@@ -48,7 +54,7 @@ function love.keypressed(key)
 end
 
 function love.quit()
-    client:close()
+    if client then client:close() end
 end
 
 --split strings by a separator
@@ -78,19 +84,31 @@ local function receiveFromServer()
     end
 end
 
-function love.update()
-    
-    serverMessage = receiveFromServer()
-    --If a command is recieved from the server
-    if serverMessage and serverMessage ~= "none" then
-        --split the command
-        local commandData = split(serverMessage,":")
-        --If a port number is given, connect to that port.
-        if commandData[1] == "port" then
-            client:close()
-            client = assert(socket.connect("localhost",commandData[2]))
+--Send message to clients when hosting
+local function sendToClients(data)
+    if server then
+        for i, client in ipairs(server.clients) do
+            client:send(data)
         end
     end
+end
+
+--Recieve messages from clients when hosting
+local function receiveFromClients()
+    if server then
+        local out = {}
+        for i,client in ipairs(server.clients) do
+            local data,err = client:receive()
+            table.insert(out,data)
+            if err == "closed" then
+                client:close()
+                table.remove(server.clients,i)
+            end
+        end
+    end
+end
+
+local function comWithMainLobby()
 
     --Sends data to the server based on user input
     if lobbyToCreate ~= nil then
@@ -100,6 +118,33 @@ function love.update()
     else
         sendToServer("ndat")
     end
+
+    serverMessage = receiveFromServer()
+    --If a command is recieved from the server
+    if serverMessage and serverMessage ~= "none" then
+        --split the command
+        local commandData = split(serverMessage,":")
+        --If a port number is given, connect to that port.
+        if commandData[1] == "port" then
+            local socketData = split(commandData[2],"_")
+            client:close()
+            client = nil
+            server = Lobby:new(socketData[1],socketData[2])
+        end
+    end
+end
+
+local function comWithClients()
+    sendToClients("hello clients, I am a host")
+    receiveFromClients()
+end
+
+
+
+function love.update()
+    if client then comWithMainLobby() end
+
+    if server then comWithClients() end
 end
 
 
