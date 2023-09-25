@@ -18,6 +18,8 @@ local lobbyToCreate = nil
 
 Lobby.__index = Lobby
 
+local messagesToWrite = {}
+
 --Creates a new lobby object
 function Lobby:new(name,port,tmp)
     local object = {}
@@ -34,7 +36,8 @@ end
 
 --Sends the new lobby details to the server.
 function Lobby:send()
-    return self.name.."_"..self.port.."\n"
+    local ip = socket.dns.toip(socket.dns.gethostname()) 
+    return self.name.."_"..self.port.."_"..ip.."\n"
 end
 
 function love.keypressed(key)
@@ -109,7 +112,7 @@ local function receiveFromClients()
 end
 
 local function comWithMainLobby()
-
+    messagesToWrite = {}
     --Sends data to the server based on user input
     if lobbyToCreate ~= nil then
         sendToServer("clob"..":"..lobbyToCreate:send())
@@ -118,20 +121,22 @@ local function comWithMainLobby()
     else
         sendToServer("ndat")
     end
-
-    serverMessage = receiveFromServer()
-    --If a command is recieved from the server
-    if serverMessage and serverMessage ~= "none" then
-        --split the command
-        local commandData = split(serverMessage,":")
-        --If a port number is given, connect to that port.
-        if commandData[1] == "port" then
-            local socketData = split(commandData[2],"_")
-            client:close()
-            client = nil
-            server = Lobby:new(socketData[1],socketData[2])
+    repeat
+        serverMessage = receiveFromServer()
+        messagesToWrite[#messagesToWrite+1] = serverMessage
+        --If a command is recieved from the server
+        if serverMessage and serverMessage ~= "none" then
+            --split the command
+            local commandData = split(serverMessage,":")
+            --If a socket details are given, connect to that socket.
+            if commandData[1] == "sock" then
+                local socketData = split(commandData[2],"_")
+                client:close()
+                client = nil
+                server = Lobby:new(socketData[1],socketData[2])
+            end
         end
-    end
+    until (serverMessage == nil)
 end
 
 local function comWithClients()
@@ -149,8 +154,10 @@ end
 
 
 function love.draw()
-    local data = serverMessage
-    if data and data ~= "none" then love.graphics.print(data) end
+    for i, message in ipairs(messagesToWrite) do
+        local data = message
+        if data and data ~= "none" then love.graphics.print(data,0,0) end
+    end
     if lobbyToJoin then 
         love.graphics.print("attemped to join lobby: "..lobbyToJoin,0,200)
     end
