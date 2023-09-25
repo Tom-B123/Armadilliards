@@ -39,7 +39,7 @@ function Lobby:join(client,name)
         mainLobby:sendToClient(client,lobbyInfo)
         return nil
     end
-    return "invalid lobby name"
+    return "invalid lobby name\n"
 end
 
 --Confirm a creation request from the client.

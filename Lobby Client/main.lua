@@ -1,6 +1,6 @@
 local socket = require("socket")
 --The client of players, that will be connected to lobbies.
-local client = assert(socket.connect("localhost",1001))
+local client = assert(socket.connect("localhost",500))
 local server = nil
 --The identifier of the client
 local clientID = nil
@@ -40,6 +40,14 @@ end
 function Lobby:send()
     local ip = socket.dns.toip(socket.dns.gethostname()) 
     return self.name.."_"..self.port.."_"..ip.."\n"
+end
+
+--Update connections coming into a lobby.
+function Lobby:updateConnections()
+    local newClient = self.server:accept()
+    if newClient then
+        table.insert(self.clients,newClient)
+    end
 end
 
 function love.keypressed(key)
@@ -90,29 +98,27 @@ local function receiveFromServer()
 end
 
 --Send message to clients when hosting
-local function sendToClients(data)
-    if server then
-        for i, client in ipairs(server.clients) do
-            client:send(data)
-        end
+function Lobby:sendToClients(data)
+    for i, client in ipairs(self.clients) do
+        client:send(data)
     end
 end
 
 --Recieve messages from clients when hosting
-local function receiveFromClients()
-    if server then
-        local out = {}
-        for i,client in ipairs(server.clients) do
-            local data,err = client:receive()
-            table.insert(out,data)
-            if err == "closed" then
-                client:close()
-                table.remove(server.clients,i)
-            end
+function Lobby:receiveFromClients()
+    local out = {}
+    for i,client in ipairs(self.clients) do
+        local data,err = client:receive()
+        table.insert(out,data)
+        if err == "closed" then
+            client:close()
+            table.remove(self.clients,i)
         end
     end
+    return out
 end
 
+--All the processing the lobby client does.
 local function comWithMainLobby()
     messagesToWrite = {}
     --Sends data to the server based on user input
@@ -124,6 +130,7 @@ local function comWithMainLobby()
         sendToServer("ndat")
     end
     repeat
+        local quit = false
         serverMessage = receiveFromServer()
         messagesToWrite[#messagesToWrite+1] = serverMessage
         --If a command is recieved from the server
@@ -138,28 +145,34 @@ local function comWithMainLobby()
                 lobbyName = sockData[1]
                 server = Lobby:new(sockData[1],sockData[2])
                 messagesToWrite = {}
+                quit = true
             --If a socket details are given, connect to that socket.
             elseif commandData[1] == "sock" then
                 local sockData = split(commandData[2],"_")
                 client:close()
                 lobbyName = sockData[1]
                 client = assert(socket.connect(sockData[2],sockData[3]))
+                client:settimeout(0)
+                quit = true
             end
         end
-    until (serverMessage == nil or client == nil)
+    until (serverMessage == nil or quit == true)
 end
 
+--All the processing a server does
 local function comWithClients()
-    sendToClients("hello clients, I am a host")
-    receiveFromClients()
+    if server then
+        server:updateConnections()
+        server:sendToClients("hello clients, I am a host\n")
+        server:receiveFromClients()
+    end
 end
-
 
 
 function love.update()
-    if client then comWithMainLobby() end
+    if client then comWithMainLobby()
 
-    if server then comWithClients() end
+    elseif server then comWithClients() end
 end
 
 
