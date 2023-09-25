@@ -10,6 +10,7 @@ Lobby.__index = Lobby
 
 local lobbies = {}
 local lobbiesDict = {}
+
 --Create a new lobby
 function Lobby:new(name,port,isMain,ipAddress)
     local object = {}
@@ -95,17 +96,15 @@ local function split (inputstr, sep)
     return t
 end
 
---The server that online players attempt to connect to.
-
-
+--Quits when esc pressed
 function love.keypressed(key)
 	if key == "escape" then
 	  love.event.quit()
 	end
 end
 
-function love.update()
-
+--Processes all client requests to rout between lobbies
+local function processRequests()
     mainLobby:updateConnections()
     --Proccess incoming requests
     clientMessages = mainLobby:receiveFromClient()
@@ -124,11 +123,16 @@ function love.update()
             if commandData[1] == "jlob" then
                 --{join,[lobby]}
                 requests[i] = {"join",commandData[2]}
+
             --Create lobby request
             elseif commandData[1] == "clob" then
                 local lobbyData = split(commandData[2],"_")
                 Lobby:new(lobbyData[1],tonumber(lobbyData[2]),false,lobbyData[3])
                 requests[i] = {"create",lobbyData[1]}
+            
+            --Close lobby request
+            elseif commandData[1] == "exit" then
+                requests[i] = {"exit",commandData[2]}
             end
         end
     end
@@ -151,6 +155,15 @@ function love.update()
                 if err then
                     mainLobby:sendToClient(client,err)
                 end
+            --If the request is to close a lobby then.
+            elseif requests[i][1] == "exit" then
+                --remove the lobby from the lobbies lists.
+                for i,lobby in ipairs(lobbies) do
+                    if lobby.name == requests[i][2] then
+                        table.remove(lobbies,i)
+                    end
+                end
+                lobbiesDict[requests[i][2]] = nil
             end
         else
             mainLobby:sendToClient(client,"none")
@@ -158,9 +171,21 @@ function love.update()
     end
 end
 
+--Send the names of every lobby to the client
+local function displayLobbies()
+    local outLobbies = ""
+    for i, lobby in ipairs(lobbies) do
+        outLobbies = outLobbies.."_"..lobby.name
+    end
+    mainLobby:sendToClient("all","disp:"..outLobbies)
+end
 
+function love.update()
 
+    processRequests()
 
+    displayLobbies()
+end
 
 --Draw text, debugging for server
 function love.draw()

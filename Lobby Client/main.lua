@@ -1,7 +1,15 @@
 local socket = require("socket")
---The client of players, that will be connected to lobbies.
-local client = assert(socket.connect("localhost",500))
+
+local client
 local server = nil
+--The client of players, that will be connected to lobbies.
+local function connectToMainLobby()
+    client = assert(socket.connect("localhost",500))
+end
+
+connectToMainLobby()
+
+
 --The identifier of the client
 local clientID = nil
 --the last message recieved.
@@ -9,7 +17,11 @@ local serverMessage = ""
 
 client:settimeout(0)
 
+--Name of the currently accessed lobby.
 local lobbyName = "Main"
+
+--list of all lobbies available to join
+local lobbiesList = {}
 
 Lobby = {}
 
@@ -20,6 +32,7 @@ local lobbyToCreate = nil
 
 Lobby.__index = Lobby
 
+--Stores messages from the main lobby
 local messagesToWrite = {}
 
 --Creates a new lobby object
@@ -66,11 +79,7 @@ function love.keypressed(key)
     end
 end
 
-function love.quit()
-    if client then client:close() end
-end
-
---split strings by a separator
+--Splits strings by a separator
 local function split (inputstr, sep)
     if sep == nil then
             sep = "%s"
@@ -82,12 +91,12 @@ local function split (inputstr, sep)
     return t
 end
 
---Send message to server
+--Sends message to server
 local function sendToServer(data)
     client:send(data .. "\n")
 end
 
---Read message from server
+--Reads message from server
 local function receiveFromServer()
     local data, err = client:receive()
     if data then
@@ -97,14 +106,14 @@ local function receiveFromServer()
     end
 end
 
---Send message to clients when hosting
+--Sends message to clients when hosting
 function Lobby:sendToClients(data)
     for i, client in ipairs(self.clients) do
         client:send(data)
     end
 end
 
---Recieve messages from clients when hosting
+--Recieves messages from clients when hosting
 function Lobby:receiveFromClients()
     local out = {}
     for i,client in ipairs(self.clients) do
@@ -154,6 +163,13 @@ local function comWithMainLobby()
                 client = assert(socket.connect(sockData[2],sockData[3]))
                 client:settimeout(0)
                 quit = true
+            elseif commandData[1] == "disp" then
+                if commandData[2] then
+                    local lobbyData = split(commandData[2],"_")
+                    for i, lobby in ipairs(lobbyData) do
+                        lobbiesList[i] = lobby
+                    end
+                end
             end
         end
     until (serverMessage == nil or quit == true)
@@ -168,6 +184,22 @@ local function comWithClients()
     end
 end
 
+local function displayLobbies()
+    love.graphics.print("Available lobbies:")
+
+    for i, lobby in ipairs(lobbiesList) do
+        love.graphics.print(lobby,0,i*20)
+    end
+end
+
+--Called when quitting.
+function love.quit()
+    if client then client:close() end
+    if server then
+        connectToMainLobby()
+        sendToServer("exit:"..server.name)
+    end
+end
 
 function love.update()
     if client then comWithMainLobby()
@@ -178,16 +210,15 @@ end
 
 function love.draw()
     love.graphics.print(lobbyName,200,0)
-    for i, message in ipairs(messagesToWrite) do
-        local data = message
-        if data and data ~= "none" then love.graphics.print(data,0,0) end
+    if lobbyName == "Main" then 
+        displayLobbies()
     end
-    if lobbyToJoin then 
-        love.graphics.print("attemped to join lobby: "..lobbyToJoin,0,200)
-    end
-    if lobbyToCreate then
-        love.graphics.print("attemped to create lobby: "..lobbyToCreate:send(),200,200)
-    end
+
+    -- for i, message in ipairs(messagesToWrite) do
+    --     local data = message
+    --     if data and data ~= "none" then love.graphics.print(data,0,0) end
+    -- end
+
     lobbyToJoin = nil
     lobbyToCreate = nil
 end
