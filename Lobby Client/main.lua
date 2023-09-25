@@ -2,9 +2,12 @@ local socket = require("socket")
 
 local client
 local server = nil
+local lobbyName
 --The client of players, that will be connected to lobbies.
 local function connectToMainLobby()
     client = assert(socket.connect("localhost",500))
+    client:settimeout(0)
+    lobbyName = "Main"
 end
 
 connectToMainLobby()
@@ -15,10 +18,7 @@ local clientID = nil
 --the last message recieved.
 local serverMessage = ""
 
-client:settimeout(0)
-
 --Name of the currently accessed lobby.
-local lobbyName = "Main"
 
 --list of all lobbies available to join
 local lobbiesList = {}
@@ -146,8 +146,16 @@ local function comWithMainLobby()
         if serverMessage and serverMessage ~= "none" then
             --split the command
             local commandData = split(serverMessage,":")
+
+            if commandData[1] == "exit" then
+                client:quit()
+                client = assert(socket.connect("localhost",500))
+                client:settimeout(0)
+                lobbyName = "Main"
+                quit = true
+
             --Command confirms lobby creation
-            if commandData[1] == "clob" then
+            elseif commandData[1] == "clob" then
                 local sockData = split(commandData[2],"_")
                 client:close()
                 client = nil
@@ -155,6 +163,7 @@ local function comWithMainLobby()
                 server = Lobby:new(sockData[1],sockData[2])
                 messagesToWrite = {}
                 quit = true
+
             --If a socket details are given, connect to that socket.
             elseif commandData[1] == "sock" then
                 local sockData = split(commandData[2],"_")
@@ -163,6 +172,8 @@ local function comWithMainLobby()
                 client = assert(socket.connect(sockData[2],sockData[3]))
                 client:settimeout(0)
                 quit = true
+
+
             elseif commandData[1] == "disp" then
                 if commandData[2] then
                     local lobbyData = split(commandData[2],"_")
@@ -196,6 +207,7 @@ end
 function love.quit()
     if client then client:close() end
     if server then
+        --Disconnect all connected clients when closing
         connectToMainLobby()
         sendToServer("exit:"..server.name)
     end

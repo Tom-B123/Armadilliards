@@ -158,9 +158,11 @@ local function processRequests()
             --If the request is to close a lobby then.
             elseif requests[i][1] == "exit" then
                 --remove the lobby from the lobbies lists.
-                for i,lobby in ipairs(lobbies) do
-                    if lobby.name == requests[i][2] then
-                        table.remove(lobbies,i)
+                for i = 1,#lobbies do
+                    if lobbies[i] then
+                        if lobbies[i].name == requests[i][2] then
+                            table.remove(lobbies,i)
+                        end
                     end
                 end
                 lobbiesDict[requests[i][2]] = nil
