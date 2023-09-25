@@ -9,6 +9,8 @@ local serverMessage = ""
 
 client:settimeout(0)
 
+local lobbyName = "Main"
+
 Lobby = {}
 
 --The lobby requests to send to the main lobby.
@@ -128,15 +130,23 @@ local function comWithMainLobby()
         if serverMessage and serverMessage ~= "none" then
             --split the command
             local commandData = split(serverMessage,":")
-            --If a socket details are given, connect to that socket.
-            if commandData[1] == "sock" then
-                local socketData = split(commandData[2],"_")
+            --Command confirms lobby creation
+            if commandData[1] == "clob" then
+                local sockData = split(commandData[2],"_")
                 client:close()
                 client = nil
-                server = Lobby:new(socketData[1],socketData[2])
+                lobbyName = sockData[1]
+                server = Lobby:new(sockData[1],sockData[2])
+                messagesToWrite = {}
+            --If a socket details are given, connect to that socket.
+            elseif commandData[1] == "sock" then
+                local sockData = split(commandData[2],"_")
+                client:close()
+                lobbyName = sockData[1]
+                client = assert(socket.connect(sockData[2],sockData[3]))
             end
         end
-    until (serverMessage == nil)
+    until (serverMessage == nil or client == nil)
 end
 
 local function comWithClients()
@@ -154,6 +164,7 @@ end
 
 
 function love.draw()
+    love.graphics.print(lobbyName,200,0)
     for i, message in ipairs(messagesToWrite) do
         local data = message
         if data and data ~= "none" then love.graphics.print(data,0,0) end

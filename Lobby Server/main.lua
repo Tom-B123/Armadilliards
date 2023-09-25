@@ -35,11 +35,19 @@ function Lobby:join(client,name)
     --If the lobby exists, send the client the socket info.
     local lobby = lobbiesDict[name]
     if lobby then
-        local lobbyInfo = "sock:"..lobby.name.."-"..lobby.port.."-"..lobby.ipAddress
+        local lobbyInfo = "sock:"..lobby.name.."_"..lobby.ipAddress.."_"..lobby.port.."\n"
         mainLobby:sendToClient(client,lobbyInfo)
         return nil
     end
     return "invalid lobby name"
+end
+
+--Confirm a creation request from the client.
+function Lobby:create(client,name)
+
+    local nLobby = lobbiesDict[name]
+    local lobbyInfo = nLobby.name.."_"..nLobby.port.."_"..nLobby.ipAddress.."\n"
+    mainLobby:sendToClient(client,"clob:"..lobbyInfo)
 end
 
 --Update connections coming into a lobby.
@@ -114,38 +122,35 @@ function love.update()
             
             --Join lobby request
             if commandData[1] == "jlob" then
-                --{join,[client],[lobby]}
+                --{join,[lobby]}
                 requests[i] = {"join",commandData[2]}
             --Create lobby request
             elseif commandData[1] == "clob" then
                 local lobbyData = split(commandData[2],"_")
                 Lobby:new(lobbyData[1],tonumber(lobbyData[2]),false,lobbyData[3])
+                requests[i] = {"create",lobbyData[1]}
             end
         end
     end
     --Packet example = requests[lobby][client] = 
-    --{"create","my lobby","1005"}
-    --Data to send for requests
-    local toSend = {}
-
-    --Carry out incoming requests to the main server
-    for i,request in ipairs(requests) do
-        toSend[i] = nil
-        if request then
-            if request[1] == "join" then
-                toSend[i] = request[2]
-            end
-        end
-    end
+    --{"create","my lobby","1005","192.168..."}
 
     --Sends data to all clients that requested it.
-    
-
     for i, client in ipairs(mainLobby.clients) do
-        if toSend[i] then
-            local err = Lobby:join(client,toSend[i])
-            if err then
-                mainLobby:sendToClient(client,err)
+        if requests[i] then
+            --If the request is a join command then.
+            if requests[i][1] == "join" then
+                local err = Lobby:join(client,requests[i][2])
+                if err then
+                    mainLobby:sendToClient(client,err)
+                end
+            --If the request is a create command then.
+            elseif requests[i][1] == "create" then
+                --Confirm creation
+                local err = Lobby:create(client,requests[i][2])
+                if err then
+                    mainLobby:sendToClient(client,err)
+                end
             end
         else
             mainLobby:sendToClient(client,"none")
