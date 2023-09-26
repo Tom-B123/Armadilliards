@@ -208,9 +208,9 @@ local function displayLobbies()
     love.graphics.setColor(1,1,1)
 
     for i, lobby in ipairs(lobbiesList) do
-        love.graphics.print(lobby[1],305,110+i*20)
-        love.graphics.print(lobby[2],510,110+i*20)
-        love.graphics.print(lobby[3],855,110+i*20)
+        love.graphics.print(lobby[1],305,80+i*50)
+        love.graphics.print(lobby[2],510,80+i*50)
+        love.graphics.print(lobby[3],855,80+i*50)
     end
 end
 

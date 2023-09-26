@@ -191,6 +191,9 @@ local function displayLobbies()
             .."|"..lobby.hostName
             .."|"..lobby.playerCount
             .."/"..lobby.maxPlayers
+            if lobby.playerCount >= lobby.maxPlayers then
+                outLobbies = outLobbies.."full"
+            end
         end
     end
     mainLobby:sendToClient("all","disp:"..outLobbies)
