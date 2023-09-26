@@ -11,13 +11,16 @@ Lobby.__index = Lobby
 local lobbies = {}
 local lobbiesDict = {}
 
---Create a new lobby
-function Lobby:new(name,port,isMain,ipAddress)
+--Create a new lobby, recording the host's name.
+function Lobby:new(name,port,isMain,ipAddress,hostName)
     local object = {}
     setmetatable(object,Lobby)
     object.name = name
     object.port = port
     object.ipAddress = ipAddress
+    object.hostName = hostName
+    object.playerCount = 1
+    object.maxPlayers = 4
     object.clients = {}
     if isMain then 
         object.server = assert(socket.bind("*",port))
@@ -33,14 +36,19 @@ local mainLobby = Lobby:new("Main Lobby",500,true)
 
 --Connect a client to a sub-Lobby
 function Lobby:join(client,name)
-    --If the lobby exists, send the client the socket info.
+    --If the lobby doesn't exist, return error
     local lobby = lobbiesDict[name]
-    if lobby then
-        local lobbyInfo = "sock:"..lobby.name.."_"..lobby.ipAddress.."_"..lobby.port.."\n"
-        mainLobby:sendToClient(client,lobbyInfo)
-        return nil
+    if not lobby then
+        return "invalid lobby name\n"
     end
-    return "invalid lobby name\n"
+    --If the lobby is full, return error
+    if lobby.playerCount == lobby.maxPlayers then
+        return "lobby full\n"
+    end
+    local lobbyInfo = "sock:"..lobby.name.."_"..lobby.ipAddress.."_"..lobby.port.."\n"
+    mainLobby:sendToClient(client,lobbyInfo)
+    lobby.playerCount = lobby.playerCount + 1
+    return nil
 end
 
 --Confirm a creation request from the client.
@@ -127,7 +135,7 @@ local function processRequests()
             --Create lobby request
             elseif commandData[1] == "clob" then
                 local lobbyData = split(commandData[2],"_")
-                Lobby:new(lobbyData[1],tonumber(lobbyData[2]),false,lobbyData[3])
+                Lobby:new(lobbyData[1],tonumber(lobbyData[2]),false,lobbyData[3],lobbyData[4])
                 requests[i] = {"create",lobbyData[1]}
             
             --Close lobby request
@@ -178,6 +186,12 @@ local function displayLobbies()
     local outLobbies = ""
     for i, lobby in ipairs(lobbies) do
         outLobbies = outLobbies.."_"..lobby.name
+        if lobby.hostName and lobby.playerCount then 
+            outLobbies = outLobbies
+            .."|"..lobby.hostName
+            .."|"..lobby.playerCount
+            .."/"..lobby.maxPlayers
+        end
     end
     mainLobby:sendToClient("all","disp:"..outLobbies)
 end

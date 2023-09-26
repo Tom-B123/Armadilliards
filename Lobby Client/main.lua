@@ -3,6 +3,7 @@ local socket = require("socket")
 local client
 local server = nil
 local lobbyName
+local playerName = "new player"
 --The client of players, that will be connected to lobbies.
 local function connectToMainLobby()
     client = assert(socket.connect("localhost",500))
@@ -52,7 +53,7 @@ end
 --Sends the new lobby details to the server.
 function Lobby:send()
     local ip = socket.dns.toip(socket.dns.gethostname()) 
-    return self.name.."_"..self.port.."_"..ip.."\n"
+    return self.name.."_"..self.port.."_"..ip.."_"..playerName.."\n"
 end
 
 --Update connections coming into a lobby.
@@ -225,11 +226,6 @@ function love.draw()
     if lobbyName == "Main" then 
         displayLobbies()
     end
-
-    -- for i, message in ipairs(messagesToWrite) do
-    --     local data = message
-    --     if data and data ~= "none" then love.graphics.print(data,0,0) end
-    -- end
 
     lobbyToJoin = nil
     lobbyToCreate = nil
