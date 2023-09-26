@@ -11,8 +11,13 @@ local function connectToMainLobby()
     lobbyName = "Main"
 end
 
+-- love.window.setMode(0,0)
+
 connectToMainLobby()
 
+local lobbyImg = love.graphics.newImage("lobby UI mock up.png")
+local futura = love.graphics.newFont("Futura font.ttf",28)
+love.graphics.setFont(futura)
 
 --The identifier of the client
 local clientID = nil
@@ -179,7 +184,8 @@ local function comWithMainLobby()
                 if commandData[2] then
                     local lobbyData = split(commandData[2],"_")
                     for i, lobby in ipairs(lobbyData) do
-                        lobbiesList[i] = lobby
+                        local lobbyInfo = split(lobby,"|")
+                        lobbiesList[i] = lobbyInfo
                     end
                 end
             end
@@ -197,10 +203,14 @@ local function comWithClients()
 end
 
 local function displayLobbies()
-    love.graphics.print("Available lobbies:")
+    love.graphics.setColor(1,1,1)
+    love.graphics.draw(lobbyImg)
+    love.graphics.setColor(1,1,1)
 
     for i, lobby in ipairs(lobbiesList) do
-        love.graphics.print(lobby,0,i*20)
+        love.graphics.print(lobby[1],305,110+i*20)
+        love.graphics.print(lobby[2],510,110+i*20)
+        love.graphics.print(lobby[3],855,110+i*20)
     end
 end
 
@@ -222,6 +232,7 @@ end
 
 
 function love.draw()
+    love.graphics.setColor(1,1,1)
     love.graphics.print(lobbyName,200,0)
     if lobbyName == "Main" then 
         displayLobbies()
