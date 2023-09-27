@@ -111,6 +111,24 @@ function love.keypressed(key)
 	end
 end
 
+--Send the names of every lobby to the client
+local function displayLobbies()
+    local outLobbies = ""
+    for i, lobby in ipairs(lobbies) do
+        outLobbies = outLobbies.."_"..lobby.name
+        if lobby.hostName and lobby.playerCount then 
+            outLobbies = outLobbies
+            .."|"..lobby.hostName
+            .."|"..lobby.playerCount
+            .."/"..lobby.maxPlayers
+            if lobby.playerCount >= lobby.maxPlayers then
+                outLobbies = outLobbies.."full"
+            end
+        end
+    end
+    mainLobby:sendToClient("all","disp:"..outLobbies)
+end
+
 --Processes all client requests to rout between lobbies
 local function processRequests()
     mainLobby:updateConnections()
@@ -141,6 +159,8 @@ local function processRequests()
             --Close lobby request
             elseif commandData[1] == "exit" then
                 requests[i] = {"exit",commandData[2]}
+            elseif commandData[1] == "updt" then
+                requests[i] = {"update"}
             end
         end
     end
@@ -174,6 +194,8 @@ local function processRequests()
                     end
                 end
                 lobbiesDict[requests[i][2]] = nil
+            elseif requests[i][1] == "update" then
+                displayLobbies()
             end
         else
             mainLobby:sendToClient(client,"none")
@@ -181,29 +203,10 @@ local function processRequests()
     end
 end
 
---Send the names of every lobby to the client
-local function displayLobbies()
-    local outLobbies = ""
-    for i, lobby in ipairs(lobbies) do
-        outLobbies = outLobbies.."_"..lobby.name
-        if lobby.hostName and lobby.playerCount then 
-            outLobbies = outLobbies
-            .."|"..lobby.hostName
-            .."|"..lobby.playerCount
-            .."/"..lobby.maxPlayers
-            if lobby.playerCount >= lobby.maxPlayers then
-                outLobbies = outLobbies.."full"
-            end
-        end
-    end
-    mainLobby:sendToClient("all","disp:"..outLobbies)
-end
-
 function love.update()
 
     processRequests()
 
-    displayLobbies()
 end
 
 --Draw text, debugging for server

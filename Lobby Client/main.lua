@@ -5,6 +5,23 @@ local client
 local server = nil
 local lobbyName
 local playerName = "new player"
+local tick = 0
+
+--Sends message to server
+local function sendToServer(data)
+    client:send(data .. "\n")
+end
+
+--Reads message from server
+local function receiveFromServer()
+    local data, err = client:receive()
+    if data then
+        return data
+    elseif err == "closed" then
+        client:close()
+    end
+end
+
 --The client of players, that will be connected to lobbies.
 local function connectToMainLobby()
     client = assert(socket.connect("localhost",500))
@@ -42,7 +59,7 @@ Lobby.__index = Lobby
 --Stores messages from the main lobby
 local messagesToWrite = {}
 
-local buttons = {}
+local buttons = {buttons = {}}
 
 function buttons:draw()
     for i,button in ipairs(buttons) do
@@ -122,20 +139,6 @@ local function split (inputstr, sep)
     return t
 end
 
---Sends message to server
-local function sendToServer(data)
-    client:send(data .. "\n")
-end
-
---Reads message from server
-local function receiveFromServer()
-    local data, err = client:receive()
-    if data then
-        return data
-    elseif err == "closed" then
-        client:close()
-    end
-end
 
 --Sends message to clients when hosting
 function Lobby:sendToClients(data)
@@ -165,6 +168,8 @@ end
 
 --All the processing the lobby client does.
 local function comWithMainLobby()
+    tick = tick + 1
+    
     messagesToWrite = {}
     --Sends data to the server based on user input
     if lobbyToCreate ~= nil then
@@ -172,7 +177,11 @@ local function comWithMainLobby()
     elseif lobbyToJoin ~= nil then
         sendToServer("jlob:"..lobbyToJoin)
     else
-        sendToServer("ndat")
+        if tick % 30 == 0 then
+            sendToServer("updt:all")
+        else 
+            sendToServer("ndat") 
+        end
     end
     repeat
         local quit = false
@@ -209,14 +218,13 @@ local function comWithMainLobby()
                 client:settimeout(0)
                 quit = true
 
-
             elseif commandData[1] == "disp" then
                 if commandData[2] then
                     local lobbyData = split(commandData[2],"_")
                     for i, lobby in ipairs(lobbyData) do
                         local lobbyInfo = split(lobby,"|")
                         lobbiesList[i] = lobbyInfo
-                        
+
                     end
                 end
             end
