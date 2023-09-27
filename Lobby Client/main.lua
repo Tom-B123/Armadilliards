@@ -62,20 +62,20 @@ local messagesToWrite = {}
 local buttons = {buttons = {}}
 
 function buttons:draw()
-    for i,button in ipairs(buttons) do
+    for i,button in ipairs(buttons.buttons) do
         love.graphics.setColor(button.colour)
         love.graphics.print(button.text,button.x1,button.y1)
     end
 end
 
 function buttons:update()
-    for i,button in ipairs(buttons) do
+    for i,button in ipairs(buttons.buttons) do
         button:update()
     end
 end
 
 local function newButton(text,colour,x1,y1,x2,y2,command,params)
-    table.insert(buttons,Button:new(text,colour,x1,y1,x2,y2,command,params))
+    table.insert(buttons.buttons,Button:new(text,colour,x1,y1,x2,y2,command,params))
 end
 
 local function drawSquare(param)
@@ -219,11 +219,14 @@ local function comWithMainLobby()
                 quit = true
 
             elseif commandData[1] == "disp" then
+                buttons.buttons = {}
                 if commandData[2] then
                     local lobbyData = split(commandData[2],"_")
                     for i, lobby in ipairs(lobbyData) do
                         local lobbyInfo = split(lobby,"|")
                         lobbiesList[i] = lobbyInfo
+
+                        newButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
 
                     end
                 end
@@ -247,7 +250,7 @@ local function displayLobbies()
     love.graphics.setColor(1,1,1)
 
     for i, lobby in ipairs(lobbiesList) do
-        newButton(lobby[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobby[1])
+        
         love.graphics.print(lobby[2],510,80+i*50)
         love.graphics.print(lobby[3],855,80+i*50)
     end
