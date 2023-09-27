@@ -111,7 +111,7 @@ function love.keypressed(key)
 	end
 end
 
---Send the names of every lobby to the client
+--Send the names of every lobby to the client.
 local function displayLobbies()
     local outLobbies = ""
     for i, lobby in ipairs(lobbies) do
@@ -129,10 +129,19 @@ local function displayLobbies()
     mainLobby:sendToClient("all","disp:"..outLobbies)
 end
 
---Processes all client requests to rout between lobbies
-local function processRequests()
-    mainLobby:updateConnections()
-    --Proccess incoming requests
+local function logRequests(requests)
+    for i,request in ipairs(requests) do
+        local out = ""
+        for j, part in ipairs(request) do
+            out = out.."  "..part
+        end
+        print(out)
+    end
+end
+
+--Proccess incoming requests.
+local function recieveRequests()
+    
     clientMessages = mainLobby:receiveFromClient()
 
     requests = {}
@@ -164,10 +173,11 @@ local function processRequests()
             end
         end
     end
-    --Packet example = requests[lobby][client] = 
-    --{"create","my lobby","1005","192.168..."}
+    return requests
+end
 
-    --Sends data to all clients that requested it.
+--Carry out the requests from the client.
+local function executeRequests(requests)
     for i, client in ipairs(mainLobby.clients) do
         if requests[i] then
             --If the request is a join command then.
@@ -201,6 +211,18 @@ local function processRequests()
             mainLobby:sendToClient(client,"none")
         end
     end
+end
+
+--Processing and acting upon client requests
+local function processRequests()
+    mainLobby:updateConnections()
+    
+    local requests = recieveRequests()
+    
+    logRequests(requests)
+
+    executeRequests(requests)
+    
 end
 
 function love.update()
