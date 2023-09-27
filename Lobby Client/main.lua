@@ -1,4 +1,5 @@
 local socket = require("socket")
+require("button")
 
 local client
 local server = nil
@@ -41,18 +42,28 @@ Lobby.__index = Lobby
 --Stores messages from the main lobby
 local messagesToWrite = {}
 
-Button = {}
-
 local buttons = {}
 
+function buttons:draw()
+    for i,button in ipairs(buttons) do
+        love.graphics.setColor(button.colour)
+        love.graphics.rectangle("line",
+        button.x1,button.y1,
+        button.x2-button.x1,button.y2 - button.y1)
+        love.graphics.print(button.text,button.x1,button.y1)
+    end
+end
 
+local function newButton(text,x1,y1,x2,y2,command,params)
+    table.insert(buttons,Button:new(text,x1,y1,x2,y2,command,params))
+end
 
 local function drawSquare(param)
     love.graphics.setColor(0,0,0)
     love.graphics.print(param)
 end
 
-Button:new("hello",0,0,20,20,drawSquare,"jlob:lobby 1")
+newButton("hello",300,130,945,165,drawSquare,"jlob:lobby 1")
 
 --Creates a new lobby object
 function Lobby:new(name,port,tmp)
@@ -245,12 +256,14 @@ end
 
 
 function love.draw()
+    
     love.graphics.setColor(1,1,1)
     love.graphics.print(lobbyName,200,0)
     if lobbyName == "Main" then 
         displayLobbies()
     end
     buttons[1]:update()
+    buttons:draw()
     lobbyToJoin = nil
     lobbyToCreate = nil
 end
