@@ -41,6 +41,19 @@ Lobby.__index = Lobby
 --Stores messages from the main lobby
 local messagesToWrite = {}
 
+Button = {}
+
+local buttons = {}
+
+
+
+local function drawSquare(param)
+    love.graphics.setColor(0,0,0)
+    love.graphics.print(param)
+end
+
+Button:new("hello",0,0,20,20,drawSquare,"jlob:lobby 1")
+
 --Creates a new lobby object
 function Lobby:new(name,port,tmp)
     local object = {}
@@ -237,7 +250,7 @@ function love.draw()
     if lobbyName == "Main" then 
         displayLobbies()
     end
-
+    buttons[1]:update()
     lobbyToJoin = nil
     lobbyToCreate = nil
 end
