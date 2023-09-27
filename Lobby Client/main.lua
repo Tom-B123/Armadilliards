@@ -57,8 +57,8 @@ function buttons:update()
     end
 end
 
-local function newButton(text,x1,y1,x2,y2,command,params)
-    table.insert(buttons,Button:new(text,x1,y1,x2,y2,command,params))
+local function newButton(text,colour,x1,y1,x2,y2,command,params)
+    table.insert(buttons,Button:new(text,colour,x1,y1,x2,y2,command,params))
 end
 
 local function drawSquare(param)
@@ -170,7 +170,7 @@ local function comWithMainLobby()
     if lobbyToCreate ~= nil then
         sendToServer("clob"..":"..lobbyToCreate:send())
     elseif lobbyToJoin ~= nil then
-        sendToServer("jlob"..":"..lobbyToJoin)
+        sendToServer("jlob:"..lobbyToJoin)
     else
         sendToServer("ndat")
     end
@@ -216,6 +216,7 @@ local function comWithMainLobby()
                     for i, lobby in ipairs(lobbyData) do
                         local lobbyInfo = split(lobby,"|")
                         lobbiesList[i] = lobbyInfo
+                        
                     end
                 end
             end
@@ -238,7 +239,7 @@ local function displayLobbies()
     love.graphics.setColor(1,1,1)
 
     for i, lobby in ipairs(lobbiesList) do
-        newButton(lobby[1],305,80+i*50,945,80+i*85,join,lobby[1])
+        newButton(lobby[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobby[1])
         love.graphics.print(lobby[2],510,80+i*50)
         love.graphics.print(lobby[3],855,80+i*50)
     end
@@ -267,9 +268,10 @@ function love.draw()
     love.graphics.print(lobbyName,200,0)
     if lobbyName == "Main" then 
         displayLobbies()
+        buttons:update()
+        buttons:draw()
     end
-    buttons:update()
-    buttons:draw()
+    
     lobbyToJoin = nil
     lobbyToCreate = nil
 end

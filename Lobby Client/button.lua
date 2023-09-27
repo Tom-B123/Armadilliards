@@ -3,10 +3,10 @@ Button = {}
 Button.__index = Button
 
 --Create a new button object
-function Button:new(text,x1,y1,x2,y2,command,params)
+function Button:new(text,colour,x1,y1,x2,y2,command,params)
     local object = {}
     setmetatable(object,Button)
-    object.colour = {0,0,0}
+    object.colour = colour
     object.text = text
     object.x1 = x1
     object.y1 = y1
