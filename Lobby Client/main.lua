@@ -238,7 +238,7 @@ local function displayLobbies()
     love.graphics.setColor(1,1,1)
 
     for i, lobby in ipairs(lobbiesList) do
-        newButton(lobby[1],305,80+i*50,945,80+i*85,drawSquare,"jlob:"..lobby[1])
+        newButton(lobby[1],305,80+i*50,945,80+i*85,join,lobby[1])
         love.graphics.print(lobby[2],510,80+i*50)
         love.graphics.print(lobby[3],855,80+i*50)
     end
