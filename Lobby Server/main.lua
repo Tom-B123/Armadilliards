@@ -210,24 +210,24 @@ function love.update()
 end
 
 --Draw text, debugging for server
-function love.draw()
-    love.graphics.print("lobby count: "..#lobbies,100,0)
-    for i, lobby in ipairs(lobbies) do
-        love.graphics.print(lobby.name,100,15*i)
-    end
+-- function love.draw()
+--     love.graphics.print("lobby count: "..#lobbies,100,0)
+--     for i, lobby in ipairs(lobbies) do
+--         love.graphics.print(lobby.name,100,15*i)
+--     end
         
-    love.graphics.print("client count: "..#mainLobby.clients,0,20)
-    local data = clientMessages
-    if data then
-        for y, message in ipairs(data) do
-            love.graphics.print(message[1],0,y*50)
-        end
-    end
-    for i, lobby in ipairs(requests) do
-        for j,request in ipairs(lobby) do
-            if request then
-                love.graphics.print(request,0,j*15)
-            end
-        end
-    end
-end
+--     love.graphics.print("client count: "..#mainLobby.clients,0,20)
+--     local data = clientMessages
+--     if data then
+--         for y, message in ipairs(data) do
+--             love.graphics.print(message[1],0,y*50)
+--         end
+--     end
+--     for i, lobby in ipairs(requests) do
+--         for j,request in ipairs(lobby) do
+--             if request then
+--                 love.graphics.print(request,0,j*15)
+--             end
+--         end
+--     end
+-- end
