@@ -47,10 +47,13 @@ local buttons = {}
 function buttons:draw()
     for i,button in ipairs(buttons) do
         love.graphics.setColor(button.colour)
-        love.graphics.rectangle("line",
-        button.x1,button.y1,
-        button.x2-button.x1,button.y2 - button.y1)
         love.graphics.print(button.text,button.x1,button.y1)
+    end
+end
+
+function buttons:update()
+    for i,button in ipairs(buttons) do
+        button:update()
     end
 end
 
@@ -62,8 +65,6 @@ local function drawSquare(param)
     love.graphics.setColor(0,0,0)
     love.graphics.print(param)
 end
-
-newButton("hello",300,130,945,165,drawSquare,"jlob:lobby 1")
 
 --Creates a new lobby object
 function Lobby:new(name,port,tmp)
@@ -157,6 +158,11 @@ function Lobby:receiveFromClients()
     return out
 end
 
+
+local function join(lobby)
+    sendToServer("jlob:"..lobby)
+end
+
 --All the processing the lobby client does.
 local function comWithMainLobby()
     messagesToWrite = {}
@@ -232,7 +238,7 @@ local function displayLobbies()
     love.graphics.setColor(1,1,1)
 
     for i, lobby in ipairs(lobbiesList) do
-        love.graphics.print(lobby[1],305,80+i*50)
+        newButton(lobby[1],305,80+i*50,945,80+i*85,drawSquare,"jlob:"..lobby[1])
         love.graphics.print(lobby[2],510,80+i*50)
         love.graphics.print(lobby[3],855,80+i*50)
     end
@@ -262,7 +268,7 @@ function love.draw()
     if lobbyName == "Main" then 
         displayLobbies()
     end
-    buttons[1]:update()
+    buttons:update()
     buttons:draw()
     lobbyToJoin = nil
     lobbyToCreate = nil
