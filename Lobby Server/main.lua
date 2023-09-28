@@ -166,10 +166,12 @@ local function recieveRequests()
                 requests[i] = {"create",lobbyData[1]}
             
             --Close lobby request
-            elseif commandData[1] == "exit" then
-                requests[i] = {"exit",commandData[2]}
+            elseif commandData[1] == "clse" then
+                requests[i] = {"close",commandData[2]}
             elseif commandData[1] == "updt" then
                 requests[i] = {"update"}
+            elseif commandData[1] == "exit" then
+                requests[i] = {"exit", commandData[2]}
             end
         end
     end
@@ -194,7 +196,7 @@ local function executeRequests(requests)
                     mainLobby:sendToClient(client,err)
                 end
             --If the request is to close a lobby then.
-            elseif requests[i][1] == "exit" then
+            elseif requests[i][1] == "close" then
                 --remove the lobby from the lobbies lists.
                 for i = 1,#lobbies do
                     if lobbies[i] then
@@ -206,6 +208,9 @@ local function executeRequests(requests)
                 lobbiesDict[requests[i][2]] = nil
             elseif requests[i][1] == "update" then
                 displayLobbies()
+            elseif requests[i][1] == "exit" then
+                local lobby = lobbiesDict[requests[i][2]]
+                lobby.playerCount = lobby.playerCount - 1
             end
         else
             mainLobby:sendToClient(client,"none")

@@ -7,6 +7,8 @@ local lobbyName
 local playerName = "new player"
 local tick = 0
 
+local state = "browsing"
+
 --Sends message to server
 local function sendToServer(data)
     client:send(data .. "\n")
@@ -26,7 +28,8 @@ end
 local function connectToMainLobby()
     client = assert(socket.connect("localhost",500))
     client:settimeout(0)
-    lobbyName = "Main"
+    --Main lobby = _Main, as this can't be immitated by players.
+    lobbyName = "_Main"
 end
 
 -- love.window.setMode(0,0)
@@ -35,6 +38,7 @@ connectToMainLobby()
 
 local lobbyImg = love.graphics.newImage("lobby UI mock up.png")
 local futura = love.graphics.newFont("Futura font.ttf",28)
+local futuraL = love.graphics.newFont("Futura font.ttf",50)
 love.graphics.setFont(futura)
 
 --The identifier of the client
@@ -59,29 +63,47 @@ Lobby.__index = Lobby
 --Stores messages from the main lobby
 local messagesToWrite = {}
 
-local buttons = {buttons = {}}
+local buttons = {lobbyButtons = {},browsingButtons = {}}
 
 function buttons:draw()
-    for i,button in ipairs(buttons.buttons) do
+    for i,button in ipairs(buttons.lobbyButtons) do
+        love.graphics.setColor(button.colour)
+        love.graphics.print(button.text,button.x1,button.y1)
+    end
+    for i,button in ipairs(buttons.browsingButtons) do
         love.graphics.setColor(button.colour)
         love.graphics.print(button.text,button.x1,button.y1)
     end
 end
 
 function buttons:update()
-    for i,button in ipairs(buttons.buttons) do
+    for i,button in ipairs(buttons.lobbyButtons) do
+        button:update()
+    end
+    for i,button in ipairs(buttons.browsingButtons) do
         button:update()
     end
 end
 
-local function newButton(text,colour,x1,y1,x2,y2,command,params)
-    table.insert(buttons.buttons,Button:new(text,colour,x1,y1,x2,y2,command,params))
+--New button to enter a lobby
+local function newLobbyButton(text,colour,x1,y1,x2,y2,command,params)
+    local nButton = Button:new(text,colour,x1,y1,x2,y2,command,params)
+    table.insert(buttons.lobbyButtons,nButton)
+    return nButton
 end
 
-local function drawSquare(param)
-    love.graphics.setColor(0,0,0)
-    love.graphics.print(param)
+local function newBrowsingButton(text,colour,x1,y1,x2,y2,command,params)
+    local nButton = Button:new(text,colour,x1,y1,x2,y2,command,params)
+    table.insert(buttons.browsingButtons,nButton)
+    return nButton
 end
+
+--Changes the state to allow the player name to be edited.
+local function editPlayerName()
+    state = "editing player name"
+end
+
+local playerNameButton = newBrowsingButton("Enter player name",{1,1,1},300,30,980,100,editPlayerName)
 
 --Creates a new lobby object
 function Lobby:new(name,port,tmp)
@@ -193,10 +215,10 @@ local function comWithMainLobby()
             local commandData = split(serverMessage,":")
 
             if commandData[1] == "exit" then
-                client:quit()
+                client:close()
                 client = assert(socket.connect("localhost",500))
                 client:settimeout(0)
-                lobbyName = "Main"
+                lobbyName = "_Main"
                 quit = true
 
             --Command confirms lobby creation
@@ -219,15 +241,14 @@ local function comWithMainLobby()
                 quit = true
 
             elseif commandData[1] == "disp" then
-                buttons.buttons = {}
+                buttons.lobbyButtons = {}
                 if commandData[2] then
                     local lobbyData = split(commandData[2],"_")
                     for i, lobby in ipairs(lobbyData) do
                         local lobbyInfo = split(lobby,"|")
                         lobbiesList[i] = lobbyInfo
 
-                        newButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
-
+                        newLobbyButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
                     end
                 end
             end
@@ -258,11 +279,16 @@ end
 
 --Called when quitting.
 function love.quit()
-    if client then client:close() end
+    if client then
+        local tmp = lobbyName
+        connectToMainLobby()
+        sendToServer("exit:"..tmp)
+
+    end
     if server then
         --Disconnect all connected clients when closing
         connectToMainLobby()
-        sendToServer("exit:"..server.name)
+        sendToServer("clse:"..server.name)
     end
 end
 
@@ -277,7 +303,7 @@ function love.draw()
     
     love.graphics.setColor(1,1,1)
     love.graphics.print(lobbyName,200,0)
-    if lobbyName == "Main" then 
+    if lobbyName == "_Main" then 
         displayLobbies()
         buttons:update()
         buttons:draw()
