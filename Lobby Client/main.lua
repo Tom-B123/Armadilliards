@@ -4,9 +4,11 @@ require("button")
 local client
 local server = nil
 local lobbyName
+local lPlayerName
 local playerName = "new player"
 local tick = 0
 
+local lState
 local state = "browsing"
 
 --Sends message to server
@@ -38,8 +40,7 @@ connectToMainLobby()
 
 local lobbyImg = love.graphics.newImage("lobby UI mock up.png")
 local futura = love.graphics.newFont("Futura font.ttf",28)
-local futuraL = love.graphics.newFont("Futura font.ttf",50)
-love.graphics.setFont(futura)
+local futuraL = love.graphics.newFont("Futura font.ttf",56)
 
 --The identifier of the client
 local clientID = nil
@@ -67,10 +68,12 @@ local buttons = {lobbyButtons = {},browsingButtons = {}}
 
 function buttons:draw()
     for i,button in ipairs(buttons.lobbyButtons) do
+        love.graphics.setFont(button.font)
         love.graphics.setColor(button.colour)
         love.graphics.print(button.text,button.x1,button.y1)
     end
     for i,button in ipairs(buttons.browsingButtons) do
+        love.graphics.setFont(button.font)
         love.graphics.setColor(button.colour)
         love.graphics.print(button.text,button.x1,button.y1)
     end
@@ -87,13 +90,13 @@ end
 
 --New button to enter a lobby
 local function newLobbyButton(text,colour,x1,y1,x2,y2,command,params)
-    local nButton = Button:new(text,colour,x1,y1,x2,y2,command,params)
+    local nButton = Button:new(text,colour,futura,x1,y1,x2,y2,command,params)
     table.insert(buttons.lobbyButtons,nButton)
     return nButton
 end
 
-local function newBrowsingButton(text,colour,x1,y1,x2,y2,command,params)
-    local nButton = Button:new(text,colour,x1,y1,x2,y2,command,params)
+local function newBrowsingButton(text,colour,font,x1,y1,x2,y2,command,params)
+    local nButton = Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     table.insert(buttons.browsingButtons,nButton)
     return nButton
 end
@@ -103,7 +106,7 @@ local function editPlayerName()
     state = "editing player name"
 end
 
-local playerNameButton = newBrowsingButton("Enter player name",{1,1,1},300,30,980,100,editPlayerName)
+local playerNameButton = newBrowsingButton("Enter player name...",{1,1,1},futuraL,300,30,980,100,editPlayerName)
 
 --Creates a new lobby object
 function Lobby:new(name,port,tmp)
@@ -133,20 +136,14 @@ function Lobby:updateConnections()
     end
 end
 
-function love.keypressed(key)
-	if key == "escape" then
-	  love.event.quit()
-	end
 
-    for i = 0,9 do
-        if key == tostring(i) then
-            if love.keyboard.isDown("lctrl") then
-                lobbyToCreate = Lobby:new("lobby "..i,1000+i,true)
-            else
-                lobbyToJoin = "lobby "..i
-            end
+local function contains(table,item)
+    for i,obj in ipairs(table) do
+        if obj == item then
+            return true
         end
     end
+    return false
 end
 
 --Splits strings by a separator
@@ -266,6 +263,7 @@ local function comWithClients()
 end
 
 local function displayLobbies()
+    love.graphics.setFont(futura)
     love.graphics.setColor(1,1,1)
     love.graphics.draw(lobbyImg)
     love.graphics.setColor(1,1,1)
@@ -292,10 +290,84 @@ function love.quit()
     end
 end
 
+--Stores the old player name
+local function storePlayerName()
+    lPlayerName = playerName
+    if playerName == "new player" then
+        playerName = ""
+    end
+end
+
+--Changes the player name on the button
+local function updatePlayerName()
+    if playerName == "" then
+        playerNameButton.text = "Enter player name..."
+    else
+        playerNameButton.text = playerName
+        
+    end
+end
+
+
+function love.keypressed(key)
+    if state == "browsing" then
+        if key == "escape" then
+            love.event.quit()
+        end
+
+        for i = 0,9 do
+            if key == tostring(i) then
+                if love.keyboard.isDown("lctrl") then
+                    lobbyToCreate = Lobby:new("lobby "..i,1000+i,true)
+                else
+                    lobbyToJoin = "lobby "..i
+                end
+            end
+        end
+    elseif state == "editing player name" then
+        local invalidLetters = {"_"}
+        if not contains(invalidLetters,key) and #key == 1 then
+            if love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift") then
+                key = string.upper(key)
+            end
+            playerName = playerName..key
+        elseif key == "space" then 
+            playerName = playerName.." "
+        elseif key == "backspace" then
+            playerName = string.sub(playerName,1,#playerName-1)
+        end
+        if key == "escape" then
+            playerName = lPlayerName
+            if playerName == "" then
+                playerName = "new player"
+            end
+            updatePlayerName()
+            state = "browsing"
+        end
+        if key == "return" then
+            if playerName == "" then
+                playerName = "new player"
+            end
+            updatePlayerName()
+            state = "browsing"
+        end
+    end
+end
+
 function love.update()
+    if state == "editing player name" then
+        if lState ~= "editing player name" then
+            storePlayerName()
+        end
+        updatePlayerName()
+    end
+    
+    
     if client then comWithMainLobby()
 
     elseif server then comWithClients() end
+
+    lState = state
 end
 
 
@@ -308,7 +380,8 @@ function love.draw()
         buttons:update()
         buttons:draw()
     end
-    
+    love.graphics.setColor(0,0,0)
+    love.graphics.print(playerName)
     lobbyToJoin = nil
     lobbyToCreate = nil
 end
