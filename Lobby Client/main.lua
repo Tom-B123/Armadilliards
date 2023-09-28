@@ -7,6 +7,8 @@ local lobbyName
 local lPlayerName
 local playerName = "new player"
 local tick = 0
+--List of players in the lobby
+local players = {}
 
 local lState
 local state = "browsing"
@@ -186,7 +188,7 @@ local function join(lobby)
 end
 
 --All the processing the lobby client does.
-local function comWithMainLobby()
+local function comWithLobby()
     tick = tick + 1
     
     messagesToWrite = {}
@@ -199,8 +201,11 @@ local function comWithMainLobby()
         if tick % 30 == 0 then
             sendToServer("updt:all")
         else 
-            sendToServer("ndat") 
+            sendToServer("ndat")
         end
+    end
+    if lobbyName ~= "_Main" then
+        sendToServer("plyr:"..playerName)
     end
     repeat
         local quit = false
@@ -227,7 +232,8 @@ local function comWithMainLobby()
                 server = Lobby:new(sockData[1],sockData[2])
                 messagesToWrite = {}
                 quit = true
-
+                state = "waiting for game"
+                table.insert(players,playerName)
             --If a socket details are given, connect to that socket.
             elseif commandData[1] == "sock" then
                 local sockData = split(commandData[2],"_")
@@ -236,6 +242,8 @@ local function comWithMainLobby()
                 client = assert(socket.connect(sockData[2],sockData[3]))
                 client:settimeout(0)
                 quit = true
+                state = "waiting for game"
+                table.insert(players,playerName)
 
             elseif commandData[1] == "disp" then
                 buttons.lobbyButtons = {}
@@ -248,6 +256,8 @@ local function comWithMainLobby()
                         newLobbyButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
                     end
                 end
+            elseif commandData[1] == "plyr" then
+                players[#players+1] = commandData[2]
             end
         end
     until (serverMessage == nil or quit == true)
@@ -257,11 +267,12 @@ end
 local function comWithClients()
     if server then
         server:updateConnections()
-        server:sendToClients("hello clients, I am a host\n")
-        server:receiveFromClients()
+        server:sendToClients("plyr:"..playerName)
+        players[#players + 1] = server:receiveFromClients()
     end
 end
 
+--Displays all graphics needed for lobbies
 local function displayLobbies()
     love.graphics.setFont(futura)
     love.graphics.setColor(1,1,1)
@@ -272,6 +283,14 @@ local function displayLobbies()
         
         love.graphics.print(lobby[2],510,80+i*50)
         love.graphics.print(lobby[3],855,80+i*50)
+    end
+end
+
+local function displayLobby()
+    love.graphics.setColor(1,1,1)
+    love.graphics.setFont(futura)
+    for i,player in ipairs(players) do
+        love.graphics.print(player,0,i*20)
     end
 end
 
@@ -308,9 +327,8 @@ local function updatePlayerName()
     end
 end
 
-
 function love.keypressed(key)
-    if state == "browsing" then
+    if state ~= "editing player name" then
         if key == "escape" then
             love.event.quit()
         end
@@ -363,7 +381,7 @@ function love.update()
     end
     
     
-    if client then comWithMainLobby()
+    if client then comWithLobby()
 
     elseif server then comWithClients() end
 
@@ -379,6 +397,9 @@ function love.draw()
         displayLobbies()
         buttons:update()
         buttons:draw()
+    end
+    if state == "waiting for game" then
+        displayLobby()
     end
     love.graphics.setColor(0,0,0)
     love.graphics.print(playerName)
