@@ -255,6 +255,11 @@ local function comWithLobby()
                         newLobbyButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
                     end
                 end
+            elseif commandData[1] == "plyr" then
+                local playerName = commandData[2]
+                if not contains(players,playerName) then
+                    table.insert(players,playerName)
+                end
             end
             
         end
