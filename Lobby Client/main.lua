@@ -204,9 +204,8 @@ local function comWithLobby()
             sendToServer("ndat")
         end
     end
-    if lobbyName ~= "_Main" then
-        sendToServer("plyr:"..playerName)
-    end
+    sendToServer("plyr:"..playerName)
+    
     repeat
         local quit = false
         serverMessage = receiveFromServer()
@@ -256,9 +255,8 @@ local function comWithLobby()
                         newLobbyButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
                     end
                 end
-            elseif commandData[1] == "plyr" then
-                players[#players+1] = commandData[2]
             end
+            
         end
     until (serverMessage == nil or quit == true)
 end
@@ -268,7 +266,16 @@ local function comWithClients()
     if server then
         server:updateConnections()
         server:sendToClients("plyr:"..playerName)
-        players[#players + 1] = server:receiveFromClients()
+        local data = server:receiveFromClients()
+        for i, clientData in ipairs(data) do
+            local playerData = split(clientData,":")
+            if playerData[1] == "plyr" then
+                local playerName = playerData[2]
+                if not contains(players,playerName) then
+                    table.insert(players,playerName)
+                end
+            end
+        end
     end
 end
 
