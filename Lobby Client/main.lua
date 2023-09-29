@@ -401,8 +401,14 @@ function love.draw()
     if state == "waiting for game" then
         displayLobby()
     end
-    love.graphics.setColor(0,0,0)
-    love.graphics.print(playerName)
+    -- love.graphics.setColor(0,0,0)
+    -- love.graphics.print(playerName)
     lobbyToJoin = nil
     lobbyToCreate = nil
+
+    love.graphics.setColor(1,0,0)
+    if client then love.graphics.print("client")
+
+    elseif server then love.graphics.print("server") end
+
 end

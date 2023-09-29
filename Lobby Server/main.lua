@@ -210,7 +210,9 @@ local function executeRequests(requests)
                 displayLobbies()
             elseif requests[i][1] == "exit" then
                 local lobby = lobbiesDict[requests[i][2]]
-                lobby.playerCount = lobby.playerCount - 1
+                if lobby then
+                    lobby.playerCount = lobby.playerCount - 1
+                end
             end
         else
             mainLobby:sendToClient(client,"none")
