@@ -238,12 +238,16 @@ end
 
 local function toggleReady(name)
     local player = playersDict[name]
-    if player.ready == "ready" then player.ready = "not ready"
-    else player.ready = "ready" end
+    if player then
+        if player.ready == "ready" then player.ready = "not ready"
+        else player.ready = "ready" end
+    end
 end
 
 local function backToMain()
-
+    for i = 1,#players do
+        players[i] = nil
+    end
     local tmp = lobbyName
     connectToMainLobby()
     sendToServer("exit:"..tmp)
