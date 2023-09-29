@@ -97,7 +97,7 @@ function buttons:draw()
     end
 end
 
-local function drawReadyButtons()
+local function drawLobbyButtons()
     for i,button in ipairs(buttons.lobbyButtons) do
         love.graphics.setFont(button.font)
         love.graphics.setColor(button.colour)
@@ -114,7 +114,7 @@ function buttons:update()
     end
 end
 
-local function updateReadyButtons()
+local function updateLobbyButtons()
     for i,button in ipairs(buttons.lobbyButtons) do
         button:update()
     end
@@ -236,8 +236,8 @@ local function join(lobby)
     sendToServer("jlob:"..lobby)
 end
 
-local function toggleReady(name)
-    local player = playersDict[name]
+local function toggleReady()
+    local player = playersDict[playerName]
     if player then
         if player.ready == "ready" then player.ready = "not ready"
         else player.ready = "ready" end
@@ -255,8 +255,8 @@ local function backToMain()
     state = "browsing"
 end
 
-local readyButton = newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady,playerName)
-local backButton = newLobbyButton("Back",{1,1,1},futuraL,000,200,100,300,backToMain)
+newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady)
+newLobbyButton("Back",{1,1,1},futuraL,000,200,100,300,backToMain)
 
 --All the processing the lobby client does.
 local function comWithLobby()
@@ -372,7 +372,6 @@ local function comWithClients()
                 if not containsPlayer(players,nPlayerName) then
                     players:new(nPlayerName)
                 elseif nPlayerName ~= playerName then
-                    local player = playersDict[nPlayerName]
                     local nPlayerTeam = playerData[2]
                     local nPlayerReady = playerData[3]
                     --If the data has changed:
@@ -523,8 +522,8 @@ function love.draw()
 
     if state == "waiting for game" then
         displayLobby()
-        updateReadyButtons()
-        drawReadyButtons()
+        updateLobbyButtons()
+        drawLobbyButtons()
     end
 
     lobbyToJoin = nil
