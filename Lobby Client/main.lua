@@ -145,7 +145,6 @@ local function editPlayerName()
 end
 
 local playerNameButton = newBrowsingButton("Enter player name...",{1,1,1},futuraL,300,30,980,100,editPlayerName)
-
 --Creates a new lobby object
 function Lobby:new(name,port,tmp)
     local object = {}
@@ -244,9 +243,6 @@ local function toggleReady(name)
 end
 
 local function backToMain()
-    buttons.lobbySelectButtons = {}
-    buttons.browsingButtons = {}
-    buttons.lobbyButtons = {}
 
     local tmp = lobbyName
     connectToMainLobby()
@@ -254,6 +250,9 @@ local function backToMain()
 
     state = "browsing"
 end
+
+local readyButton = newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady,playerName)
+local backButton = newLobbyButton("Back",{1,1,1},futuraL,000,200,100,300,backToMain)
 
 --All the processing the lobby client does.
 local function comWithLobby()
@@ -303,8 +302,6 @@ local function comWithLobby()
                 quit = true
                 state = "waiting for game"
                 players:new(playerName)
-                newLobbyButton("Start",{1,1,1},futuraL,200,200,300,300,toggleReady,playerName)
-                newLobbyButton("Back",{1,1,1},futuraL,000,200,100,300,backToMain)
             --If a socket details are given, connect to that socket.
             elseif commandData[1] == "sock" then
                 local sockData = split(commandData[2],"_")
@@ -315,8 +312,7 @@ local function comWithLobby()
                 quit = true
                 state = "waiting for game"
                 players:new(playerName)
-                newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady,playerName)
-                newLobbyButton("Back",{1,1,1},futuraL,000,200,100,300,backToMain)
+
             elseif commandData[1] == "disp" then
                 buttons.lobbySelectButtons = {}
                 if commandData[2] then
