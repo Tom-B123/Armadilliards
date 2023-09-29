@@ -25,12 +25,6 @@ function players:new(name)
     table.insert(players,object)
 end
 
-local function toggleReady(name)
-    players[1].ready = "ready"
-    -- local player = playersDict[name]
-    -- if player.ready == "ready" then player.ready = "no ready"
-    -- else player.ready = "ready" end
-end
 --Sends message to server
 local function sendToServer(data)
     client:send(data .. "\n")
@@ -85,13 +79,13 @@ Lobby.__index = Lobby
 local messagesToWrite = {}
 
 local buttons = {
-    lobbyButtons = {},
+    lobbySelectButtons = {},
     browsingButtons = {},
-    readyButtons = {}
+    lobbyButtons = {}
 }
 
 function buttons:draw()
-    for i,button in ipairs(buttons.lobbyButtons) do
+    for i,button in ipairs(buttons.lobbySelectButtons) do
         love.graphics.setFont(button.font)
         love.graphics.setColor(button.colour)
         love.graphics.print(button.text,button.x1,button.y1)
@@ -104,7 +98,7 @@ function buttons:draw()
 end
 
 local function drawReadyButtons()
-    for i,button in ipairs(buttons.readyButtons) do
+    for i,button in ipairs(buttons.lobbyButtons) do
         love.graphics.setFont(button.font)
         love.graphics.setColor(button.colour)
         love.graphics.print(button.text,button.x1,button.y1)
@@ -112,7 +106,7 @@ local function drawReadyButtons()
 end
 
 function buttons:update()
-    for i,button in ipairs(buttons.lobbyButtons) do
+    for i,button in ipairs(buttons.lobbySelectButtons) do
         button:update()
     end
     for i,button in ipairs(buttons.browsingButtons) do
@@ -121,15 +115,15 @@ function buttons:update()
 end
 
 local function updateReadyButtons()
-    for i,button in ipairs(buttons.readyButtons) do
+    for i,button in ipairs(buttons.lobbyButtons) do
         button:update()
     end
 end
 
 --New button to enter a lobby
-local function newLobbyButton(text,colour,x1,y1,x2,y2,command,params)
+local function newLobbySelectButton(text,colour,x1,y1,x2,y2,command,params)
     local nButton = Button:new(text,colour,futura,x1,y1,x2,y2,command,params)
-    table.insert(buttons.lobbyButtons,nButton)
+    table.insert(buttons.lobbySelectButtons,nButton)
     return nButton
 end
 
@@ -139,9 +133,9 @@ local function newBrowsingButton(text,colour,font,x1,y1,x2,y2,command,params)
     return nButton
 end
 
-local function newReadyButton(text,colour,font,x1,y1,x2,y2,command,params)
+local function newLobbyButton(text,colour,font,x1,y1,x2,y2,command,params)
     local nButton = Button:new(text,colour,font,x1,y1,x2,y2,command,params)
-    table.insert(buttons.readyButtons,nButton)
+    table.insert(buttons.lobbyButtons,nButton)
     return nButton
 end
 
@@ -243,10 +237,28 @@ local function join(lobby)
     sendToServer("jlob:"..lobby)
 end
 
+local function toggleReady(name)
+    local player = playersDict[name]
+    if player.ready == "ready" then player.ready = "not ready"
+    else player.ready = "ready" end
+end
+
+local function backToMain()
+    buttons.lobbySelectButtons = {}
+    buttons.browsingButtons = {}
+    buttons.lobbyButtons = {}
+
+    local tmp = lobbyName
+    connectToMainLobby()
+    sendToServer("exit:"..tmp)
+
+    state = "browsing"
+end
+
 --All the processing the lobby client does.
 local function comWithLobby()
     tick = tick + 1
-    
+
     messagesToWrite = {}
     --Sends data to the server based on user input
     if lobbyToCreate ~= nil then
@@ -260,7 +272,10 @@ local function comWithLobby()
             sendToServer("ndat")
         end
     end
-    sendToServer("plyr:"..playerName)
+    if state == "waiting for game" then
+        local player = playersDict[playerName]
+        sendToServer("plyr:"..player.name.."_"..player.team.."_"..player.ready)
+    end
     repeat
         local quit = false
         serverMessage = receiveFromServer()
@@ -288,7 +303,8 @@ local function comWithLobby()
                 quit = true
                 state = "waiting for game"
                 players:new(playerName)
-                newReadyButton("Ready",{1,1,1},futuraL,200,200,500,500,toggleReady,playerName)
+                newLobbyButton("Start",{1,1,1},futuraL,200,200,300,300,toggleReady,playerName)
+                newLobbyButton("Back",{1,1,1},futuraL,000,200,100,300,backToMain)
             --If a socket details are given, connect to that socket.
             elseif commandData[1] == "sock" then
                 local sockData = split(commandData[2],"_")
@@ -299,23 +315,36 @@ local function comWithLobby()
                 quit = true
                 state = "waiting for game"
                 players:new(playerName)
-
+                newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady,playerName)
+                newLobbyButton("Back",{1,1,1},futuraL,000,200,100,300,backToMain)
             elseif commandData[1] == "disp" then
-                buttons.lobbyButtons = {}
+                buttons.lobbySelectButtons = {}
                 if commandData[2] then
                     local lobbyData = split(commandData[2],"_")
                     for i, lobby in ipairs(lobbyData) do
                         local lobbyInfo = split(lobby,"|")
                         lobbiesList[i] = lobbyInfo
 
-                        newLobbyButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
+                        newLobbySelectButton(lobbyInfo[1],{1,1,1},305,80+i*50,945,80+i*85,join,lobbyInfo[1])
                     end
                 end
             --Player info message
             elseif commandData[1] == "plyr" then
-                local playerName = commandData[2]
-                if not containsPlayer(players,playerName) then
-                    players:new(playerName)
+                local playerData = split(commandData[2],"_")
+                local nPlayerName = playerData[1]
+                --Add the player if its a new name.
+                if not containsPlayer(players,nPlayerName) then
+                    players:new(nPlayerName)
+                --Update values for other clients.
+                elseif nPlayerName ~= playerName then
+                    local player = playersDict[nPlayerName]
+                    local nPlayerTeam = playerData[2]
+                    local nPlayerReady = playerData[3]
+                    --If the data has changed:
+                    if player.team ~= nPlayerTeam or player.ready ~= nPlayerReady then
+                        player.team = nPlayerTeam
+                        player.ready = nPlayerReady
+                    end
                 end
             --Plain text message in chat
             elseif commandData[1] == "msg" then
@@ -331,15 +360,26 @@ local function comWithClients()
     if server then
         server:updateConnections()
         for i,player in ipairs(players) do
-            server:sendToClient("all","plyr:"..player.name)
+            server:sendToClient("all","plyr:"..player.name.."_"..player.team.."_"..player.ready)
         end
         local data = server:receiveFromClients()
         for i, clientData in ipairs(data) do
-            local playerData = split(clientData,":")
-            if playerData[1] == "plyr" then
-                local playerName = playerData[2]
-                if not containsPlayer(players,playerName) then
-                    players:new(playerName)
+            local commandData = split(clientData,":")
+            if commandData[1] == "plyr" then
+                local playerData = split(commandData[2],"_")
+                local nPlayerName = playerData[1]
+                local player = playersDict[nPlayerName]
+                if not containsPlayer(players,nPlayerName) then
+                    players:new(nPlayerName)
+                elseif nPlayerName ~= playerName then
+                    local player = playersDict[nPlayerName]
+                    local nPlayerTeam = playerData[2]
+                    local nPlayerReady = playerData[3]
+                    --If the data has changed:
+                    if player.team ~= nPlayerTeam or player.ready ~= nPlayerReady then
+                        player.team = nPlayerTeam
+                        player.ready = nPlayerReady
+                    end
                 end
             end
         end
@@ -354,9 +394,13 @@ local function displayLobbies()
     love.graphics.setColor(1,1,1)
 
     for i, lobby in ipairs(lobbiesList) do
-        
-        love.graphics.print(lobby[2],510,80+i*50)
-        love.graphics.print(lobby[3],855,80+i*50)
+        local playerCount = split(lobby[3],"/")
+        if playerCount[1] == "0" then
+            table.remove(lobbiesList,i)
+        else
+            love.graphics.print(lobby[2],510,80+i*50)
+            love.graphics.print(lobby[3],855,80+i*50)
+        end
     end
 end
 

@@ -124,6 +124,9 @@ local function displayLobbies()
             if lobby.playerCount >= lobby.maxPlayers then
                 outLobbies = outLobbies.."full"
             end
+            if lobby.playerCount == 0 then
+                table.remove(lobbies,i)
+            end
         end
     end
     mainLobby:sendToClient("all","disp:"..outLobbies)
