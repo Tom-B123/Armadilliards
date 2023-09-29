@@ -163,8 +163,8 @@ end
 
 --Sends message to clients when hosting
 function Lobby:sendToClients(data)
-    for i, client in ipairs(self.clients) do
-        client:send(data)
+    for i, clientToSend in ipairs(self.clients) do
+        clientToSend:send(data)
     end
 end
 
@@ -205,10 +205,11 @@ local function comWithLobby()
         end
     end
     sendToServer("plyr:"..playerName)
-    
+    players = {}
     repeat
         local quit = false
         serverMessage = receiveFromServer()
+        players[#players+1] = serverMessage
         messagesToWrite[#messagesToWrite+1] = serverMessage
         --If a command is recieved from the server
         if serverMessage and serverMessage ~= "none" then
@@ -256,12 +257,8 @@ local function comWithLobby()
                     end
                 end
             elseif commandData[1] == "plyr" then
-                local playerName = commandData[2]
-                if not contains(players,playerName) then
-                    table.insert(players,playerName)
-                end
+                love.graphics.print("recieved a player message",200,0)
             end
-            
         end
     until (serverMessage == nil or quit == true)
 end
@@ -393,34 +390,27 @@ function love.update()
     end
     
     
-    if client then comWithLobby()
 
-    elseif server then comWithClients() end
+    if server then comWithClients() end
 
     lState = state
 end
 
 
 function love.draw()
-    
-    love.graphics.setColor(1,1,1)
-    love.graphics.print(lobbyName,200,0)
+    if client then comWithLobby()
+    end
+
     if lobbyName == "_Main" then 
         displayLobbies()
         buttons:update()
         buttons:draw()
     end
+
     if state == "waiting for game" then
         displayLobby()
     end
-    -- love.graphics.setColor(0,0,0)
-    -- love.graphics.print(playerName)
+
     lobbyToJoin = nil
     lobbyToCreate = nil
-
-    love.graphics.setColor(1,0,0)
-    if client then love.graphics.print("client")
-
-    elseif server then love.graphics.print("server") end
-
 end
