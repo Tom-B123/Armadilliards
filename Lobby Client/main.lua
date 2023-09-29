@@ -162,9 +162,13 @@ end
 
 
 --Sends message to clients when hosting
-function Lobby:sendToClients(data)
-    for i, clientToSend in ipairs(self.clients) do
-        clientToSend:send(data)
+function Lobby:sendToClient(client,data)
+    if client == "all" then
+        for i,clientToSend in ipairs(self.clients) do
+            clientToSend:send(data.."\n")
+        end
+    else
+        if data then client:send(data.."\n") end
     end
 end
 
@@ -205,11 +209,9 @@ local function comWithLobby()
         end
     end
     sendToServer("plyr:"..playerName)
-    players = {}
     repeat
         local quit = false
         serverMessage = receiveFromServer()
-        players[#players+1] = serverMessage
         messagesToWrite[#messagesToWrite+1] = serverMessage
         --If a command is recieved from the server
         if serverMessage and serverMessage ~= "none" then
@@ -257,7 +259,10 @@ local function comWithLobby()
                     end
                 end
             elseif commandData[1] == "plyr" then
-                love.graphics.print("recieved a player message",200,0)
+                local playerName = commandData[2]
+                if not contains(players,playerName) then
+                    table.insert(players,playerName)
+                end
             end
         end
     until (serverMessage == nil or quit == true)
@@ -267,7 +272,9 @@ end
 local function comWithClients()
     if server then
         server:updateConnections()
-        server:sendToClients("plyr:"..playerName)
+        for i,player in ipairs(players) do
+            server:sendToClient("all","plyr:"..player)
+        end
         local data = server:receiveFromClients()
         for i, clientData in ipairs(data) do
             local playerData = split(clientData,":")
