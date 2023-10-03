@@ -4,7 +4,9 @@ local socket = require("socket")
 local client
 local server = nil
 
-local message = ""
+local clients = {}
+
+local message = {}
 
 math.randomseed(os.clock())
 local playerName = math.random(1,1000)
@@ -40,6 +42,37 @@ local function receiveFromServer()
     end
 end
 
+local function sendToClient(client,data)
+    if client == "all" then
+        for i,clientToSend in ipairs(clients) do
+            clientToSend:send(data.."\n")
+        end
+    else
+        if data then client:send(data.."\n") end
+    end
+end
+
+local function receiveFromClients()
+    local out = {}
+    for i,client in ipairs(clients) do
+        local data,err = client:receive()
+        table.insert(out,data)
+        if err == "closed" then
+            client:close()
+            table.remove(clients,i)
+        end
+    end
+    return out
+end
+
+local function updateConnections()
+    if server == nil then return end
+    local newClient = server:accept()
+    if newClient then
+        table.insert(clients,newClient)
+    end
+end
+
 local function attemptToConnect()
     client = assert(socket.connect("localhost",1000))
 end
@@ -47,11 +80,12 @@ end
 if pcall(attemptToConnect) then
     --if there is a server:
     client:settimeout(0)
-    message = "I am a client"
+    message = {"I am a client"}
 else
     --else, host one
     server = assert(socket.bind("*",1000))
-    message = "I am a server"
+    server:settimeout(0)
+    message = {"I am a server"}
 end
 
 function love.keypressed(key)
@@ -61,8 +95,19 @@ function love.keypressed(key)
 end
 
 function love.update()
+    message = {"msg1","msg2"}
+    if client then 
+        sendToServer("plyr:"..playerName)
+        message = {receiveFromServer()}
+    elseif server then
+        updateConnections()
+        sendToClient("all","plyr:"..playerName)
+        message = receiveFromClients()
+    end
 end
 
 function love.draw()
-    love.graphics.print(message)
+    for i ,msg in ipairs(message) do
+        love.graphics.print(msg,0,20*i)
+    end
 end
