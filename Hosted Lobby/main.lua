@@ -28,6 +28,39 @@ function players:new(name)
     table.insert(players,object)
 end
 
+players:new(playerName)
+
+local function split (inputstr, sep)
+    if sep == nil then
+            sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+            table.insert(t, str)
+    end
+    return t
+end
+
+
+local function contains(table,item)
+    for i,obj in ipairs(table) do
+        if obj == item then
+            return true
+        end
+    end
+    return false
+end
+
+local function containsPlayer(table,name)
+    for i,obj in ipairs(table) do
+        if obj.name == name then
+            return true
+        end
+    end
+    return false
+end
+
+
 local function sendToServer(data)
     client:send(data .. "\n")
 end
@@ -80,12 +113,10 @@ end
 if pcall(attemptToConnect) then
     --if there is a server:
     client:settimeout(0)
-    message = {"I am a client"}
 else
     --else, host one
     server = assert(socket.bind("*",1000))
     server:settimeout(0)
-    message = {"I am a server"}
 end
 
 function love.keypressed(key)
@@ -95,19 +126,38 @@ function love.keypressed(key)
 end
 
 function love.update()
-    message = {"msg1","msg2"}
     if client then 
         sendToServer("plyr:"..playerName)
-        message = {receiveFromServer()}
+        local data = receiveFromServer()
+        if data then
+            local commandData = split(data,":")
+            if commandData[1] == "plyr" then
+                local nPlayerName = commandData[2]
+                if not containsPlayer(players,nPlayerName) then
+                    players:new(nPlayerName)
+                end
+            end
+        end
     elseif server then
         updateConnections()
         sendToClient("all","plyr:"..playerName)
-        message = receiveFromClients()
+        local data = receiveFromClients()
+        if data then
+            for i,client in ipairs(data) do
+                local commandData = split(client,":")
+                if commandData[1] == "plyr" then
+                    local nPlayerName = commandData[2]
+                    if not containsPlayer(players,nPlayerName) then
+                        players:new(nPlayerName)
+                    end
+                end
+            end
+        end
     end
 end
 
 function love.draw()
-    for i ,msg in ipairs(message) do
-        love.graphics.print(msg,0,20*i)
+    for i ,player in ipairs(players) do
+        love.graphics.print(player.name,0,20*i)
     end
 end
