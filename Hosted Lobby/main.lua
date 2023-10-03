@@ -4,6 +4,8 @@ local socket = require("socket")
 local client
 local server = nil
 
+local message = ""
+
 math.randomseed(os.clock())
 local playerName = math.random(1,1000)
 
@@ -38,6 +40,15 @@ local function receiveFromServer()
     end
 end
 
+local function attemptToConnect()
+    client = assert(socket.connect("localhost",1000))
+end
+
+if pcall(attemptToConnect) then
+    message = "successfully connected"
+else
+    message = "timed out"
+end
 function love.keypressed(key)
     if key == "escape" then
         love.event.quit()
@@ -48,5 +59,5 @@ function love.update()
 end
 
 function love.draw()
-    love.graphics.print("name:"..playerName)
+    love.graphics.print(message)
 end
