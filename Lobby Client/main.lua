@@ -46,6 +46,7 @@ local function connectToMainLobby()
     client:settimeout(0)
     --Main lobby = _Main, as this can't be immitated by players.
     lobbyName = "_Main"
+    state = "browsing"
 end
 
 -- love.window.setMode(0,0)
@@ -248,11 +249,8 @@ local function backToMain()
     for i = 1,#players do
         players[i] = nil
     end
-    local tmp = lobbyName
-    connectToMainLobby()
-    sendToServer("exit:"..tmp)
-
-    state = "browsing"
+    if client then sendToServer("exit:"..playerName)
+    else connectToMainLobby() end
 end
 
 newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady)
@@ -289,10 +287,9 @@ local function comWithLobby()
             local commandData = split(serverMessage,":")
 
             if commandData[1] == "exit" then
-                client:close()
-                client = assert(socket.connect("localhost",500))
-                client:settimeout(0)
-                lobbyName = "_Main"
+                love.graphics.print("exit")
+                connectToMainLobby()
+
                 quit = true
 
             --Command confirms lobby creation
@@ -380,6 +377,16 @@ local function comWithClients()
                         player.ready = nPlayerReady
                     end
                 end
+            elseif clientData[1] == "exit" then
+                local player = playersDict[clientData[2]]
+                for i = 1,#players do
+                    if players[i] == player then 
+                        players[i] = nil
+                    end
+                    playersDict[clientData[2]] = nil
+                end
+                -- server:sendToClient("all","rmov:"..clientData[2])
+                server:sendToClient(player,"exit:lobby")
             end
         end
     end
@@ -504,15 +511,17 @@ function love.update()
     
     
 
-    if server then comWithClients() end
-
-    lState = state
+    
 end
 
 
 function love.draw()
+    if server then comWithClients() end
+
     if client then comWithLobby()
     end
+
+    lState = state
 
     if lobbyName == "_Main" then 
         displayLobbies()
