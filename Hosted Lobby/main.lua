@@ -45,10 +45,15 @@ local function attemptToConnect()
 end
 
 if pcall(attemptToConnect) then
-    message = "successfully connected"
+    --if there is a server:
+    client:settimeout(0)
+    message = "I am a client"
 else
-    message = "timed out"
+    --else, host one
+    server = assert(socket.bind("*",1000))
+    message = "I am a server"
 end
+
 function love.keypressed(key)
     if key == "escape" then
         love.event.quit()
