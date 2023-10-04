@@ -30,8 +30,8 @@ end
 
 function players:remove(name)
     for i = 1,#players do
-        local player = players[i]
-        if name == player.name then
+        local player = playersDict[name]
+        if player == players[i] then
             players[i] = nil
         end
     end
@@ -141,7 +141,7 @@ end
 function love.update()
     if client then
         sendToServer("plyr:"..playerName)
-
+        local quit = false
         repeat
             local data = receiveFromServer()
             if data then
@@ -154,12 +154,13 @@ function love.update()
                 elseif commandData[1] == "exit" then
                     local nPlayerName = commandData[2]
                     message = nPlayerName
-                    if nPlayerName == playerName then
+                    if nPlayerName == tostring(playerName) then
                         love.event.quit()
-                    end
+                    else players:remove(nPlayerName) end
+                    quit = true
                 end
             end
-        until data == nil
+        until data == nil or quit
     elseif server then
         updateConnections()
         for i,player in ipairs(players) do
@@ -178,7 +179,7 @@ function love.update()
                     local nPlayerName = commandData[2]
                     message = nPlayerName
                     sendToClient("all","exit:"..nPlayerName)
-                    -- players:remove(nPlayerName)
+                    players:remove(nPlayerName)
                 end
             end
         end
@@ -191,5 +192,4 @@ function love.draw()
     for i ,player in ipairs(players) do
         love.graphics.print(player.name,0,20*i)
     end
-    love.graphics.print(tostring(message == tostring(playerName)),200,0)
 end
