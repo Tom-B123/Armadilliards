@@ -28,8 +28,6 @@ function players:new(name)
     table.insert(players,object)
 end
 
-players:new(playerName)
-
 local function split (inputstr, sep)
     if sep == nil then
             sep = "%s"
@@ -117,6 +115,7 @@ else
     --else, host one
     server = assert(socket.bind("*",1000))
     server:settimeout(0)
+    players:new(playerName)
 end
 
 function love.keypressed(key)
@@ -126,21 +125,26 @@ function love.keypressed(key)
 end
 
 function love.update()
-    if client then 
+    if client then
         sendToServer("plyr:"..playerName)
-        local data = receiveFromServer()
-        if data then
-            local commandData = split(data,":")
-            if commandData[1] == "plyr" then
-                local nPlayerName = commandData[2]
-                if not containsPlayer(players,nPlayerName) then
-                    players:new(nPlayerName)
+
+        repeat
+            local data = receiveFromServer()
+            if data then
+                local commandData = split(data,":")
+                if commandData[1] == "plyr" then
+                    local nPlayerName = commandData[2]
+                    if not containsPlayer(players,nPlayerName) then
+                        players:new(nPlayerName)
+                    end
                 end
             end
-        end
+        until data == nil
     elseif server then
         updateConnections()
-        sendToClient("all","plyr:"..playerName)
+        for i,player in ipairs(players) do
+            sendToClient("all","plyr:"..player.name)
+        end
         local data = receiveFromClients()
         if data then
             for i,client in ipairs(data) do
