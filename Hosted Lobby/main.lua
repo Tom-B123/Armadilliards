@@ -6,7 +6,7 @@ local server = nil
 
 local clients = {}
 
-local message = {}
+local message = ""
 
 math.randomseed(os.clock())
 local playerName = math.random(1,1000000)
@@ -191,5 +191,5 @@ function love.draw()
     for i ,player in ipairs(players) do
         love.graphics.print(player.name,0,20*i)
     end
-    love.graphics.print("message:"..message.." player name:"..playerName,200,0)
+    love.graphics.print(tostring(message == tostring(playerName)),200,0)
 end
