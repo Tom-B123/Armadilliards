@@ -9,7 +9,7 @@ local clients = {}
 local message = {}
 
 math.randomseed(os.clock())
-local playerName = math.random(1,1000)
+local playerName = math.random(1,1000000)
 
 local players = {}
 local playersDict = {}
@@ -28,6 +28,16 @@ function players:new(name)
     table.insert(players,object)
 end
 
+function players:remove(name)
+    for i = 1,#players do
+        local player = players[i]
+        if name == player.name then
+            players[i] = nil
+        end
+    end
+    playersDict[name] = nil
+end
+
 local function split (inputstr, sep)
     if sep == nil then
             sep = "%s"
@@ -38,7 +48,6 @@ local function split (inputstr, sep)
     end
     return t
 end
-
 
 local function contains(table,item)
     for i,obj in ipairs(table) do
@@ -57,7 +66,6 @@ local function containsPlayer(table,name)
     end
     return false
 end
-
 
 local function sendToServer(data)
     client:send(data .. "\n")
@@ -118,9 +126,15 @@ else
     players:new(playerName)
 end
 
+local function exit()
+    sendToServer("exit:"..playerName)
+end
+
 function love.keypressed(key)
     if key == "escape" then
-        love.event.quit()
+        if client then exit()
+        elseif server then love.event.quit()
+        end
     end
 end
 
@@ -136,6 +150,12 @@ function love.update()
                     local nPlayerName = commandData[2]
                     if not containsPlayer(players,nPlayerName) then
                         players:new(nPlayerName)
+                    end
+                elseif commandData[1] == "exit" then
+                    local nPlayerName = commandData[2]
+                    message = nPlayerName
+                    if nPlayerName == playerName then
+                        love.event.quit()
                     end
                 end
             end
@@ -154,14 +174,22 @@ function love.update()
                     if not containsPlayer(players,nPlayerName) then
                         players:new(nPlayerName)
                     end
+                elseif commandData[1] == "exit" then
+                    local nPlayerName = commandData[2]
+                    message = nPlayerName
+                    sendToClient("all","exit:"..nPlayerName)
+                    -- players:remove(nPlayerName)
                 end
             end
         end
     end
 end
 
+
+
 function love.draw()
     for i ,player in ipairs(players) do
         love.graphics.print(player.name,0,20*i)
     end
+    love.graphics.print("message:"..message.." player name:"..playerName,200,0)
 end
