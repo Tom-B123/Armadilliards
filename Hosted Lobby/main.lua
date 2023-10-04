@@ -156,8 +156,7 @@ function love.update()
                     message = nPlayerName
                     if nPlayerName == tostring(playerName) then
                         love.event.quit()
-                    else players:remove(nPlayerName) end
-                    quit = true
+                    else table.insert(messageLog,nPlayerName.." has left") end
                 end
             end
         until data == nil or quit
@@ -179,7 +178,7 @@ function love.update()
                     local nPlayerName = commandData[2]
                     message = nPlayerName
                     sendToClient("all","exit:"..nPlayerName)
-                    players:remove(nPlayerName)
+                    table.insert(messageLog,nPlayerName.." has left")
                 end
             end
         end
@@ -189,6 +188,11 @@ end
 
 
 function love.draw()
+    for i,message in ipairs(messageLog) do
+        local y = 500 - #messageLog * 20
+        love.graphics.print(message,400,y + i*20)
+    end
+    love.graphics.print(tostring(playerName),400,0)
     for i ,player in ipairs(players) do
         love.graphics.print(player.name,0,20*i)
     end
