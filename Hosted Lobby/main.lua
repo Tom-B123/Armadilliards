@@ -125,7 +125,6 @@ else
     --else, host one
     server = assert(socket.bind("*",1000))
     server:settimeout(0)
-    players:new(playerName)
 end
 
 local function exit()
@@ -243,6 +242,6 @@ function love.draw()
     end
     love.graphics.print(tostring(playerName),400,0)
     for i ,player in ipairs(players) do
-        love.graphics.print(player.name,0,20*i)
+        love.graphics.print("name: "..player.name.." ready: "..player.ready.." team: "..player.team,0,20*i)
     end
 end
