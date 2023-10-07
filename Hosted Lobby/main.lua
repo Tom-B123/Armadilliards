@@ -184,10 +184,16 @@ local function processServerData(data)
             local commandData = split(client,":")
             if commandData[1] == "plyr" then
                 local nPlayer = commandData[2]
-                local nPlayerData = split(nPlayer,"_")
-                local nPlayerName = nPlayerData[1]
+                local nPlayerData  = split(nPlayer,"_")
+                local nPlayerName  = nPlayerData[1]
+                local nPlayerReady = nPlayerData[2]
+                local nPlayerTeam  = nPlayerData[3]
                 if not containsPlayer(players,nPlayerName) then
                     players:new(nPlayerName)
+                else
+                    local oldPlayer = playersDict[nPlayerName]
+                    oldPlayer.ready = nPlayerReady
+                    oldPlayer.team = nPlayerTeam
                 end
             elseif commandData[1] == "exit" then
                 local nPlayerName = commandData[2]
