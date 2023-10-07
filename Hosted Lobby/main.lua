@@ -15,6 +15,7 @@ local playerName = math.random(1,1000000)
 
 local players = {}
 local playersDict = {}
+local blockedPlayers = {}
 
 local messageLog = {}
 
@@ -71,7 +72,6 @@ local function sendToServer(data)
     client:send(data .. "\n")
 end
 
---Reads message from server
 local function receiveFromServer()
     local data, err = client:receive()
     if data then
@@ -186,19 +186,23 @@ local function processServerData(data)
                 local nPlayerName  = nPlayerData[1]
                 local nPlayerReady = nPlayerData[2]
                 local nPlayerTeam  = nPlayerData[3]
-                --create a new player if the name hasn't been seen before
-                if not containsPlayer(players,nPlayerName) then
-                    players:new(nPlayerName)
-                --if extra info is given, update it
-                elseif nPlayerTeam and nPlayerReady then
-                    local oldPlayer = playersDict[nPlayerName]
-                    oldPlayer.ready = nPlayerReady
-                    oldPlayer.team = nPlayerTeam
+                if not contains(blockedPlayers,nPlayerName) then
+                    --create a new player if the name hasn't been seen before
+                    if not containsPlayer(players,nPlayerName) then
+                        players:new(nPlayerName)
+                    --if extra info is given, update it
+                    elseif nPlayerTeam and nPlayerReady then
+                        local oldPlayer = playersDict[nPlayerName]
+                        oldPlayer.ready = nPlayerReady
+                        oldPlayer.team = nPlayerTeam
+                    end
                 end
             elseif commandData[1] == "exit" then
                 local nPlayerName = commandData[2]
                 message = nPlayerName
                 sendToClient("all","exit:"..nPlayerName)
+                players:refresh()
+                table.insert(blockedPlayers,nPlayerName)
                 table.insert(messageLog,nPlayerName.." has left")
             elseif commandData[1] == "msg" then
                 sendToClient("all",client)
