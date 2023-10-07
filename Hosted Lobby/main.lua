@@ -139,36 +139,71 @@ function love.keypressed(key)
             sendToServer("msg:"..playerName.."_"..key)
         elseif server then
             sendToClient("all","msg:"..playerName.."_"..key)
+            table.insert(messageLog,playerName..": "..key)
         end
     end
 end
 
-function love.update()
+--process the data recieved by the client
+local function processClientData(data)
+    local quit = false
+    if data then
+        local commandData = split(data,":")
+        if commandData[1] == "plyr" then
+            local nPlayerName = commandData[2]
+            if not containsPlayer(players,nPlayerName) then
+                players:new(nPlayerName)
+            end
+        elseif commandData[1] == "exit" then
+            local nPlayerName = commandData[2]
+            message = nPlayerName
+            if nPlayerName == tostring(playerName) then
+                love.event.quit()
+            else 
+                table.insert(messageLog,nPlayerName.." has left")
+                players:refresh()
+            end
+        elseif commandData[1] == "msg" then
+            local messageData = split(commandData,"_")
+            table.insert(messageLog,messageData[1]..": "..messageData[2])
+        end
+    end
+    return quit
+end
+
+--process the data recieved by the server
+local function processServerData(data)
+    if data then
+        for i,client in ipairs(data) do
+            local commandData = split(client,":")
+            if commandData[1] == "plyr" then
+                local nPlayerName = commandData[2]
+                if not containsPlayer(players,nPlayerName) then
+                    players:new(nPlayerName)
+                end
+            elseif commandData[1] == "exit" then
+                local nPlayerName = commandData[2]
+                message = nPlayerName
+                sendToClient("all","exit:"..nPlayerName)
+                -- players:refresh()
+                table.insert(messageLog,nPlayerName.." has left")
+            elseif commandData[1] == "msg" then
+                sendToClient("all",client)
+                local messageData = split(commandData,"_")
+                table.insert(messageLog,messageData[1]..": "..messageData[2])
+            end
+        end
+    end
+end
+
+--processes all incoming data for the client or the server
+local function processReqeusts()
     if client then
         sendToServer("plyr:"..playerName)
         local quit = false
         repeat
             local data = receiveFromServer()
-            if data then
-                local commandData = split(data,":")
-                if commandData[1] == "plyr" then
-                    local nPlayerName = commandData[2]
-                    if not containsPlayer(players,nPlayerName) then
-                        players:new(nPlayerName)
-                    end
-                elseif commandData[1] == "exit" then
-                    local nPlayerName = commandData[2]
-                    message = nPlayerName
-                    if nPlayerName == tostring(playerName) then
-                        love.event.quit()
-                    else 
-                        table.insert(messageLog,nPlayerName.." has left")
-                        players:refresh()
-                    end
-                elseif commandData[1] == "msg" then
-                    table.insert(messageLog,commandData[2])
-                end
-            end
+            quit = processClientData(data)
         until data == nil or quit
     elseif server then
         updateConnections()
@@ -176,27 +211,14 @@ function love.update()
             sendToClient("all","plyr:"..player.name)
         end
         local data = receiveFromClients()
-        if data then
-            for i,client in ipairs(data) do
-                local commandData = split(client,":")
-                if commandData[1] == "plyr" then
-                    local nPlayerName = commandData[2]
-                    if not containsPlayer(players,nPlayerName) then
-                        players:new(nPlayerName)
-                    end
-                elseif commandData[1] == "exit" then
-                    local nPlayerName = commandData[2]
-                    message = nPlayerName
-                    sendToClient("all","exit:"..nPlayerName)
-                    players:refresh()
-                    table.insert(messageLog,nPlayerName.." has left")
-                elseif commandData[1] == "msg" then
-                    sendToClient("all",client)
-                    table.insert(messageLog,commandData[2])
-                end
-            end
-        end
+        processServerData(data)
     end
+end
+
+function love.update()
+
+    processReqeusts()
+
 end
 
 function love.draw()
