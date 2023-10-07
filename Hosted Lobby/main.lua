@@ -164,7 +164,7 @@ local function processClientData(data)
                 players:refresh()
             end
         elseif commandData[1] == "msg" then
-            local messageData = split(commandData,"_")
+            local messageData = split(commandData[2],"_")
             table.insert(messageLog,messageData[1]..": "..messageData[2])
         end
     end
@@ -189,7 +189,7 @@ local function processServerData(data)
                 table.insert(messageLog,nPlayerName.." has left")
             elseif commandData[1] == "msg" then
                 sendToClient("all",client)
-                local messageData = split(commandData,"_")
+                local messageData = split(commandData[2],"_")
                 table.insert(messageLog,messageData[1]..": "..messageData[2])
             end
         end
