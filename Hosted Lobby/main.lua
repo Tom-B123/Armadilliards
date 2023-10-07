@@ -11,6 +11,8 @@ local message = ""
 math.randomseed(os.clock())
 local playerName = math.random(1,1000000)
 
+
+
 local players = {}
 local playersDict = {}
 
@@ -27,6 +29,8 @@ function players:new(name)
     playersDict[name] = object
     table.insert(players,object)
 end
+
+players:new(playerName)
 
 function players:refresh()
     for i = 1,#players do
@@ -150,7 +154,9 @@ local function processClientData(data)
     if data then
         local commandData = split(data,":")
         if commandData[1] == "plyr" then
-            local nPlayerName = commandData[2]
+            local nPlayer = commandData[2]
+            local nPlayerData = split(nPlayer,"_")
+            local nPlayerName = nPlayerData[1]
             if not containsPlayer(players,nPlayerName) then
                 players:new(nPlayerName)
             end
@@ -177,7 +183,9 @@ local function processServerData(data)
         for i,client in ipairs(data) do
             local commandData = split(client,":")
             if commandData[1] == "plyr" then
-                local nPlayerName = commandData[2]
+                local nPlayer = commandData[2]
+                local nPlayerData = split(nPlayer,"_")
+                local nPlayerName = nPlayerData[1]
                 if not containsPlayer(players,nPlayerName) then
                     players:new(nPlayerName)
                 end
@@ -199,7 +207,8 @@ end
 --processes all incoming data for the client or the server
 local function processReqeusts()
     if client then
-        sendToServer("plyr:"..playerName)
+        local clientPlayer = playersDict[playerName]
+        sendToServer("plyr:"..clientPlayer.name.."_"..clientPlayer.ready.."_"..clientPlayer.team)
         local quit = false
         repeat
             local data = receiveFromServer()
@@ -208,7 +217,7 @@ local function processReqeusts()
     elseif server then
         updateConnections()
         for i,player in ipairs(players) do
-            sendToClient("all","plyr:"..player.name)
+            sendToClient("all","plyr:"..player.name.."_"..player.ready.."_"..player.team)
         end
         local data = receiveFromClients()
         processServerData(data)
