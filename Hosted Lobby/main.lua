@@ -186,8 +186,10 @@ local function processServerData(data)
                 local nPlayerName  = nPlayerData[1]
                 local nPlayerReady = nPlayerData[2]
                 local nPlayerTeam  = nPlayerData[3]
+                --create a new player if the name hasn't been seen before
                 if not containsPlayer(players,nPlayerName) then
                     players:new(nPlayerName)
+                --if extra info is given, update it
                 elseif nPlayerTeam and nPlayerReady then
                     local oldPlayer = playersDict[nPlayerName]
                     oldPlayer.ready = nPlayerReady
@@ -197,7 +199,6 @@ local function processServerData(data)
                 local nPlayerName = commandData[2]
                 message = nPlayerName
                 sendToClient("all","exit:"..nPlayerName)
-                -- players:refresh()
                 table.insert(messageLog,nPlayerName.." has left")
             elseif commandData[1] == "msg" then
                 sendToClient("all",client)
@@ -212,7 +213,9 @@ end
 local function processReqeusts()
     if client then
         local clientPlayer = playersDict[playerName]
+        --if a player object exists for the client's player, send all details to the host
         if clientPlayer then sendToServer("plyr:"..clientPlayer.name.."_"..clientPlayer.ready.."_"..clientPlayer.team)
+        --otherwise, just send the player name for confirmation from the host, which will then lead to a player object being made
         else sendToServer("plyr:"..playerName) end
         local quit = false
         repeat
