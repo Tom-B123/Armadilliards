@@ -28,14 +28,12 @@ function players:new(name)
     table.insert(players,object)
 end
 
-function players:remove(name)
+function players:refresh()
     for i = 1,#players do
-        local player = playersDict[name]
-        if player == players[i] then
-            players[i] = nil
-        end
+        -- playersDict[players[i].name] = nil
+        players[i] = nil
     end
-    playersDict[name] = nil
+    if server then players:new(playerName) end
 end
 
 local function split (inputstr, sep)
@@ -135,6 +133,13 @@ function love.keypressed(key)
         if client then exit()
         elseif server then love.event.quit()
         end
+    --debug text for messages, sends the key pressed to all other players
+    else
+        if client then
+            sendToServer("msg:"..playerName.."_"..key)
+        elseif server then
+            sendToClient("all","msg:"..playerName.."_"..key)
+        end
     end
 end
 
@@ -156,7 +161,12 @@ function love.update()
                     message = nPlayerName
                     if nPlayerName == tostring(playerName) then
                         love.event.quit()
-                    else table.insert(messageLog,nPlayerName.." has left") end
+                    else 
+                        table.insert(messageLog,nPlayerName.." has left")
+                        players:refresh()
+                    end
+                elseif commandData[1] == "msg" then
+                    table.insert(messageLog,commandData[2])
                 end
             end
         until data == nil or quit
@@ -178,14 +188,16 @@ function love.update()
                     local nPlayerName = commandData[2]
                     message = nPlayerName
                     sendToClient("all","exit:"..nPlayerName)
+                    players:refresh()
                     table.insert(messageLog,nPlayerName.." has left")
+                elseif commandData[1] == "msg" then
+                    sendToClient("all",client)
+                    table.insert(messageLog,commandData[2])
                 end
             end
         end
     end
 end
-
-
 
 function love.draw()
     for i,message in ipairs(messageLog) do
