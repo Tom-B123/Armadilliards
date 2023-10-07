@@ -30,8 +30,6 @@ function players:new(name)
     table.insert(players,object)
 end
 
-players:new(playerName)
-
 function players:refresh()
     for i = 1,#players do
         -- playersDict[players[i].name] = nil
@@ -125,6 +123,7 @@ else
     --else, host one
     server = assert(socket.bind("*",1000))
     server:settimeout(0)
+    players:new(playerName)
 end
 
 local function exit()
@@ -189,7 +188,7 @@ local function processServerData(data)
                 local nPlayerTeam  = nPlayerData[3]
                 if not containsPlayer(players,nPlayerName) then
                     players:new(nPlayerName)
-                else
+                elseif nPlayerTeam and nPlayerReady then
                     local oldPlayer = playersDict[nPlayerName]
                     oldPlayer.ready = nPlayerReady
                     oldPlayer.team = nPlayerTeam
@@ -213,7 +212,8 @@ end
 local function processReqeusts()
     if client then
         local clientPlayer = playersDict[playerName]
-        sendToServer("plyr:"..clientPlayer.name.."_"..clientPlayer.ready.."_"..clientPlayer.team)
+        if clientPlayer then sendToServer("plyr:"..clientPlayer.name.."_"..clientPlayer.ready.."_"..clientPlayer.team)
+        else sendToServer("plyr:"..playerName) end
         local quit = false
         repeat
             local data = receiveFromServer()
