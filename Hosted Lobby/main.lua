@@ -181,14 +181,15 @@ function love.keypressed(key)
         if gameState == "lobby" then
             if key == "return" and server then
                 gameState = "game"
-                for i = 1, #players + 1 do
+                for i = 1, #players do
                     table.insert(balls,Ball:new(i*50,i*50,"team 1"))
                 end
                 for i,player in ipairs(players) do
                     playersBallDict[player.name] = balls[i]
                     playerBall = balls[i]
                     if player.name ~= playerName then
-                        sendToClient("all","asgn:"..i)
+                        --Tell the client how many balls there are, and the player's ball index
+                        sendToClient("all","asgn:"..i.."_"..#balls)
                     end
                 end
                 sendToClient("all","gmst:game")
@@ -234,6 +235,12 @@ local function processClientData(data)
                 ball.x = ballData[2*i-1]
                 ball.y = ballData[2*i]
             end
+        elseif commandData[1] == "asgn" then
+            local ballData = split(commandData[2],"_")
+            for i = 1,tonumber(ballData[2]) do
+                table.insert(balls.Ball:new(i*50,i*50,"team 1"))
+            end
+            playerBall = balls[tonumber(commandData[2])]
         end
     end
     return quit
