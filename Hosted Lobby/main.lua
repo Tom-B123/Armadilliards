@@ -70,6 +70,11 @@ function Ball:draw(focusedBall)
     love.graphics.circle("fill",self.x + offset.x,self.y + offset.y,20)
 end
 
+function Ball:move(x,y)
+    self.x = self.x + x
+    self.y = self.y + y
+end
+
 local function drawBalls(focusedBall)
     for i, ball in ipairs(balls) do
         ball:draw(focusedBall)
@@ -264,6 +269,11 @@ local function processServerData(data)
                 sendToClient("all",client)
                 local messageData = split(commandData[2],"_")
                 table.insert(messageLog,messageData[1]..": "..messageData[2])
+            elseif commandData[1] == "plin" then
+                local inputData = split(commandData[2],"_")
+                if inputData[1] == "move" then
+                    balls[2]:move(inputData[2],inputData[3])
+                end
             end
         end
     end
@@ -324,8 +334,7 @@ local function processPlayerInputs()
     if love.keyboard.isDown("s") then y = y + 1 end
     if love.keyboard.isDown("d") then x = x + 1 end
     if server then
-        playerBall.x = playerBall.x + x
-        playerBall.y = playerBall.y + y
+        playerBall:move(x,y)
     elseif client then
         sendToServer("plin:move_"..x.."_"..y)
     end
