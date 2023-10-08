@@ -238,7 +238,7 @@ local function processClientData(data)
         elseif commandData[1] == "asgn" then
             local ballData = split(commandData[2],"_")
             for i = 1,tonumber(ballData[2]) do
-                table.insert(balls.Ball:new(i*50,i*50,"team 1"))
+                table.insert(balls,Ball:new(i*50,i*50,"team 1"))
             end
             playerBall = balls[tonumber(commandData[2])]
         end
