@@ -188,6 +188,7 @@ function love.keypressed(key)
                     playersBallDict[player.name] = balls[i]
                     if player.name == playerName then
                         playerBall = balls[i]
+                        ballNum = i
                     else
                         --Tell the client how many balls there are, and the player's ball index
                         sendToClient("all","asgn:"..i.."_"..#balls)
@@ -241,6 +242,7 @@ local function processClientData(data)
             for i = 1,tonumber(ballData[2]) do
                 table.insert(balls,Ball:new(i*50,i*50,"team 1"))
             end
+            ballNum = ballData[1]
             playerBall = balls[tonumber(ballData[1])]
             gameState = "game"
         end
@@ -282,9 +284,14 @@ local function processServerData(data)
                 local messageData = split(commandData[2],"_")
                 table.insert(messageLog,messageData[1]..": "..messageData[2])
             elseif commandData[1] == "plin" then
+                
                 local inputData = split(commandData[2],"_")
+                love.graphics.print(balls[1].x..":"..balls[2].x)
+                love.graphics.print(inputData[2],0,20)
                 if inputData[1] == "move" then
-                    balls[2]:move(inputData[2],inputData[3])
+                    local ballToMove = tonumber(inputData[2])
+                    local x,y = inputData[3],inputData[4]
+                    balls[ballToMove]:move(x,y)
                 end
             end
         end
@@ -355,15 +362,17 @@ end
 
 function love.update(dt)
 
+    
+end
+
+function love.draw()
+    
     processReqeusts()
     
     if gameState == "game" then
         processPlayerInputs()
     end
-end
 
-function love.draw()
-    
     if gameState == "lobby" then
         drawLobby()
     elseif gameState == "game" then
