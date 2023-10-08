@@ -3,6 +3,8 @@ local socket = require("socket")
 
 --To do: unblock players after a fixed interval (in ticks or in real time) 
 
+local tick
+
 local gameState = "lobby"
 
 local client
@@ -59,17 +61,18 @@ function Ball:new(x,y,team)
     return object
 end
 
-function Ball:draw()
+function Ball:draw(focusedBall)
+    local offset = {x = 400-focusedBall.x,y = 300-focusedBall.y}
     local colour = {1,1,1}
     if self.team == "team 1" then colour = {0,0,1} end
 
     love.graphics.setColor(colour)
-    love.graphics.circle("fill",self.x,self.y,20)
+    love.graphics.circle("fill",self.x + offset.x,self.y + offset.y,20)
 end
 
-local function drawBalls()
+local function drawBalls(focusedBall)
     for i, ball in ipairs(balls) do
-        ball:draw()
+        ball:draw(focusedBall)
     end
 end
 
@@ -77,6 +80,7 @@ for i = 1,4 do
     table.insert(balls,Ball:new(i*50,i*50,"team 1"))
 end
 
+local playerBall = balls[1]
 
 local function split (inputstr, sep)
     if sep == nil then
@@ -304,6 +308,6 @@ function love.draw()
     if gameState == "lobby" then
         drawLobby()
     elseif gameState == "game" then
-        drawBalls()
+        drawBalls(playerBall)
     end
 end
