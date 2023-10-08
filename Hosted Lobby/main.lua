@@ -266,20 +266,33 @@ end
 --processes all incoming data for the client or the server
 local function processReqeusts()
     if client then
-        local clientPlayer = playersDict[playerName]
-        --if a player object exists for the client's player, send all details to the host
-        if clientPlayer then sendToServer("plyr:"..clientPlayer.name.."_"..clientPlayer.ready.."_"..clientPlayer.team)
-        --otherwise, just send the player name for confirmation from the host, which will then lead to a player object being made
-        else sendToServer("plyr:"..playerName) end
         local quit = false
+        if gameState == "lobby" then
+            local clientPlayer = playersDict[playerName]
+            --if a player object exists for the client's player, send all details to the host
+            if clientPlayer then
+                sendToServer("plyr:"..clientPlayer.name.."_"..clientPlayer.ready.."_"..clientPlayer.team)
+            --otherwise, just send the player name for confirmation from the host, which will then lead to a player object being made
+            else
+                sendToServer("plyr:"..playerName)
+            end
+        end
         repeat
             local data = receiveFromServer()
             quit = processClientData(data)
         until data == nil or quit
+
     elseif server then
         updateConnections()
-        for i,player in ipairs(players) do
-            sendToClient("all","plyr:"..player.name.."_"..player.ready.."_"..player.team)
+        if gameState == "lobby" then
+            for i,player in ipairs(players) do
+                sendToClient("all","plyr:"..player.name.."_"..player.ready.."_"..player.team)
+            end
+        elseif gameState == "game" then
+            local message = "updt:"
+            for i,ball in ipairs(balls) do
+                message = message..ball.x.."_"..ball.y.."_"
+            end
         end
         local data = receiveFromClients()
         processServerData(data)
@@ -301,14 +314,6 @@ function love.update(dt)
 
     processReqeusts()
     
-    if gameState == "game" then
-        balls[1].x = balls[1].x + 1
-        tick = tick + 1
-        if tick % 50 == 0 then
-            local ballNumber = (tick/50)% #balls + 1
-            playerBall = balls[ballNumber]
-        end
-    end
 end
 
 function love.draw()
