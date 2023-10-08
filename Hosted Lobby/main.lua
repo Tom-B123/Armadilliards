@@ -17,13 +17,10 @@ local message = ""
 math.randomseed(os.clock())
 local playerName = math.random(1,1000000)
 
-
-
 local players = {}
 local playersDict = {}
+local playersBallDict = {}
 local blockedPlayers = {}
-
-
 
 local Ball  = {}
 local balls = {}
@@ -79,10 +76,6 @@ local function drawBalls(focusedBall)
     for i, ball in ipairs(balls) do
         ball:draw(focusedBall)
     end
-end
-
-for i = 1,4 do
-    table.insert(balls,Ball:new(i*50,i*50,"team 1"))
 end
 
 local playerBall = balls[1]
@@ -188,6 +181,16 @@ function love.keypressed(key)
         if gameState == "lobby" then
             if key == "return" and server then
                 gameState = "game"
+                for i = 1, #players + 1 do
+                    table.insert(balls,Ball:new(i*50,i*50,"team 1"))
+                end
+                for i,player in ipairs(players) do
+                    playersBallDict[player.name] = balls[i]
+                    playerBall = balls[i]
+                    if player.name ~= playerName then
+                        sendToClient("all","asgn:"..i)
+                    end
+                end
                 sendToClient("all","gmst:game")
             elseif client then
                 sendToServer("msg:"..playerName.."_"..key)
