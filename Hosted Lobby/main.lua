@@ -1,6 +1,10 @@
 local socket = require("socket")
 -- require("button")
 
+--To do: unblock players after a fixed interval (in ticks or in real time) 
+
+local gameState = "lobby"
+
 local client
 local server = nil
 
@@ -16,6 +20,11 @@ local playerName = math.random(1,1000000)
 local players = {}
 local playersDict = {}
 local blockedPlayers = {}
+
+
+
+local Ball  = {}
+local balls = {}
 
 local messageLog = {}
 
@@ -38,6 +47,36 @@ function players:refresh()
     end
     if server then players:new(playerName) end
 end
+
+Ball.__index = Ball
+
+function Ball:new(x,y,team)
+    local object = {}
+    setmetatable(object,Ball)
+    object.x = x
+    object.y = y
+    object.team = team
+    return object
+end
+
+function Ball:draw()
+    local colour = {1,1,1}
+    if self.team == "team 1" then colour = {0,0,1} end
+
+    love.graphics.setColor(colour)
+    love.graphics.circle("fill",self.x,self.y,20)
+end
+
+local function drawBalls()
+    for i, ball in ipairs(balls) do
+        ball:draw()
+    end
+end
+
+for i = 1,4 do
+    table.insert(balls,Ball:new(i*50,i*50,"team 1"))
+end
+
 
 local function split (inputstr, sep)
     if sep == nil then
@@ -137,11 +176,16 @@ function love.keypressed(key)
         end
     --debug text for messages, sends the key pressed to all other players
     else
-        if client then
-            sendToServer("msg:"..playerName.."_"..key)
-        elseif server then
-            sendToClient("all","msg:"..playerName.."_"..key)
-            table.insert(messageLog,playerName..": "..key)
+        if gameState == "lobby" then
+            if key == "return" and server then
+                gameState = "game"
+                sendToClient("all","gmst:game")
+            elseif client then
+                sendToServer("msg:"..playerName.."_"..key)
+            elseif server then
+                sendToClient("all","msg:"..playerName.."_"..key)
+                table.insert(messageLog,playerName..": "..key)
+            end
         end
     end
 end
@@ -170,6 +214,8 @@ local function processClientData(data)
         elseif commandData[1] == "msg" then
             local messageData = split(commandData[2],"_")
             table.insert(messageLog,messageData[1]..": "..messageData[2])
+        elseif commandData[1] == "gmst" then
+            gameState = commandData[2]
         end
     end
     return quit
@@ -236,19 +282,28 @@ local function processReqeusts()
     end
 end
 
-function love.update()
+local function drawLobby()
+    love.graphics.setColor(1,1,1)
+    for i, message in ipairs(messageLog) do
+        local y = 500 - #messageLog * 20
+        love.graphics.print(message,400,y + i*20)
+    end
+    for i, player in ipairs(players) do
+        love.graphics.print("name: "..player.name.." ready: "..player.ready.." team: "..player.team,0,20*i)
+    end
+end
+
+function love.update(dt)
 
     processReqeusts()
 
 end
 
 function love.draw()
-    for i,message in ipairs(messageLog) do
-        local y = 500 - #messageLog * 20
-        love.graphics.print(message,400,y + i*20)
-    end
-    love.graphics.print(tostring(playerName),400,0)
-    for i ,player in ipairs(players) do
-        love.graphics.print("name: "..player.name.." ready: "..player.ready.." team: "..player.team,0,20*i)
+    
+    if gameState == "lobby" then
+        drawLobby()
+    elseif gameState == "game" then
+        drawBalls()
     end
 end
