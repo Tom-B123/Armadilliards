@@ -3,7 +3,7 @@ local socket = require("socket")
 
 --To do: unblock players after a fixed interval (in ticks or in real time) 
 
-local tick
+local tick = 1
 
 local gameState = "lobby"
 
@@ -300,7 +300,15 @@ end
 function love.update(dt)
 
     processReqeusts()
-
+    
+    if gameState == "game" then
+        balls[1].x = balls[1].x + 1
+        tick = tick + 1
+        if tick % 50 == 0 then
+            local ballNumber = (tick/50)% #balls + 1
+            playerBall = balls[ballNumber]
+        end
+    end
 end
 
 function love.draw()
