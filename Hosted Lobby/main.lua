@@ -24,6 +24,8 @@ local blockedPlayers = {}
 
 local Ball  = {}
 local balls = {}
+local playerBall
+local ballNum
 
 local messageLog = {}
 
@@ -77,8 +79,6 @@ local function drawBalls(focusedBall)
         ball:draw(focusedBall)
     end
 end
-
-local playerBall = balls[1]
 
 local function split (inputstr, sep)
     if sep == nil then
@@ -186,13 +186,14 @@ function love.keypressed(key)
                 end
                 for i,player in ipairs(players) do
                     playersBallDict[player.name] = balls[i]
-                    playerBall = balls[i]
-                    if player.name ~= playerName then
+                    if player.name == playerName then
+                        playerBall = balls[i]
+                    else
                         --Tell the client how many balls there are, and the player's ball index
                         sendToClient("all","asgn:"..i.."_"..#balls)
                     end
                 end
-                sendToClient("all","gmst:game")
+                -- sendToClient("all","gmst:game")
             elseif client then
                 sendToServer("msg:"..playerName.."_"..key)
             elseif server then
@@ -240,7 +241,8 @@ local function processClientData(data)
             for i = 1,tonumber(ballData[2]) do
                 table.insert(balls,Ball:new(i*50,i*50,"team 1"))
             end
-            playerBall = balls[tonumber(commandData[2])]
+            playerBall = balls[tonumber(ballData[1])]
+            gameState = "game"
         end
     end
     return quit
@@ -346,7 +348,7 @@ local function processPlayerInputs()
     if server then
         playerBall:move(x,y)
     elseif client then
-        sendToServer("plin:move_"..x.."_"..y)
+        sendToServer("plin:move_"..ballNum.."_"..x.."_"..y)
     end
     
 end
