@@ -66,7 +66,7 @@ function Ball:draw(focusedBall)
     if self.team == "team 1" then colour = {0,0,1} end
 
     love.graphics.setColor(colour)
-    love.graphics.circle("fill",self.x + offset.x,self.y + offset.y,20)
+    if self.x and self.y then love.graphics.circle("fill",self.x + offset.x,self.y + offset.y,20) end
 end
 
 function Ball:move(x,y)
@@ -190,8 +190,8 @@ function love.keypressed(key)
                         playerBall = balls[i]
                         ballNum = i
                     else
-                        --Tell the client how many balls there are, and the player's ball index
-                        sendToClient("all","asgn:"..i.."_"..#balls)
+                        --Which client to asign, the ball index, the total number of ball to create.
+                        sendToClient("all","asgn:"..player.name.."_"..i.."_"..#balls)
                     end
                 end
                 -- sendToClient("all","gmst:game")
@@ -239,12 +239,15 @@ local function processClientData(data)
             end
         elseif commandData[1] == "asgn" then
             local ballData = split(commandData[2],"_")
-            for i = 1,tonumber(ballData[2]) do
-                table.insert(balls,Ball:new(i*50,i*50,"team 1"))
+            table.insert(messageLog,ballData)
+            if tonumber(ballData[1]) == playerName then
+                for i = 1,tonumber(ballData[3]) do
+                    table.insert(balls,Ball:new(i*50,i*50,"team 1"))
+                end
+                ballNum = ballData[2]
+                playerBall = balls[tonumber(ballData[2])]
+                gameState = "game"
             end
-            ballNum = ballData[1]
-            playerBall = balls[tonumber(ballData[1])]
-            gameState = "game"
         end
     end
     return quit
@@ -286,8 +289,6 @@ local function processServerData(data)
             elseif commandData[1] == "plin" then
                 
                 local inputData = split(commandData[2],"_")
-                love.graphics.print(balls[1].x..":"..balls[2].x)
-                love.graphics.print(inputData[2],0,20)
                 if inputData[1] == "move" then
                     local ballToMove = tonumber(inputData[2])
                     local x,y = inputData[3],inputData[4]
