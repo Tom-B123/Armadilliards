@@ -220,6 +220,12 @@ local function processClientData(data)
             table.insert(messageLog,messageData[1]..": "..messageData[2])
         elseif commandData[1] == "gmst" then
             gameState = commandData[2]
+        elseif commandData[1] == "updt" then
+            for i,ball in ipairs(balls) do
+                local ballData = split(commandData[2],"_")
+                ball.x = ballData[2*i-1]
+                ball.y = ballData[2*i]
+            end
         end
     end
     return quit
@@ -293,6 +299,7 @@ local function processReqeusts()
             for i,ball in ipairs(balls) do
                 message = message..ball.x.."_"..ball.y.."_"
             end
+            sendToClient("all",message)
         end
         local data = receiveFromClients()
         processServerData(data)
@@ -310,10 +317,28 @@ local function drawLobby()
     end
 end
 
+local function processPlayerInputs()
+    local x,y = 0,0
+    if love.keyboard.isDown("w") then y = y - 1 end
+    if love.keyboard.isDown("a") then x = x - 1 end
+    if love.keyboard.isDown("s") then y = y + 1 end
+    if love.keyboard.isDown("d") then x = x + 1 end
+    if server then
+        playerBall.x = playerBall.x + x
+        playerBall.y = playerBall.y + y
+    elseif client then
+        sendToServer("plin:move_"..x.."_"..y)
+    end
+    
+end
+
 function love.update(dt)
 
     processReqeusts()
     
+    if gameState == "game" then
+        processPlayerInputs()
+    end
 end
 
 function love.draw()
