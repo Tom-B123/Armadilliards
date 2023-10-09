@@ -21,11 +21,14 @@ local players = {}
 local playersDict = {}
 local playersBallDict = {}
 local blockedPlayers = {}
+local camera = {x=0,y=0}
 
 local Ball  = {}
 local balls = {}
 local playerBall
 local ballNum
+
+World = {}
 
 local messageLog = {}
 
@@ -56,22 +59,67 @@ function Ball:new(x,y,team)
     setmetatable(object,Ball)
     object.x = x
     object.y = y
+    object.vx = 0
+    object.vy = 0
+    object.ax = 0
+    object.ay = 0
+    object.lx = x
+    object.ly = y
+    object.lvx = 0
+    object.lvy = 0
     object.team = team
     return object
 end
 
 function Ball:draw(focusedBall)
-    local offset = {x = 400-focusedBall.x,y = 300-focusedBall.y}
+    camera.x, camera.y = 400-focusedBall.x, 300 - focusedBall.y
     local colour = {1,1,1}
     if self.team == "team 1" then colour = {0,0,1} end
 
     love.graphics.setColor(colour)
-    if self.x and self.y then love.graphics.circle("fill",self.x + offset.x,self.y + offset.y,20) end
+    if self.x and self.y then love.graphics.circle("fill",self.x + camera.x,self.y + camera.y,20) end
 end
 
 function Ball:move(x,y)
-    self.x = self.x + x
-    self.y = self.y + y
+    self.vx = self.vx + x
+    self.vy = self.vy + y
+end
+
+function Ball:verlet(dt)
+
+    local nextVX = (self.ax * dt * dt) + self.x - self.lx
+    local nextVY = (self.ay * dt * dt) + self.y - self.ly
+
+    self.vx = (self.vx + self.lvx) / 2
+    self.vy = (self.vy + self.lvy) / 2
+
+    local nextX = (self.x + self.vx)
+    local nextY = (self.y + self.vy)
+
+    self.lx = self.x
+    self.ly = self.y
+
+    self.x = nextX
+    self.y = nextY
+
+    self.lvx = self.vx
+    self.lvy = self.vy
+
+    self.vx = nextVX
+    self.vy = nextVY
+
+    self.ax = 0
+    self.ay = 0
+
+    if math.abs(self.vx) < 0.02 then self.vx = 0 end
+    if math.abs(self.vy) < 0.02 then self.vy = 0 end
+
+end
+
+function World:verlet(dt)
+    for i, ball in ipairs(balls) do
+        ball:verlet(dt)
+    end
 end
 
 local function drawBalls(focusedBall)
@@ -331,8 +379,12 @@ local function processReqeusts()
             end
             sendToClient("all",message)
         end
-        local data = receiveFromClients()
-        processServerData(data)
+
+        --Server will always read the last n messages, leading to repeat messages
+        for i = 1,1 do
+            local data = receiveFromClients()
+            processServerData(data)
+        end
     end
 end
 
@@ -347,7 +399,7 @@ local function drawLobby()
     end
 end
 
-local function processPlayerInputs()
+local function processPlayerInputs(dt)
     local x,y = 0,0
     if love.keyboard.isDown("w") then y = y - 1 end
     if love.keyboard.isDown("a") then x = x - 1 end
@@ -355,6 +407,7 @@ local function processPlayerInputs()
     if love.keyboard.isDown("d") then x = x + 1 end
     if server then
         playerBall:move(x,y)
+        World:verlet(dt)
     elseif client then
         sendToServer("plin:move_"..ballNum.."_"..x.."_"..y)
     end
@@ -363,20 +416,22 @@ end
 
 function love.update(dt)
 
+    processReqeusts()
+    
+    if gameState == "game" then
+        processPlayerInputs(dt)
+    end
     
 end
 
 function love.draw()
-    
-    processReqeusts()
-    
-    if gameState == "game" then
-        processPlayerInputs()
-    end
 
     if gameState == "lobby" then
         drawLobby()
     elseif gameState == "game" then
+        love.graphics.setColor(0,1,0)
+        love.graphics.rectangle("fill",camera.x,camera.y,800,600)
         drawBalls(playerBall)
+        
     end
 end
