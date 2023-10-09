@@ -67,6 +67,7 @@ function Ball:new(x,y,team)
     object.ly = y
     object.lvx = 0
     object.lvy = 0
+    object.radius = 20
     object.team = team
     return object
 end
@@ -77,12 +78,32 @@ function Ball:draw(focusedBall)
     if self.team == "team 1" then colour = {0,0,1} end
 
     love.graphics.setColor(colour)
-    if self.x and self.y then love.graphics.circle("fill",self.x + camera.x,self.y + camera.y,20) end
+    if self.x and self.y then love.graphics.circle("fill",self.x + camera.x,self.y + camera.y,self.radius) end
 end
 
 function Ball:move(x,y)
     self.vx = self.vx + x
     self.vy = self.vy + y
+end
+
+function Ball:constraint()
+    if self.x - self.radius < 0 then
+        self.lx = self.x - self.vx
+        self.x = self.radius
+    end
+    if self.x + self.radius > 800 then
+        self.lx = self.x - self.vx
+        self.x = 800-self.radius
+    end
+    if self.y - self.radius < 0 then
+        self.ly = self.y - self.vy
+        self.y = self.radius
+    end
+    if self.y + self.radius > 600 then
+        self.ly = self.y - self.vy
+        self.y = 600 - self.radius
+    end
+    self.ay = 4000
 end
 
 function Ball:verlet(dt)
@@ -119,6 +140,12 @@ end
 function World:verlet(dt)
     for i, ball in ipairs(balls) do
         ball:verlet(dt)
+    end
+end
+
+function World:constraint()
+    for i, ball in ipairs(balls) do
+        ball:constraint()
     end
 end
 
@@ -407,6 +434,7 @@ local function processPlayerInputs(dt)
     if love.keyboard.isDown("d") then x = x + 1 end
     if server then
         playerBall:move(x,y)
+        World:constraint()
         World:verlet(dt)
     elseif client then
         sendToServer("plin:move_"..ballNum.."_"..x.."_"..y)
