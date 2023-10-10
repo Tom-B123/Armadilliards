@@ -229,9 +229,13 @@ local function processRequests()
     
     local requests = recieveRequests()
     
-    logRequests(requests)
+    if not pcall(logRequests,requests) then
+        print("logging error")
+    end
 
-    executeRequests(requests)
+    if not pcall(executeRequests,requests) then
+        print("execution error") 
+    end
     
 end
 

@@ -55,9 +55,7 @@ local function connectToMainLobby()
     end
 end
 
--- love.window.setMode(0,0)
-
-connectToMainLobby()
+if connectToMainLobby() ~= nil then love.event.quit() end
 
 local lobbyImg = love.graphics.newImage("lobby UI mock up.png")
 local futura = love.graphics.newFont("Futura font.ttf",28)
@@ -210,7 +208,6 @@ local function split (inputstr, sep)
     return t
 end
 
-
 --Sends message to clients when hosting
 function Lobby:sendToClient(client,data)
     if client == "all" then
@@ -254,7 +251,14 @@ local function backToMain()
         players[i] = nil
     end
     if client then sendToServer("exit:"..playerName)
-    else connectToMainLobby() end
+    else 
+        local tmp = lobbyName
+        if connectToMainLobby() == nil then
+            sendToServer("clse:"..tmp)
+        else
+            love.quit()
+        end
+    end
 end
 
 newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady)
@@ -383,12 +387,12 @@ local function comWithClients()
                 end
             elseif clientData[1] == "exit" then
                 local player = playersDict[clientData[2]]
-                for i = 1,#players do
-                    if players[i] == player then 
-                        players[i] = nil
-                    end
-                    playersDict[clientData[2]] = nil
-                end
+                -- for i = 1,#players do
+                --     if players[i] == player then 
+                --         players[i] = nil
+                --     end
+                --     playersDict[clientData[2]] = nil
+                -- end
                 -- server:sendToClient("all","rmov:"..clientData[2])
                 server:sendToClient(player,"exit:lobby")
             end
