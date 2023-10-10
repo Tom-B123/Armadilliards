@@ -42,11 +42,17 @@ end
 
 --The client of players, that will be connected to lobbies.
 local function connectToMainLobby()
-    client = assert(socket.connect("localhost",500))
-    client:settimeout(0)
-    --Main lobby = _Main, as this can't be immitated by players.
-    lobbyName = "_Main"
-    state = "browsing"
+    local function attemptConnection() client = assert(socket.connect("localhost",500)) end
+    if pcall(attemptConnection) then
+        client:settimeout(0)
+        --Main lobby = _Main, as this can't be immitated by players.
+        lobbyName = "_Main"
+        state = "browsing"
+        return nil
+    else
+        --throw an error if the host server closes.
+        return "server closed"
+    end
 end
 
 -- love.window.setMode(0,0)
@@ -61,8 +67,6 @@ local futuraL = love.graphics.newFont("Futura font.ttf",56)
 local clientID = nil
 --the last message recieved.
 local serverMessage = ""
-
---Name of the currently accessed lobby.
 
 --list of all lobbies available to join
 local lobbiesList = {}
@@ -427,14 +431,15 @@ end
 function love.quit()
     if client then
         local tmp = lobbyName
-        connectToMainLobby()
-        sendToServer("exit:"..tmp)
-
+        if connectToMainLobby() == nil then
+            sendToServer("exit:"..tmp)
+        end
     end
     if server then
         --Disconnect all connected clients when closing
-        connectToMainLobby()
-        sendToServer("clse:"..server.name)
+        if connectToMainLobby() == nil then
+            sendToServer("clse:"..server.name)
+        end
     end
 end
 
