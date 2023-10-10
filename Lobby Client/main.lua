@@ -10,6 +10,7 @@ local tick = 0
 --List of players in the lobby
 local players = {}
 local playersDict = {}
+local playerClientDict = {}
 
 local messageLog = {}
 
@@ -53,6 +54,10 @@ local function connectToMainLobby()
         --throw an error if the host server closes.
         return "server closed"
     end
+end
+
+local function newMessage(message)
+    table.insert(messageLog,message)
 end
 
 if connectToMainLobby() ~= nil then love.event.quit() end
@@ -295,9 +300,11 @@ local function comWithLobby()
             local commandData = split(serverMessage,":")
 
             if commandData[1] == "exit" then
-                love.graphics.print("exit")
-                connectToMainLobby()
-
+                if commandData[2] == playerName then
+                    connectToMainLobby()
+                else
+                    newMessage(playerName.." has left")
+                end
                 quit = true
 
             --Command confirms lobby creation
@@ -386,7 +393,7 @@ local function comWithClients()
                     end
                 end
             elseif clientData[1] == "exit" then
-                local player = playersDict[clientData[2]]
+                local nPlayerName = clientData[2]
                 -- for i = 1,#players do
                 --     if players[i] == player then 
                 --         players[i] = nil
@@ -394,7 +401,7 @@ local function comWithClients()
                 --     playersDict[clientData[2]] = nil
                 -- end
                 -- server:sendToClient("all","rmov:"..clientData[2])
-                server:sendToClient(player,"exit:lobby")
+                server:sendToClient("all","exit:"..nPlayerName)
             end
         end
     end

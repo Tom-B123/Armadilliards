@@ -181,40 +181,67 @@ local function recieveRequests()
     return requests
 end
 
+local function tryJoin(client,i)
+    local err = Lobby:join(client,requests[i][2])
+    if err then
+        mainLobby:sendToClient(client,err)
+    end
+end
+
+local function tryCreate(client,i)
+    --Confirm creation
+    local err = Lobby:create(client,requests[i][2])
+    if err then
+        mainLobby:sendToClient(client,err)
+    end
+end
+
+local function tryClose(i)
+    --remove the lobby from the lobbies lists.
+    for i = 1,#lobbies do
+        if lobbies[i] then
+            if lobbies[i].name == requests[i][2] then
+                table.remove(lobbies,i)
+            end
+        end
+    end
+    lobbiesDict[requests[i][2]] = nil
+end
+
+local function tryUpdate(i)
+    displayLobbies()
+end
+
+local function tryExit(i)
+    local lobby = lobbiesDict[requests[i][2]]
+    if lobby then
+        lobby.playerCount = lobby.playerCount - 1
+    end
+end
+
 --Carry out the requests from the client.
 local function executeRequests(requests)
     for i, client in ipairs(mainLobby.clients) do
         if requests[i] then
-            --If the request is a join command then.
             if requests[i][1] == "join" then
-                local err = Lobby:join(client,requests[i][2])
-                if err then
-                    mainLobby:sendToClient(client,err)
+                if not pcall(tryJoin,client,i) then
+                    print("join error")
                 end
-            --If the request is a create command then.
             elseif requests[i][1] == "create" then
-                --Confirm creation
-                local err = Lobby:create(client,requests[i][2])
-                if err then
-                    mainLobby:sendToClient(client,err)
+                if not pcall(tryCreate,client,i) then
+                    print("creation error")
                 end
-            --If the request is to close a lobby then.
             elseif requests[i][1] == "close" then
-                --remove the lobby from the lobbies lists.
-                for i = 1,#lobbies do
-                    if lobbies[i] then
-                        if lobbies[i].name == requests[i][2] then
-                            table.remove(lobbies,i)
-                        end
-                    end
+                if not pcall(tryClose,i) then
+                    print("close error") 
                 end
-                lobbiesDict[requests[i][2]] = nil
             elseif requests[i][1] == "update" then
-                displayLobbies()
+                if not pcall (tryUpdate,i) then
+                    print("update error") 
+                end
             elseif requests[i][1] == "exit" then
-                local lobby = lobbiesDict[requests[i][2]]
-                if lobby then
-                    lobby.playerCount = lobby.playerCount - 1
+                if not pcall(tryExit,i) then
+                    print("exit error")
                 end
             end
         else
@@ -234,7 +261,7 @@ local function processRequests()
     end
 
     if not pcall(executeRequests,requests) then
-        print("execution error") 
+        print("execution error")
     end
     
 end
