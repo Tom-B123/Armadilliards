@@ -35,10 +35,18 @@ for i = 1,32 do
     ballImages[i] = love.graphics.newImage("ball ("..i..").png")
 end
 
-local function calcAngle(distance)
+local function pitchAngle(distance)
     local radius = 16
     local angle = distance / radius
     return angle
+end
+
+local function yawAngle(x,y)
+    if x >= 0 then
+        return math.tan(y/x)
+    else
+        return -math.tan(y/x)
+    end
 end
 
 Ball = {}
@@ -66,9 +74,16 @@ end
 
 function Ball:draw()
     local imageIndex = math.floor(((self.pitch / (2 * math.pi) * 32) % 32)) + 1
-    local radYaw = self.yaw * 180 / math.pi
-    love.graphics.draw(ballImages[imageIndex],self.x,self.y,radYaw,1,1,16,16)
+    love.graphics.draw(ballImages[imageIndex],self.x,self.y,self.yaw,1,1,16,16)
     love.graphics.print("pitch: "..self.pitch.."\nyaw: "..self.yaw)
+end
+
+function Ball:move(x,y)
+    self.x = self.x + x
+    self.y = self.y + y
+    local magnitude = (x^2 + y^2)^0.5
+    self.pitch = self.pitch + pitchAngle(magnitude)
+    self.yaw = yawAngle(self.vx,self.vy) 
 end
 
 function Ball:verlet(dt)
@@ -84,8 +99,7 @@ function Ball:verlet(dt)
     self.lx = self.x
     self.ly = self.y
 
-    self.x = nextX
-    self.y = nextY
+    self:move(self.vx,self.vy)
 
     self.lvx = self.vx * 0.99
     self.lvy = self.vy * 0.99
@@ -102,24 +116,28 @@ end
 
 local ball = Ball:new(100,100)
 
-ball.vx = 5
 
 function love.update(dt)
     ball:verlet(dt)
-    -- local v = 1
-    -- ball.x = ball.x + v
-    -- ball.pitch = ball.pitch + calcAngle(v)
+    local speed = 0.1
+    if love.keyboard.isDown("w") then
+        ball.vy = ball.vy - 1 * speed
+    end
+    if love.keyboard.isDown("a") then
+        ball.vx = ball.vx - 1 * speed
+    end
+    if love.keyboard.isDown("s") then
+        ball.vy = ball.vy + 1 * speed
+    end
+    if love.keyboard.isDown("d") then
+        ball.vx = ball.vx + 1 * speed
+    end
 end
 
 
 
 function love.draw()
-    for i = 1,30 do
-        love.graphics.line(i*32,0,i*32,600)
-    end
-    for i = 1,20 do
-        love.graphics.line(0,i*32,800,i*32)
-    end
+
     ball:draw()
     
 end
