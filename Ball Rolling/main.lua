@@ -35,6 +35,12 @@ for i = 1,32 do
     ballImages[i] = love.graphics.newImage("ball ("..i..").png")
 end
 
+local function calcAngle(distance)
+    local radius = 16
+    local angle = distance / radius
+    return angle
+end
+
 Ball = {}
 Ball.__index = Ball
 
@@ -57,19 +63,34 @@ function Ball:new(x,y)
 end
 
 function Ball:draw()
-    local imageIndex = math.floor(((self.pitch / 360 * 32) % 32)) + 1
+    local imageIndex = math.floor(((self.pitch / (2 * math.pi) * 32) % 32)) + 1
     local radYaw = self.yaw * 180 / math.pi
     love.graphics.draw(ballImages[imageIndex],self.x,self.y,radYaw,1,1,16,16)
     love.graphics.print("pitch: "..self.pitch.."\nyaw: "..self.yaw)
 end
 
+function Ball:verlet()
+end
+
 local ball = Ball:new(100,100)
 
+
+
 function love.update()
+    local v = 1
+    ball.x = ball.x + v
+    ball.pitch = ball.pitch + calcAngle(v)
 end
 
 
 
 function love.draw()
+    for i = 1,30 do
+        love.graphics.line(i*32,0,i*32,600)
+    end
+    for i = 1,20 do
+        love.graphics.line(0,i*32,800,i*32)
+    end
     ball:draw()
+    
 end
