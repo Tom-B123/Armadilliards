@@ -41,6 +41,7 @@ local function pitchAngle(distance)
     return angle
 end
 
+
 local function yawAngle(x,y)
     if x >= 0 then
         return math.tan(y/x)
