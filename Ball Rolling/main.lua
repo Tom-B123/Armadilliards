@@ -57,11 +57,18 @@ function Ball:new(x,y)
 end
 
 function Ball:draw()
-    local imageIndex = (self.pitch % 32) + 1
-    love.graphics.draw(ballImages[imageIndex],self.x,self.y)
+    local imageIndex = math.floor(((self.pitch / 360 * 32) % 32)) + 1
+    local radYaw = self.yaw * 180 / math.pi
+    love.graphics.draw(ballImages[imageIndex],self.x,self.y,radYaw,1,1,16,16)
+    love.graphics.print("pitch: "..self.pitch.."\nyaw: "..self.yaw)
 end
 
 local ball = Ball:new(100,100)
+
+function love.update()
+end
+
+
 
 function love.draw()
     ball:draw()
