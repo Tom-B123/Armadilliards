@@ -31,8 +31,8 @@
 
 local ballImages = {}
 
-for i = 0,15 do
-    ballImages[i+1] = love.graphics.newImage("BlackBall"..i..".png")
+for i = 1,32 do
+    ballImages[i] = love.graphics.newImage("ball ("..i..").png")
 end
 
 Ball = {}
