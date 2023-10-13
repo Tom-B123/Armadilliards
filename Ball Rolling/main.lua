@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 local balls = {}
 local i = 0
 local toDraw = {}
@@ -27,4 +28,30 @@ local function drawBall(roll,velocity,rotation)
 end
 function love.draw()
     drawBall(i*2,4,i * math.pi / 180)
+=======
+local ballImages = {}
+Ball = {}
+Ball.__index = Ball
+
+function Ball:new(x,y)
+    local object = {}
+    setmetatable(Ball,object)
+    object.x = x
+    object.y = y
+    object.vx = 0
+    object.vy = 0
+    object.lx = x
+    object.ly = y
+    object.lvx = 0
+    object.lvy = 0
+    --rotation in the z axis
+    object.yaw = 0
+    --rotation stage of the ball
+    object.pitch = 0
+end
+
+function Ball:draw()
+    local imageIndex = (self.pitch % 32) + 1
+    love.graphics.draw(ballImages[imageIndex])
+>>>>>>> Stashed changes
 end
