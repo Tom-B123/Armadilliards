@@ -94,6 +94,7 @@ function Ball:move(x,y)
 end
 
 function Ball:verlet(dt)
+    self.ay = 100
     local nextVX = (self.ax * dt * dt) + self.x - self.lx
     local nextVY = (self.ay * dt * dt) + self.y - self.ly
 
@@ -119,6 +120,10 @@ function Ball:verlet(dt)
 
     if math.abs(self.vx) < 0.02 then self.vx = 0 end
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
+end
+
+function Ball:collisions()
+    
 end
 
 local count = 8
