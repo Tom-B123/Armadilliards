@@ -121,10 +121,13 @@ function Ball:verlet(dt)
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
 end
 
-for i = 1,90 do
+local count = 8
+for i = 1,count do
+    local speed = 4
     local ball = Ball:new(400,300)
-    ball.vx = i
-    ball.vy = i
+    local angle = i / (count/2) * math.pi
+    ball.vx = speed * math.cos(angle)
+    ball.vy = speed * math.sin(angle)
     table.insert(balls,ball)
 end
 
