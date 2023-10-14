@@ -35,8 +35,7 @@ for i = 1,32 do
     ballImages[i] = love.graphics.newImage("ball ("..i..").png")
 end
 
-local function pitchAngle(distance)
-    local radius = 16
+local function pitchAngle(distance,radius)
     local angle = distance / radius
     return angle
 end
@@ -72,7 +71,7 @@ function Ball:new(x,y)
     object.ly = y
     object.lvx = 0
     object.lvy = 0
-    object.radius = 16
+    object.radius = 14
     --rotation in the z axis
     object.yaw = 0
     --rotation stage of the ball
@@ -81,21 +80,26 @@ function Ball:new(x,y)
 end
 
 function Ball:draw()
+    --Gets the corresponding sprite image based on the pitch angle of the ball.
     local imageIndex = math.floor(((self.pitch / (2 * math.pi) * 32) % 32)) + 1
-    love.graphics.draw(ballImages[imageIndex],self.x,self.y,self.yaw,1,1,16,16)
-    -- love.graphics.print("pitch: "..self.pitch.."\nyaw: "..self.yaw)
+    --Indexes the sprite image based on the stage of rotation
+    --Draws the sprite at the x and y of the ball
+    --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
+    --Rotates the sprite around the z axis by the yaw value.
+    local function tryDraw() love.graphics.draw(ballImages[imageIndex],self.x,self.y,self.yaw,1,1,16,16) end
+    pcall(tryDraw)
+    
 end
 
 function Ball:move(x,y)
     self.x = self.x + x
     self.y = self.y + y
     local magnitude = (x^2 + y^2)^0.5
-    self.pitch = self.pitch + pitchAngle(magnitude)
+    self.pitch = self.pitch + pitchAngle(magnitude,self.radius)
     self.yaw = yawAngle(self.vx,self.vy) 
 end
 
 function Ball:verlet(dt)
-    -- self.ay = 1000
     local nextVX = (self.ax * dt * dt) + self.x - self.lx
     local nextVY = (self.ay * dt * dt) + self.y - self.ly
 
@@ -152,13 +156,44 @@ local function constraintAll()
     end
 end
 
-local count = 12
+local function expensiveCollisions(objects)
+    local bounce = 1
+    for i, obj1 in ipairs(objects) do
+        for j, obj2 in ipairs(objects) do
+            if i ~= j then
+                local collisionAxis = {x=0,y=0}
+                collisionAxis.x = obj1.x - obj2.x
+                collisionAxis.y = obj1.y - obj2.y
+                local distance = (collisionAxis.x^2 + collisionAxis.y^2) ^ 0.5
+                local diameter = obj1.radius + obj2.radius
+                if distance < diameter then
+                    local n = collisionAxis
+                    n.x = n.x / distance
+                    n.y = n.y / distance
+                    local delta = diameter - distance
+                    local offset1 = obj2.radius / obj1.radius
+                    local offset2 = obj1.radius / obj2.radius
+                    if offset1 > 2 then offset1 = 2 end
+                    if offset2 > 2 then offset2 = 2 end
+                    obj2.x = obj2.x - bounce * offset2 * delta * n.x
+                    obj2.y = obj2.y - bounce * offset2 * delta * n.y
+                    obj1.x = obj1.x + bounce * offset1 * delta * n.x
+                    obj1.y = obj1.y + bounce * offset1 * delta * n.y
+                end
+            end
+        end
+    end
+end
+
+local count = 60
 for i = 1,count do
     local speed = 5
     local ball = Ball:new(400,300)
     local angle = i / (count/2) * math.pi
     ball.vx = speed * math.cos(angle)
     ball.vy = speed * math.sin(angle)
+    ball.x = ball.x + ball.vx * 10
+    ball.y = ball.y + ball.vy * 10
     table.insert(balls,ball)
 end
 
@@ -167,6 +202,7 @@ end
 
 function love.update(dt)
     constraintAll()
+    expensiveCollisions(balls)
     for i,ball in ipairs(balls) do
         ball:verlet(dt)
     end
