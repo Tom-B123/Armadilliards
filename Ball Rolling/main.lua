@@ -117,22 +117,24 @@ end
 
 local ball = Ball:new(100,100)
 
+ball.vx = 5
+ball.vy = 5
 
 function love.update(dt)
     ball:verlet(dt)
-    local speed = 0.1
-    if love.keyboard.isDown("w") then
-        ball.vy = ball.vy - 1 * speed
-    end
-    if love.keyboard.isDown("a") then
-        ball.vx = ball.vx - 1 * speed
-    end
-    if love.keyboard.isDown("s") then
-        ball.vy = ball.vy + 1 * speed
-    end
-    if love.keyboard.isDown("d") then
-        ball.vx = ball.vx + 1 * speed
-    end
+    -- local speed = 0.1
+    -- if love.keyboard.isDown("w") then
+    --     ball.vy = ball.vy - 1 * speed
+    -- end
+    -- if love.keyboard.isDown("a") then
+    --     ball.vx = ball.vx - 1 * speed
+    -- end
+    -- if love.keyboard.isDown("s") then
+    --     ball.vy = ball.vy + 1 * speed
+    -- end
+    -- if love.keyboard.isDown("d") then
+    --     ball.vx = ball.vx + 1 * speed
+    -- end
 end
 
 
