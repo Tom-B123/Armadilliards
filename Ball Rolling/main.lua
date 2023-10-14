@@ -43,13 +43,19 @@ end
 
 
 local function yawAngle(x,y)
-    if x >= 0 then
-        return math.tan(y/x)
-    else
-        return -math.tan(y/x)
+    local ax,ay = math.abs(x),math.abs(y)
+    if x > 0 and y >= 0 then
+        return math.atan(ay/ax)
+    elseif x <= 0 and y > 0 then
+        return math.atan(ax/ay) + math.pi / 2
+    elseif x < 0 and y <= 0 then
+        return math.atan(ay/ax) + math.pi
+    elseif x >= 0 and y < 0 then
+        return math.atan(ax/ay) + math.pi * 3 / 2
     end
 end
 
+local balls = {}
 Ball = {}
 Ball.__index = Ball
 
@@ -76,7 +82,7 @@ end
 function Ball:draw()
     local imageIndex = math.floor(((self.pitch / (2 * math.pi) * 32) % 32)) + 1
     love.graphics.draw(ballImages[imageIndex],self.x,self.y,self.yaw,1,1,16,16)
-    love.graphics.print("pitch: "..self.pitch.."\nyaw: "..self.yaw)
+    -- love.graphics.print("pitch: "..self.pitch.."\nyaw: "..self.yaw)
 end
 
 function Ball:move(x,y)
@@ -115,13 +121,20 @@ function Ball:verlet(dt)
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
 end
 
-local ball = Ball:new(100,100)
+for i = 1,90 do
+    local ball = Ball:new(400,300)
+    ball.vx = i
+    ball.vy = i
+    table.insert(balls,ball)
+end
 
-ball.vx = 5
-ball.vy = 5
+
+
 
 function love.update(dt)
-    ball:verlet(dt)
+    for i,ball in ipairs(balls) do
+        ball:verlet(dt)
+    end
     -- local speed = 0.1
     -- if love.keyboard.isDown("w") then
     --     ball.vy = ball.vy - 1 * speed
@@ -140,7 +153,7 @@ end
 
 
 function love.draw()
-
-    ball:draw()
-    
+    for i,ball in ipairs(balls) do
+        ball:draw()
+    end
 end
