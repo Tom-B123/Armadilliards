@@ -72,6 +72,7 @@ function Ball:new(x,y)
     object.ly = y
     object.lvx = 0
     object.lvy = 0
+    object.radius = 16
     --rotation in the z axis
     object.yaw = 0
     --rotation stage of the ball
@@ -94,7 +95,7 @@ function Ball:move(x,y)
 end
 
 function Ball:verlet(dt)
-    self.ay = 100
+    -- self.ay = 1000
     local nextVX = (self.ax * dt * dt) + self.x - self.lx
     local nextVY = (self.ay * dt * dt) + self.y - self.ly
 
@@ -122,13 +123,38 @@ function Ball:verlet(dt)
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
 end
 
-function Ball:collisions()
-    
+function Ball:constraint()
+    if self.x < self.radius then
+        self.x = self.radius
+        self.vx = - self.vx
+        self.lvx = - self.lvx
+    end
+    if self.y < self.radius then
+        self.y = self.radius
+        self.vy = - self.vy
+        self.lvy = - self.lvy
+    end
+    if self.x > love.graphics.getWidth() - self.radius then
+        self.x = love.graphics.getWidth() - self.radius
+        self.vx = - self.vx
+        self.lvx = - self.lvx
+    end
+    if self.y > love.graphics.getHeight() - self.radius then
+        self.y = love.graphics.getHeight() - self.radius
+        self.vy = - self.vy
+        self.lvy = - self.lvy
+    end
 end
 
-local count = 8
+local function constraintAll()
+    for i,ball in ipairs(balls) do
+        ball:constraint()
+    end
+end
+
+local count = 12
 for i = 1,count do
-    local speed = 4
+    local speed = 5
     local ball = Ball:new(400,300)
     local angle = i / (count/2) * math.pi
     ball.vx = speed * math.cos(angle)
@@ -140,22 +166,24 @@ end
 
 
 function love.update(dt)
+    constraintAll()
     for i,ball in ipairs(balls) do
         ball:verlet(dt)
     end
-    -- local speed = 0.1
-    -- if love.keyboard.isDown("w") then
-    --     ball.vy = ball.vy - 1 * speed
-    -- end
-    -- if love.keyboard.isDown("a") then
-    --     ball.vx = ball.vx - 1 * speed
-    -- end
-    -- if love.keyboard.isDown("s") then
-    --     ball.vy = ball.vy + 1 * speed
-    -- end
-    -- if love.keyboard.isDown("d") then
-    --     ball.vx = ball.vx + 1 * speed
-    -- end
+    local ball = balls[1]
+    local speed = 0.1
+    if love.keyboard.isDown("w") then
+        ball.vy = ball.vy - 1 * speed
+    end
+    if love.keyboard.isDown("a") then
+        ball.vx = ball.vx - 1 * speed
+    end
+    if love.keyboard.isDown("s") then
+        ball.vy = ball.vy + 1 * speed
+    end
+    if love.keyboard.isDown("d") then
+        ball.vx = ball.vx + 1 * speed
+    end
 end
 
 
