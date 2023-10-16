@@ -34,7 +34,7 @@ local ballImages = {}
 local mouseState = {false,false}
 
 for i = 1,32 do
-    ballImages[i] = love.graphics.newImage("ball ("..i..").png")
+    ballImages[i] = love.graphics.newImage("porcupine ("..i..").png")
 end
 
 local function pitchAngle(distance,radius)
@@ -90,7 +90,6 @@ function Ball:draw()
     --Rotates the sprite around the z axis by the yaw value.
     local function tryDraw() love.graphics.draw(ballImages[imageIndex],self.x,self.y,self.yaw,1,1,16,16) end
     pcall(tryDraw)
-    
 end
 
 function Ball:move(x,y)
