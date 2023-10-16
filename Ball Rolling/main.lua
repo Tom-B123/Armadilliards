@@ -31,6 +31,8 @@
 
 local ballImages = {}
 
+local mouseState = {0,0}
+
 for i = 1,32 do
     ballImages[i] = love.graphics.newImage("ball ("..i..").png")
 end
@@ -150,8 +152,14 @@ function Ball:constraint()
     end
 end
 
-local function constraintAll()
-    for i,ball in ipairs(balls) do
+local function verlet(objects,dt)
+    for i,ball in ipairs(objects) do
+        ball:verlet(dt)
+    end
+end
+
+local function constraint(objects)
+    for i,ball in ipairs(objects) do
         ball:constraint()
     end
 end
@@ -197,17 +205,9 @@ for i = 1,count do
     table.insert(balls,ball)
 end
 
-
-
-
-function love.update(dt)
-    constraintAll()
-    expensiveCollisions(balls)
-    for i,ball in ipairs(balls) do
-        ball:verlet(dt)
-    end
+local function processPlayerInputs()
     local ball = balls[1]
-    local speed = 0.1
+    local speed = 0.4
     if love.keyboard.isDown("w") then
         ball.vy = ball.vy - 1 * speed
     end
@@ -220,6 +220,19 @@ function love.update(dt)
     if love.keyboard.isDown("d") then
         ball.vx = ball.vx + 1 * speed
     end
+end
+
+
+function love.update(dt)
+
+    constraint(balls)
+
+    expensiveCollisions(balls)
+
+    verlet(balls,dt)
+
+    processPlayerInputs()
+
 end
 
 
