@@ -214,25 +214,26 @@ for i = 1,count do
     table.insert(balls,ball)
 end
 
-balls[1].model = "porcupine"
+local playerBall = balls[1]
+playerBall.model = "porcupine"
 
-local function dashMarker()
-    local ball = balls[1]
-    love.graphics.setColor(0.5,0.5,0.5)
-    love.graphics.circle("line",ball.x,ball.y,100)
-end
 local function dashActive()
     local dashForce = 20
-    local ball = balls[1]
+    local ball = playerBall
     local mx,my = love.mouse.getPosition()
+    local distance = ((ball.x-mx)^2 + (ball.y-my)^2)^0.5
+    if distance > 100 then distance = 100 end
+    local distanceFactor = 100 / distance
     local angle = yawAngle(ball.x-mx,ball.y-my)
-    local nx,ny = -dashForce * math.cos(angle), -dashForce * math.sin(angle)
-    ball.vx = nx
-    ball.vy = ny
+    local nx,ny = -dashForce / distanceFactor * math.cos(angle), -dashForce / distanceFactor * math.sin(angle)
+    ball.vx,ball.lvx = nx,nx
+    ball.vy,ball.lvy = ny,ny
 end
 
+
+
 local function processPlayerInputs()
-    local ball = balls[1]
+    local ball = playerBall
     local speed = 0.4
     if love.keyboard.isDown("w") then
         ball.vy = ball.vy - 1 * speed
@@ -250,12 +251,48 @@ local function processPlayerInputs()
     local lMouse = love.mouse.isDown(1)
     local rMouse = love.mouse.isDown(1)
 
-    if lMouse then
-        dashMarker()
-    elseif not lMouse and mouseState[1] then
+    
+    if not lMouse and mouseState[1] then
         dashActive()
     end
     mouseState = {lMouse,rMouse}
+end
+
+local function playerGhostInput(ability)
+    local ball = playerBall
+    local function abilityRange(rad)
+        love.graphics.setColor(0,0,0,0.5)
+        love.graphics.circle("line",ball.x,ball.y,rad)
+        return rad
+    end
+    local function localMousePointer(rad)
+        local mx,my = love.mouse.getPosition()
+        local distance = ((ball.x-mx)^2 + (ball.y-my)^2)^0.5
+        if distance > rad then
+            local angle = yawAngle(ball.x-mx,ball.y-my)
+            mx = ball.x - rad * math.cos(angle)
+            my = ball.y - rad * math.sin(angle)
+        end
+        love.graphics.line(mx-4,my-4,mx+4,my+4)
+        love.graphics.line(mx-4,my+4,mx+4,my-4)
+        return mx,my
+    end
+    local function lineToMouse(mx,my)
+        love.graphics.line(ball.x,ball.y,mx,my)
+    end
+    local function ghostPlayerAtMouse(mx,my)
+        love.graphics.circle("fill",mx,my,ball.radius)
+    end
+    if ability == "dash" then
+        local range = abilityRange(100)
+        local mx,my = localMousePointer(range)
+        lineToMouse(mx,my)
+        ghostPlayerAtMouse(mx,my)
+    elseif ability == "rope" then
+        local range = abilityRange(150)
+        local mx,my = localMousePointer(range)
+        lineToMouse(mx,my)
+    end
 end
 
 function love.update(dt)
@@ -266,17 +303,26 @@ function love.update(dt)
 
     verlet(balls,dt)
 
-    
+    processPlayerInputs()
+
 end
 
 
 
 function love.draw()
+
     love.graphics.setColor(0,0.6,0)
     love.graphics.rectangle("fill",0,0,love.graphics.getWidth(),love.graphics.getHeight())
-    processPlayerInputs()
+
     love.graphics.setColor(1,1,1)
     for i,ball in ipairs(balls) do
         ball:draw()
+    end
+    local lMouse = love.mouse.isDown(1)
+    local rMouse = love.mouse.isDown(2)
+    if lMouse then
+        playerGhostInput("dash")
+    elseif rMouse then
+        playerGhostInput("rope")
     end
 end
