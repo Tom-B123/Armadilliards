@@ -47,6 +47,7 @@ function Ball:new(x,y)
     object.lvy = 0
     object.radius = 14
     object.model = "ball"
+    object.team = "neutral"
     --rotation in the z axis
     object.yaw = 0
     --rotation stage of the ball
@@ -69,7 +70,15 @@ function Ball:draw()
     --Draws the sprite at the x and y of the ball
     --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
     --Rotates the sprite around the z axis by the yaw value.
-    local function tryDraw() love.graphics.draw(images[imageIndex],self.x,self.y,self.yaw,1,1,16,16) end
+    local function tryDraw()
+        love.graphics.setColor(0.1,0.1,0.1,0.4)
+
+        if self.team == "team 1" then love.graphics.setColor(0,0,1,0.4) end
+
+        love.graphics.circle("fill",self.x,self.y,self.radius + 4) 
+        love.graphics.setColor(1,1,1)
+        love.graphics.draw(images[imageIndex],self.x,self.y,self.yaw,1,1,16,16)
+    end
     pcall(tryDraw)
 end
 
@@ -146,6 +155,74 @@ end
 
 local playerBall = balls[1]
 playerBall.model = "porcupine"
+playerBall.team = "team 1"
+
+local ropeObjects = {}
+Rope = {}
+Rope.__index = Rope
+
+function Rope:new(source, target)
+    local object = {}
+    setmetatable(object,Rope)
+    object.source = source
+    object.tAngle = nil
+    object.tLength = nil
+    object.target = nil
+    object.endX = 0
+    object.endY = 0
+    object.tAngle = target[1]
+    object.tLength = target[2]
+    
+    return object
+
+end
+
+local function ropeLink(ball)
+    for i,rope in ipairs(ropes) do
+        if (rope[1] == playerBall and rope[2] == ball) or (rope[1] == ball and rope[2] == playerBall) then
+            return
+        end
+    end
+    local distanceToBall = math.max(((playerBall.x-ball.x)^2 + (playerBall.y-ball.y)^2)^0.5,64)
+    table.insert(ropes,{playerBall,ball,distanceToBall})
+end
+
+function Rope:update()
+    if self.target then
+        --Code for when a specific target ball is given
+    elseif self.tAngle and self.tLength then
+        local dx = math.cos(self.tAngle) * self.tLength / 20
+        local dy = math.sin(self.tAngle) * self.tLength / 20
+        self.endX = self.endX + dx
+        self.endY = self.endY + dy
+        if ((self.endX)^2 + (self.endY)^2)^0.5 >= self.tLength then
+            return true
+        end
+        local minDistance = 1000000
+        local closestBall = nil
+        local rx = self.endX + self.source.x
+        local ry = self.endY + self.source.y
+        for i,ball in ipairs(balls) do
+            if ball ~= playerBall then
+                local distance = ((rx - ball.x)^2 + (ry - ball.y)^2)^0.5
+                if distance < minDistance then
+                    minDistance = distance
+                    closestBall = ball
+                end
+            end
+        end
+        if closestBall and minDistance < playerBall.radius then
+            ropeLink(closestBall)
+            return true
+        end
+    end
+end
+
+function Rope:draw()
+    local ball = {x = self.source.x, y = self.source.y}
+    love.graphics.setColor(1,1,0)
+    love.graphics.line(ball.x,ball.y,ball.x + self.endX,ball.y + self.endY)
+end
 
 local function verlet(objects,dt)
     for i,ball in ipairs(objects) do
@@ -221,6 +298,9 @@ local function drawRopes()
         love.graphics.setColor(1,1,0)
         love.graphics.line(rope[1].x,rope[1].y,rope[2].x,rope[2].y)
     end
+    for i,rope in ipairs(ropeObjects) do
+        rope:draw()
+    end
 end
 
 local function dashActive()
@@ -237,22 +317,12 @@ local function dashActive()
 end
 
 local function ropeActive()
-    local minDistance = 1000000
-    local ballToRope = nil
     local mx,my = love.mouse.getPosition()
-    for i,ball in ipairs(balls) do
-        if ball ~= playerBall then
-            local distance = ((mx-ball.x)^2 + (my-ball.y)^2)^0.5
-            if distance < minDistance then
-                minDistance = distance
-                ballToRope = ball
-            end
-        end
-    end
-    if ballToRope then
-        local distanceToBall = math.max(((playerBall.x-ballToRope.x)^2 + (playerBall.y-ballToRope.y)^2)^0.5,64)
-        table.insert(ropes,{playerBall,ballToRope,distanceToBall})
-    end
+    local angle = yawAngle(playerBall.x-mx,playerBall.y-my)
+    local distance = ((playerBall.x-mx)^2 + (playerBall.y-my)^2)^0.5
+    if distance > 150 then distance = 150 end
+    local nRope = Rope:new(playerBall,{angle + math.pi,distance})
+    table.insert(ropeObjects,nRope)
 end
 
 local function processPlayerInputs()
@@ -320,6 +390,15 @@ local function playerGhostInput(ability)
     end
 end
 
+local function updateRopes()
+    processRopes()
+    for i,rope in ipairs(ropeObjects) do
+        if rope:update() then
+            table.remove(ropeObjects,i)
+        end
+    end
+end
+
 function love.update(dt)
 
     constraint(balls)
@@ -330,7 +409,7 @@ function love.update(dt)
 
     processPlayerInputs()
 
-    processRopes()
+    updateRopes()
     
 end
 
