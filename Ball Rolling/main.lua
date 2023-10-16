@@ -163,6 +163,21 @@ function Ball:constraint()
     end
 end
 
+local count = 5
+for i = 1,count do
+    local speed = 5
+    local ball = Ball:new(400,300)
+    local angle = i / (count/2) * math.pi
+    ball.vx = speed * math.cos(angle)
+    ball.vy = speed * math.sin(angle)
+    ball.x = ball.x + ball.vx * 10
+    ball.y = ball.y + ball.vy * 10
+    table.insert(balls,ball)
+end
+
+local playerBall = balls[1]
+playerBall.model = "porcupine"
+
 local function verlet(objects,dt)
     for i,ball in ipairs(objects) do
         ball:verlet(dt)
@@ -206,32 +221,32 @@ end
 
 local function processRopes()
     for i,rope in ipairs(ropes) do
-        local distance = ((rope[1].x - rope[2].x)^2 + (rope[1].y - rope[2].y)^2)^0.5
-        local xDif = (rope[1].x + rope[2].x) / 2
-        local yDif = (rope[1].y + rope[2].y) / 2
-        if distance < 100 then
-            rope[1].vx = rope[1].x - xDif
-            rope[1].vy = rope[1].y - xDif
-            rope[2].vx = rope[2].x - xDif
-            rope[2].vy = rope[2].y - xDif
+        local centre = {
+            x = (rope[1].x + rope[2].x) / 2,
+            y = (rope[1].y + rope[2].y) / 2
+        }
+        for i,ball in ipairs(rope) do
+            local toObj = {x=0,y=0}
+            toObj.x = ball.x - centre.x
+            toObj.y = ball.y - centre.y
+            local distance = (toObj.x^2 + toObj.y^2)^0.5
+            local forceMult = 2
+            if ball == playerBall then forceMult = 0.5 end
+
+            if distance > 50 - ball.radius then
+                -- local n = {x=0,y=0}
+                -- n.x = toObj.x / distance
+                -- n.y = toObj.y / distance
+                -- obj.x = center.x + n.x * (ropeRadius - obj.radius)
+                -- obj.y = center.y + n.y * (ropeRadius - obj.radius)
+                ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
+                ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
+            end
         end
     end
 end
 
-local count = 60
-for i = 1,count do
-    local speed = 5
-    local ball = Ball:new(400,300)
-    local angle = i / (count/2) * math.pi
-    ball.vx = speed * math.cos(angle)
-    ball.vy = speed * math.sin(angle)
-    ball.x = ball.x + ball.vx * 10
-    ball.y = ball.y + ball.vy * 10
-    table.insert(balls,ball)
-end
 
-local playerBall = balls[1]
-playerBall.model = "porcupine"
 
 local function dashActive()
     local dashForce = 20
@@ -250,11 +265,14 @@ local function ropeActive()
     local ropeLength = 150
     local minDistance = 1000000
     local ballToRope = nil
+    local mx,my = love.mouse.getPosition()
     for i,ball in ipairs(balls) do
-        local distance = ((playerBall.x-ball.x)^2 + (playerBall.y-ball.y)^2)^0.5
-        if distance < minDistance then
-            minDistance = distance
-            ballToRope = ball
+        if ball ~= playerBall then
+            local distance = ((mx-ball.x)^2 + (my-ball.y)^2)^0.5
+            if distance < minDistance then
+                minDistance = distance
+                ballToRope = ball
+            end
         end
     end
     if ballToRope then
@@ -349,6 +367,9 @@ function love.draw()
     love.graphics.rectangle("fill",0,0,love.graphics.getWidth(),love.graphics.getHeight())
 
     love.graphics.setColor(1,1,1)
+    for i,rope in ipairs(ropes) do
+        love.graphics.print(rope[1].x.."-"..rope[1].y..":"..rope[2].x.."-"..rope[2].y,0,i*20)
+    end
     for i,ball in ipairs(balls) do
         ball:draw()
     end
