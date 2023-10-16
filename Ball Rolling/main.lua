@@ -58,6 +58,8 @@ local function yawAngle(x,y)
     end
 end
 
+local ropes = {}
+
 local balls = {}
 Ball = {}
 Ball.__index = Ball
@@ -202,6 +204,20 @@ local function expensiveCollisions(objects)
     end
 end
 
+local function processRopes()
+    for i,rope in ipairs(ropes) do
+        local distance = ((rope[1].x - rope[2].x)^2 + (rope[1].y - rope[2].y)^2)^0.5
+        local xDif = (rope[1].x + rope[2].x) / 2
+        local yDif = (rope[1].y + rope[2].y) / 2
+        if distance < 100 then
+            rope[1].vx = rope[1].x - xDif
+            rope[1].vy = rope[1].y - xDif
+            rope[2].vx = rope[2].x - xDif
+            rope[2].vy = rope[2].y - xDif
+        end
+    end
+end
+
 local count = 60
 for i = 1,count do
     local speed = 5
@@ -230,7 +246,21 @@ local function dashActive()
     ball.vy,ball.lvy = ny,ny
 end
 
-
+local function ropeActive()
+    local ropeLength = 150
+    local minDistance = 1000000
+    local ballToRope = nil
+    for i,ball in ipairs(balls) do
+        local distance = ((playerBall.x-ball.x)^2 + (playerBall.y-ball.y)^2)^0.5
+        if distance < minDistance then
+            minDistance = distance
+            ballToRope = ball
+        end
+    end
+    if ballToRope then
+        table.insert(ropes,{playerBall,ballToRope})
+    end
+end
 
 local function processPlayerInputs()
     local ball = playerBall
@@ -249,11 +279,13 @@ local function processPlayerInputs()
     end
 
     local lMouse = love.mouse.isDown(1)
-    local rMouse = love.mouse.isDown(1)
+    local rMouse = love.mouse.isDown(2)
 
     
     if not lMouse and mouseState[1] then
         dashActive()
+    elseif not rMouse and mouseState[2] then
+        ropeActive()
     end
     mouseState = {lMouse,rMouse}
 end
@@ -305,6 +337,8 @@ function love.update(dt)
 
     processPlayerInputs()
 
+    processRopes()
+    
 end
 
 
