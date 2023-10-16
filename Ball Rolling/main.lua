@@ -13,7 +13,6 @@ local function pitchAngle(distance,radius)
     return angle
 end
 
-
 local function yawAngle(x,y)
     local ax,ay = math.abs(x),math.abs(y)
     if x > 0 and y >= 0 then
@@ -133,7 +132,7 @@ function Ball:constraint()
     end
 end
 
-local count = 5
+local count = 32
 for i = 1,count do
     local speed = 5
     local ball = Ball:new(400,300)
@@ -191,11 +190,13 @@ end
 
 local function processRopes()
     for i,rope in ipairs(ropes) do
+        local ropeLength = rope[3]
         local centre = {
             x = (rope[1].x + rope[2].x) / 2,
             y = (rope[1].y + rope[2].y) / 2
         }
-        for i,ball in ipairs(rope) do
+        for i = 1,2 do
+            local ball = rope[i]
             local toObj = {x=0,y=0}
             toObj.x = ball.x - centre.x
             toObj.y = ball.y - centre.y
@@ -203,7 +204,7 @@ local function processRopes()
             local forceMult = 2
             if ball == playerBall then forceMult = 0.5 end
 
-            if distance > 50 - ball.radius then
+            if distance > ropeLength - ball.radius then
                 -- local n = {x=0,y=0}
                 -- n.x = toObj.x / distance
                 -- n.y = toObj.y / distance
@@ -237,7 +238,6 @@ local function dashActive()
 end
 
 local function ropeActive()
-    local ropeLength = 150
     local minDistance = 1000000
     local ballToRope = nil
     local mx,my = love.mouse.getPosition()
@@ -251,7 +251,8 @@ local function ropeActive()
         end
     end
     if ballToRope then
-        table.insert(ropes,{playerBall,ballToRope})
+        local distanceToBall = math.max(((playerBall.x-ballToRope.x)^2 + (playerBall.y-ballToRope.y)^2)^0.5,64)
+        table.insert(ropes,{playerBall,ballToRope,distanceToBall})
     end
 end
 
