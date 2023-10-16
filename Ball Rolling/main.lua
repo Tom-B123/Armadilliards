@@ -31,7 +31,7 @@
 
 local ballImages = {}
 
-local mouseState = {0,0}
+local mouseState = {false,false}
 
 for i = 1,32 do
     ballImages[i] = love.graphics.newImage("ball ("..i..").png")
@@ -205,6 +205,21 @@ for i = 1,count do
     table.insert(balls,ball)
 end
 
+local function dashMarker()
+    local ball = balls[1]
+    love.graphics.setColor(0.5,0.5,0.5)
+    love.graphics.circle("line",ball.x,ball.y,100)
+end
+local function dashActive()
+    local dashForce = 20
+    local ball = balls[1]
+    local mx,my = love.mouse.getPosition()
+    local angle = yawAngle(ball.x-mx,ball.y-my)
+    local nx,ny = -dashForce * math.cos(angle), -dashForce * math.sin(angle)
+    ball.vx = nx
+    ball.vy = ny
+end
+
 local function processPlayerInputs()
     local ball = balls[1]
     local speed = 0.4
@@ -220,8 +235,17 @@ local function processPlayerInputs()
     if love.keyboard.isDown("d") then
         ball.vx = ball.vx + 1 * speed
     end
-end
 
+    local lMouse = love.mouse.isDown(1)
+    local rMouse = love.mouse.isDown(1)
+
+    if lMouse then
+        dashMarker()
+    elseif not lMouse and mouseState[1] then
+        dashActive()
+    end
+    mouseState = {lMouse,rMouse}
+end
 
 function love.update(dt)
 
@@ -231,13 +255,14 @@ function love.update(dt)
 
     verlet(balls,dt)
 
-    processPlayerInputs()
-
+    
 end
 
 
 
 function love.draw()
+    processPlayerInputs()
+    love.graphics.setColor(1,1,1)
     for i,ball in ipairs(balls) do
         ball:draw()
     end
