@@ -203,13 +203,12 @@ local function processRopes()
             local distance = (toObj.x^2 + toObj.y^2)^0.5
             local forceMult = 2
             if ball == playerBall then forceMult = 0.5 end
-
+            --Elastic rope radius
             if distance > ropeLength - ball.radius then
-                -- local n = {x=0,y=0}
-                -- n.x = toObj.x / distance
-                -- n.y = toObj.y / distance
-                -- obj.x = center.x + n.x * (ropeRadius - obj.radius)
-                -- obj.y = center.y + n.y * (ropeRadius - obj.radius)
+                --Rigid rope radius
+                if distance > (ropeLength * 1.5) - ball.radius then
+                    forceMult = forceMult * 4
+                end
                 ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
                 ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
             end
