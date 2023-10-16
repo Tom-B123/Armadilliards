@@ -29,12 +29,14 @@
 -- function love.draw()
 --     drawBall(i*2,4,i * math.pi / 180)
 
+local porcupineImages = {}
 local ballImages = {}
 
 local mouseState = {false,false}
 
 for i = 1,32 do
-    ballImages[i] = love.graphics.newImage("porcupine ("..i..").png")
+    porcupineImages[i] = love.graphics.newImage("porcupine ("..i..").png")
+    ballImages[i] = love.graphics.newImage("ball ("..i..").png")
 end
 
 local function pitchAngle(distance,radius)
@@ -74,6 +76,7 @@ function Ball:new(x,y)
     object.lvx = 0
     object.lvy = 0
     object.radius = 14
+    object.model = "ball"
     --rotation in the z axis
     object.yaw = 0
     --rotation stage of the ball
@@ -82,13 +85,20 @@ function Ball:new(x,y)
 end
 
 function Ball:draw()
+    local images = {}
+    if self.model == "ball" then
+        images = ballImages
+    else
+        images = porcupineImages
+    end
+
     --Gets the corresponding sprite image based on the pitch angle of the ball.
     local imageIndex = math.floor(((self.pitch / (2 * math.pi) * 32) % 32)) + 1
     --Indexes the sprite image based on the stage of rotation
     --Draws the sprite at the x and y of the ball
     --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
     --Rotates the sprite around the z axis by the yaw value.
-    local function tryDraw() love.graphics.draw(ballImages[imageIndex],self.x,self.y,self.yaw,1,1,16,16) end
+    local function tryDraw() love.graphics.draw(images[imageIndex],self.x,self.y,self.yaw,1,1,16,16) end
     pcall(tryDraw)
 end
 
@@ -204,6 +214,8 @@ for i = 1,count do
     table.insert(balls,ball)
 end
 
+balls[1].model = "porcupine"
+
 local function dashMarker()
     local ball = balls[1]
     love.graphics.setColor(0.5,0.5,0.5)
@@ -260,6 +272,8 @@ end
 
 
 function love.draw()
+    love.graphics.setColor(0,0.6,0)
+    love.graphics.rectangle("fill",0,0,love.graphics.getWidth(),love.graphics.getHeight())
     processPlayerInputs()
     love.graphics.setColor(1,1,1)
     for i,ball in ipairs(balls) do
