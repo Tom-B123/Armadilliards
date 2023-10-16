@@ -87,6 +87,7 @@ function Ball:new(x,y)
 end
 
 function Ball:draw()
+    love.graphics.setColor(1,1,1)
     local images = {}
     if self.model == "ball" then
         images = ballImages
@@ -246,7 +247,12 @@ local function processRopes()
     end
 end
 
-
+local function drawRopes()
+    for i,rope in ipairs(ropes) do
+        love.graphics.setColor(1,1,0)
+        love.graphics.line(rope[1].x,rope[1].y,rope[2].x,rope[2].y)
+    end
+end
 
 local function dashActive()
     local dashForce = 20
@@ -366,10 +372,8 @@ function love.draw()
     love.graphics.setColor(0,0.6,0)
     love.graphics.rectangle("fill",0,0,love.graphics.getWidth(),love.graphics.getHeight())
 
-    love.graphics.setColor(1,1,1)
-    for i,rope in ipairs(ropes) do
-        love.graphics.print(rope[1].x.."-"..rope[1].y..":"..rope[2].x.."-"..rope[2].y,0,i*20)
-    end
+    drawRopes()
+
     for i,ball in ipairs(balls) do
         ball:draw()
     end
