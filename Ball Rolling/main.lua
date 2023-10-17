@@ -167,13 +167,30 @@ local playerBall = balls[1]
 playerBall.model = "porcupine"
 playerBall.team = "team 1"
 
-local Camera = {following = playerBall,x=playerBall.x,y=playerBall.y}
+local Camera = {
+    following = playerBall,
+    x=playerBall.x,
+    y=playerBall.y,
+    vx = 0,
+    vy = 0
+}
 
 function Camera:update()
-    -- local dx = self.x - self.following.x
-    -- local dy = self.x - self.following.y
-    self.x = self.following.x - self.x
-    self.y = self.following.y - self.y
+    local centre = {
+        x = (self.x + self.following.x) / 2,
+        y = (self.y + self.following.y) / 2
+    }
+    --attraction force of camera to the ball
+    local forceMult = 10
+    --Elastic rope radius
+    self.vx = self.vx + (centre.x - self.x) / (50 / forceMult)
+    self.vy = self.vy + (centre.y - self.y) / (50 / forceMult)
+
+    self.x = self.x + self.vx
+    self.y = self.y + self.vy
+    --setting velocity to a low number prevents boucing of camera
+    self.vx = self.vx * 0.1
+    self.vy = self.vx * 0.1
 end
 
 function Camera:getOffset()
