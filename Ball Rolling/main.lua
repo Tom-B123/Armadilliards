@@ -28,6 +28,16 @@ end
 
 local ropes = {}
 
+local Camera = {following = nil}
+
+function Camera:getPosition()
+    if self.following == nil then
+        return 0,0
+    else 
+        return 400 - self.following.x, 300 - self.following.y
+    end
+end
+
 local balls = {}
 Ball = {}
 Ball.__index = Ball
@@ -55,7 +65,7 @@ function Ball:new(x,y)
     return object
 end
 
-function Ball:draw()
+function Ball:draw(offsetX,offsetY)
     love.graphics.setColor(1,1,1)
     local images = {}
     if self.model == "ball" then
@@ -75,9 +85,19 @@ function Ball:draw()
 
         if self.team == "team 1" then love.graphics.setColor(0,0,1,0.4) end
 
-        love.graphics.circle("fill",self.x,self.y,self.radius + 4) 
+        love.graphics.circle(
+            "fill",
+            self.x + offsetX,
+            self.y + offsetY,
+            self.radius + 4
+        ) 
         love.graphics.setColor(1,1,1)
-        love.graphics.draw(images[imageIndex],self.x,self.y,self.yaw,1,1,16,16)
+        love.graphics.draw(
+            images[imageIndex],
+            self.x + offsetX,
+            self.y + offsetY,
+            self.yaw,1,1,16,16
+        )
     end
     pcall(tryDraw)
 end
@@ -156,6 +176,7 @@ end
 local playerBall = balls[1]
 playerBall.model = "porcupine"
 playerBall.team = "team 1"
+Camera.following = playerBall
 
 local ropeObjects = {}
 Rope = {}
@@ -218,10 +239,15 @@ function Rope:update()
     end
 end
 
-function Rope:draw()
+function Rope:draw(offsetX,offsetY)
     local ball = {x = self.source.x, y = self.source.y}
     love.graphics.setColor(1,1,0)
-    love.graphics.line(ball.x,ball.y,ball.x + self.endX,ball.y + self.endY)
+    love.graphics.line(
+        ball.x + offsetX,
+        ball.y + offsetY,
+        ball.x + self.endX + offsetX,
+        ball.y + self.endY + offsetY
+    )
 end
 
 local bulletObjects = {}
@@ -271,9 +297,9 @@ function Bullet:update()
     end
 end
 
-function Bullet:draw()
+function Bullet:draw(offsetX,offsetY)
     love.graphics.setColor(1,0.5,0)
-    love.graphics.circle("fill",self.x,self.y,self.radius)
+    love.graphics.circle("fill",self.x + offsetX,self.y + offsetY,self.radius)
 end
 
 local function verlet(objects,dt)
@@ -348,11 +374,12 @@ end
 local function dashActive()
     local dashForce = 20
     local ball = playerBall
+    local centre = {x=400,y=300}
     local mx,my = love.mouse.getPosition()
-    local distance = ((ball.x-mx)^2 + (ball.y-my)^2)^0.5
+    local distance = ((centre.x-mx)^2 + (centre.y-my)^2)^0.5
     if distance > 100 then distance = 100 end
     local distanceFactor = 100 / distance
-    local angle = yawAngle(ball.x-mx,ball.y-my)
+    local angle = yawAngle(centre.x-mx,centre.y-my)
     local nx,ny = -dashForce / distanceFactor * math.cos(angle), -dashForce / distanceFactor * math.sin(angle)
     ball.vx,ball.lvx = nx,nx
     ball.vy,ball.lvy = ny,ny
@@ -360,8 +387,9 @@ end
 
 local function ropeActive()
     local mx,my = love.mouse.getPosition()
-    local angle = yawAngle(playerBall.x-mx,playerBall.y-my)
-    local distance = ((playerBall.x-mx)^2 + (playerBall.y-my)^2)^0.5
+    local centre = {x=400,y=300}
+    local angle = yawAngle(centre.x-mx,centre.y-my)
+    local distance = ((centre.x-mx)^2 + (centre.y-my)^2)^0.5
     if distance > 150 then distance = 150 end
     local nRope = Rope:new(playerBall,{angle + math.pi,distance})
     table.insert(ropeObjects,nRope)
@@ -369,7 +397,8 @@ end
 
 local function pistolActive()
     local mx,my = love.mouse.getPosition()
-    local angle = yawAngle(playerBall.x-mx,playerBall.y-my)
+    local centre = {x=400,y=300}
+    local angle = yawAngle(centre.x-mx,centre.y-my)
     local distance = 300
     local nBullet = Bullet:new(playerBall,angle + math.pi)
     table.insert(bulletObjects,nBullet)
@@ -406,30 +435,56 @@ local function processPlayerInputs()
     mouseState = {lMouse,rMouse,mMouse}
 end
 
-local function playerGhostInput(ability)
+local function playerGhostInput(ability,offsetX,offsetY)
     local ball = playerBall
+    local centre = {x=400,y = 300}
     local function abilityRange(rad)
         love.graphics.setColor(0,0,0,0.5)
-        love.graphics.circle("line",ball.x,ball.y,rad)
+        love.graphics.circle(
+            "line",
+            centre.x,
+            centre.y,
+            rad
+        )
         return rad
     end
     local function localMousePointer(rad,adjustable)
         local mx,my = love.mouse.getPosition()
-        local distance = ((ball.x-mx)^2 + (ball.y-my)^2)^0.5
+        local distance = ((centre.x-mx)^2 + (centre.y-my)^2)^0.5
         if distance > rad or not adjustable then
-            local angle = yawAngle(ball.x-mx,ball.y-my)
-            mx = ball.x - rad * math.cos(angle)
-            my = ball.y - rad * math.sin(angle)
+            local angle = yawAngle(centre.x-mx,centre.y-my)
+            mx = centre.x - rad * math.cos(angle)
+            my = centre.y - rad * math.sin(angle)
         end
-        love.graphics.line(mx-4,my-4,mx+4,my+4)
-        love.graphics.line(mx-4,my+4,mx+4,my-4)
+        love.graphics.line(
+            mx-4,
+            my-4,
+            mx+4,
+            my+4
+        )
+        love.graphics.line(
+            mx-4,
+            my+4,
+            mx+4,
+            my-4
+        )
         return mx,my
     end
     local function lineToMouse(mx,my)
-        love.graphics.line(ball.x,ball.y,mx,my)
+        love.graphics.line(
+            centre.x,
+            centre.y,
+            mx,
+            my
+        )
     end
     local function ghostPlayerAtMouse(mx,my)
-        love.graphics.circle("fill",mx,my,ball.radius)
+        love.graphics.circle(
+            "fill",
+            mx,
+            my,
+            ball.radius
+        )
     end
     if ability == "dash" then
 
@@ -453,9 +508,9 @@ local function playerGhostInput(ability)
     end
 end
 
-local function drawBalls()
+local function drawBalls(offsetX,offsetY)
     for i,ball in ipairs(balls) do
-        ball:draw()
+        ball:draw(offsetX,offsetY)
     end
 end
 
@@ -468,13 +523,18 @@ local function updateRopes()
     end
 end
 
-local function drawRopes()
+local function drawRopes(offsetX,offsetY)
     for i,rope in ipairs(ropes) do
         love.graphics.setColor(1,1,0)
-        love.graphics.line(rope[1].x,rope[1].y,rope[2].x,rope[2].y)
+        love.graphics.line(
+            rope[1].x + offsetX,
+            rope[1].y + offsetY,
+            rope[2].x + offsetX,
+            rope[2].y + offsetY
+        )
     end
     for i,rope in ipairs(ropeObjects) do
-        rope:draw()
+        rope:draw(offsetX,offsetY)
     end
 end
 
@@ -486,9 +546,9 @@ local function updateBullets()
     end
 end
 
-local function drawBullets()
+local function drawBullets(offsetX,offsetY)
     for i,bullet in ipairs(bulletObjects) do
-        bullet:draw()
+        bullet:draw(offsetX,offsetY)
     end
 end
 
@@ -510,23 +570,25 @@ end
 
 function love.draw()
 
+    local offsetX,offsetY = Camera:getPosition()
+
     love.graphics.setColor(0,0.4,0)
-    love.graphics.rectangle("fill",0,0,love.graphics.getWidth(),love.graphics.getHeight())
+    love.graphics.rectangle("fill",offsetX,offsetY,love.graphics.getWidth(),love.graphics.getHeight())
 
-    drawRopes()
+    drawRopes(offsetX,offsetY)
 
-    drawBalls()
+    drawBalls(offsetX,offsetY)
 
-    drawBullets()
+    drawBullets(offsetX,offsetY)
 
     local lMouse = love.mouse.isDown(1)
     local mMouse = love.mouse.isDown(3)
     local rMouse = love.mouse.isDown(2)
     if lMouse then
-        playerGhostInput("dash")
+        playerGhostInput("dash",offsetX,offsetY)
     elseif rMouse then
-        playerGhostInput("rope")
+        playerGhostInput("rope",offsetX,offsetY)
     elseif mMouse then
-        playerGhostInput("pistol")
+        playerGhostInput("pistol",offsetX,offsetY)
     end
 end
