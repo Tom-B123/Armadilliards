@@ -28,16 +28,6 @@ end
 
 local ropes = {}
 
-local Camera = {following = nil}
-
-function Camera:getPosition()
-    if self.following == nil then
-        return 0,0
-    else 
-        return 400 - self.following.x, 300 - self.following.y
-    end
-end
-
 local balls = {}
 Ball = {}
 Ball.__index = Ball
@@ -176,7 +166,23 @@ end
 local playerBall = balls[1]
 playerBall.model = "porcupine"
 playerBall.team = "team 1"
-Camera.following = playerBall
+
+local Camera = {following = playerBall,x=playerBall.x,y=playerBall.y}
+
+function Camera:update()
+    -- local dx = self.x - self.following.x
+    -- local dy = self.x - self.following.y
+    self.x = self.following.x - self.x
+    self.y = self.following.y - self.y
+end
+
+function Camera:getOffset()
+    if self.following == nil then
+        return 0,0
+    else 
+        return 400 - self.x, 300 - self.y
+    end
+end
 
 local ropeObjects = {}
 Rope = {}
@@ -566,11 +572,12 @@ function love.update(dt)
     
     updateBullets()
 
+    Camera:update()
 end
 
 function love.draw()
 
-    local offsetX,offsetY = Camera:getPosition()
+    local offsetX,offsetY = Camera:getOffset()
 
     love.graphics.setColor(0,0.4,0)
     love.graphics.rectangle("fill",offsetX,offsetY,love.graphics.getWidth(),love.graphics.getHeight())
