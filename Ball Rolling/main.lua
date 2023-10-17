@@ -1,7 +1,7 @@
 local porcupineImages = {}
 local ballImages = {}
 
-local mouseState = {false,false}
+local mouseState = {false,false,false}
 
 for i = 1,32 do
     porcupineImages[i] = love.graphics.newImage("porcupine ("..i..").png")
@@ -71,7 +71,7 @@ function Ball:draw()
     --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
     --Rotates the sprite around the z axis by the yaw value.
     local function tryDraw()
-        love.graphics.setColor(0.1,0.1,0.1,0.4)
+        love.graphics.setColor(0,0,0,0.4)
 
         if self.team == "team 1" then love.graphics.setColor(0,0,1,0.4) end
 
@@ -224,6 +224,58 @@ function Rope:draw()
     love.graphics.line(ball.x,ball.y,ball.x + self.endX,ball.y + self.endY)
 end
 
+local bulletObjects = {}
+Bullet = {}
+Bullet.__index = Bullet
+
+function Bullet:new(source,angle)
+    local object = {}
+    setmetatable(object,Bullet)
+    object.x = source.x
+    object.y = source.y
+    object.radius = 4
+    object.angle = angle
+    object.distance = 0
+    return object
+end
+
+local function bulletHit(object,fx,fy)
+    object.vx = object.vx + fx
+    object.vy = object.vy + fy
+    object.lvx = object.lvx + fx
+    object.lvy = object.lvy + fy
+end
+
+function Bullet:update()
+    local speed = 10
+    self.distance = self.distance + speed
+    self.x = self.x + math.cos(self.angle) * speed
+    self.y = self.y + math.sin(self.angle) * speed
+    local minDistance = 1000000
+    local closestBall = nil
+    for i,ball in ipairs(balls) do
+        if ball ~= playerBall then
+            local distance = ((self.x - ball.x)^2 + (self.y - ball.y)^2)^0.5
+            if distance < minDistance then
+                minDistance = distance
+                closestBall = ball
+            end
+        end
+    end
+    if closestBall and minDistance < playerBall.radius + self.radius then
+        bulletHit(closestBall,speed * math.cos(self.angle), speed * math.sin(self.angle))
+        return true
+    end
+    if self.distance == 300 then
+        return true
+    end
+end
+
+function Bullet:draw()
+    love.graphics.setColor(1,0.5,0)
+    love.graphics.circle("fill",self.x,self.y,self.radius)
+end
+
 local function verlet(objects,dt)
     for i,ball in ipairs(objects) do
         ball:verlet(dt)
@@ -293,16 +345,6 @@ local function processRopes()
     end
 end
 
-local function drawRopes()
-    for i,rope in ipairs(ropes) do
-        love.graphics.setColor(1,1,0)
-        love.graphics.line(rope[1].x,rope[1].y,rope[2].x,rope[2].y)
-    end
-    for i,rope in ipairs(ropeObjects) do
-        rope:draw()
-    end
-end
-
 local function dashActive()
     local dashForce = 20
     local ball = playerBall
@@ -325,6 +367,14 @@ local function ropeActive()
     table.insert(ropeObjects,nRope)
 end
 
+local function pistolActive()
+    local mx,my = love.mouse.getPosition()
+    local angle = yawAngle(playerBall.x-mx,playerBall.y-my)
+    local distance = 300
+    local nBullet = Bullet:new(playerBall,angle + math.pi)
+    table.insert(bulletObjects,nBullet)
+end
+
 local function processPlayerInputs()
     local ball = playerBall
     local speed = 0.4
@@ -342,6 +392,7 @@ local function processPlayerInputs()
     end
 
     local lMouse = love.mouse.isDown(1)
+    local mMouse = love.mouse.isDown(3)
     local rMouse = love.mouse.isDown(2)
 
     
@@ -349,8 +400,10 @@ local function processPlayerInputs()
         dashActive()
     elseif not rMouse and mouseState[2] then
         ropeActive()
+    elseif not mMouse and mouseState[3] then
+        pistolActive()
     end
-    mouseState = {lMouse,rMouse}
+    mouseState = {lMouse,rMouse,mMouse}
 end
 
 local function playerGhostInput(ability)
@@ -360,10 +413,10 @@ local function playerGhostInput(ability)
         love.graphics.circle("line",ball.x,ball.y,rad)
         return rad
     end
-    local function localMousePointer(rad)
+    local function localMousePointer(rad,adjustable)
         local mx,my = love.mouse.getPosition()
         local distance = ((ball.x-mx)^2 + (ball.y-my)^2)^0.5
-        if distance > rad then
+        if distance > rad or not adjustable then
             local angle = yawAngle(ball.x-mx,ball.y-my)
             mx = ball.x - rad * math.cos(angle)
             my = ball.y - rad * math.sin(angle)
@@ -379,14 +432,30 @@ local function playerGhostInput(ability)
         love.graphics.circle("fill",mx,my,ball.radius)
     end
     if ability == "dash" then
+
         local range = abilityRange(100)
-        local mx,my = localMousePointer(range)
+        local mx,my = localMousePointer(range,true)
         lineToMouse(mx,my)
         ghostPlayerAtMouse(mx,my)
+
     elseif ability == "rope" then
+
         local range = abilityRange(150)
-        local mx,my = localMousePointer(range)
+        local mx,my = localMousePointer(range,true)
         lineToMouse(mx,my)
+
+    elseif ability == "pistol" then
+
+        local range = abilityRange(300)
+        local mx,my = localMousePointer(range,false)
+        lineToMouse(mx,my)
+
+    end
+end
+
+local function drawBalls()
+    for i,ball in ipairs(balls) do
+        ball:draw()
     end
 end
 
@@ -396,6 +465,30 @@ local function updateRopes()
         if rope:update() then
             table.remove(ropeObjects,i)
         end
+    end
+end
+
+local function drawRopes()
+    for i,rope in ipairs(ropes) do
+        love.graphics.setColor(1,1,0)
+        love.graphics.line(rope[1].x,rope[1].y,rope[2].x,rope[2].y)
+    end
+    for i,rope in ipairs(ropeObjects) do
+        rope:draw()
+    end
+end
+
+local function updateBullets()
+    for i,bullet in ipairs(bulletObjects) do
+        if bullet:update() then
+            table.remove(bulletObjects,i)
+        end
+    end
+end
+
+local function drawBullets()
+    for i,bullet in ipairs(bulletObjects) do
+        bullet:draw()
     end
 end
 
@@ -411,25 +504,29 @@ function love.update(dt)
 
     updateRopes()
     
+    updateBullets()
+
 end
-
-
 
 function love.draw()
 
-    love.graphics.setColor(0,0.6,0)
+    love.graphics.setColor(0,0.4,0)
     love.graphics.rectangle("fill",0,0,love.graphics.getWidth(),love.graphics.getHeight())
 
     drawRopes()
 
-    for i,ball in ipairs(balls) do
-        ball:draw()
-    end
+    drawBalls()
+
+    drawBullets()
+
     local lMouse = love.mouse.isDown(1)
+    local mMouse = love.mouse.isDown(3)
     local rMouse = love.mouse.isDown(2)
     if lMouse then
         playerGhostInput("dash")
     elseif rMouse then
         playerGhostInput("rope")
+    elseif mMouse then
+        playerGhostInput("pistol")
     end
 end
