@@ -34,6 +34,10 @@ local function yawAngle(x,y)
     end
 end
 
+local function findDistance(x,y)
+    return (x^2 + y^2)^0.5
+end
+
 local ropes = {}
 
 local balls = {}
@@ -103,7 +107,7 @@ end
 function Ball:move(x,y)
     self.x = self.x + x
     self.y = self.y + y
-    local magnitude = (x^2 + y^2)^0.5
+    local magnitude = findDistance(x,y)
     self.pitch = self.pitch + pitchAngle(magnitude,self.radius)
     self.yaw = yawAngle(self.vx,self.vy) 
 end
@@ -240,19 +244,19 @@ local function ropeLink(ball)
             return
         end
     end
-    local distanceToBall = math.max(((playerBall.x-ball.x)^2 + (playerBall.y-ball.y)^2)^0.5,64)
+    local distanceToBall = math.max(findDistance(playerBall.x-ball.x, playerBall.y-ball.y),64)
     table.insert(ropes,{playerBall,ball,distanceToBall})
 end
 
 function Rope:update()
     if self.target then
-        local angle = yawAngle(self.endX-self.target.x,self.endY-self.target.y)
-
-        local dx = math.cos(angle) * self.tLength / 20
-        local dy = math.sin(angle) * self.tLength / 20
+        local angle = -yawAngle(self.source.x-self.target.x,self.source.y-self.target.y)
+        local distance = findDistance(self.source.x-self.target.x,self.source.y-self.target.y)
+        local dx = math.cos(angle) * distance / 20
+        local dy = math.sin(angle) * distance / 20
         self.endX = self.endX + dx
         self.endY = self.endY + dy
-        if ((self.endX)^2 + (self.endY)^2)^0.5 >= self.tLength then
+        if findDistance(self.endX,self.endY) >= distance then
             return true
         end
     elseif self.tAngle and self.tLength then
@@ -260,7 +264,7 @@ function Rope:update()
         local dy = math.sin(self.tAngle) * self.tLength / 20
         self.endX = self.endX + dx
         self.endY = self.endY + dy
-        if ((self.endX)^2 + (self.endY)^2)^0.5 >= self.tLength then
+        if findDistance(self.endX,self.endY) >= self.tLength then
             return true
         end
         local minDistance = 1000000
@@ -269,7 +273,7 @@ function Rope:update()
         local ry = self.endY + self.source.y
         for i,ball in ipairs(balls) do
             if ball ~= playerBall then
-                local distance = ((rx - ball.x)^2 + (ry - ball.y)^2)^0.5
+                local distance = findDistance(rx - ball.x,ry - ball.y)
                 if distance < minDistance then
                     minDistance = distance
                     closestBall = ball
@@ -325,7 +329,7 @@ function Bullet:update()
     local closestBall = nil
     for i,ball in ipairs(balls) do
         if ball ~= playerBall then
-            local distance = ((self.x - ball.x)^2 + (self.y - ball.y)^2)^0.5
+            local distance = findDistance(self.x - ball.x,self.y - ball.y)
             if distance < minDistance then
                 minDistance = distance
                 closestBall = ball
@@ -399,7 +403,7 @@ local function processRopes()
             local toObj = {x=0,y=0}
             toObj.x = ball.x - centre.x
             toObj.y = ball.y - centre.y
-            local distance = (toObj.x^2 + toObj.y^2)^0.5
+            local distance = findDistance(toObj.x, toObj.y)
             local forceMult = 2
             if ball == playerBall then forceMult = 0.5 end
             --Elastic rope radius
@@ -421,7 +425,7 @@ local function dashActive()
     local ball = playerBall
     local centre = {x=centreX,y=centreY}
     local mx,my = love.mouse.getPosition()
-    local distance = ((centre.x-mx)^2 + (centre.y-my)^2)^0.5
+    local distance = findDistance(centre.x-mx,centre.y-my)
     if distance > 100 then distance = 100 end
     local distanceFactor = 100 / distance
     local angle = yawAngle(centre.x-mx,centre.y-my)
@@ -436,7 +440,7 @@ local function ropeActive()
     local mx,my = love.mouse.getPosition()
     local centre = {x=centreX,y=centreY}
     local angle = yawAngle(centre.x-mx,centre.y-my)
-    local length = ((centre.x-mx)^2 + (centre.y-my)^2)^0.5
+    local length = findDistance(centre.x-mx,centre.y-my)
 
     if length > 150 then length = 150 end
 
@@ -452,7 +456,7 @@ local function ropeActive()
             local ballRx = ball.x + offsetX - windowDims.x/2
             local ballRy = ball.y + offsetY - windowDims.y/2
             
-            local distance = ((rx - ballRx)^2 + (ry - ballRy)^2)^0.5
+            local distance = findDistance(rx - ballRx,ry - ballRy)
             if distance < minDistance then
                 minDistance = distance
                 closestBall = ball
@@ -530,7 +534,7 @@ local function playerGhostInput(ability)
     local function localMousePointer(rad,adjustable)
         local mx,my = love.mouse.getPosition()
 
-        local length = ((centre.x-mx)^2 + (centre.y-my)^2)^0.5
+        local length = findDistance(centre.x-mx,centre.y-my)
         
         if length > rad or not adjustable then
             local angle = yawAngle(centre.x-mx,centre.y-my)
@@ -550,7 +554,7 @@ local function playerGhostInput(ability)
                 local ballRx = ball.x + offsetX - windowDims.x/2
                 local ballRy = ball.y + offsetY - windowDims.y/2
                 
-                local distance = ((rx - ballRx)^2 + (ry - ballRy)^2)^0.5
+                local distance = findDistance(rx - ballRx,ry - ballRy)
                 if distance < minDistance then
                     minDistance = distance
                     closestBall = ball
