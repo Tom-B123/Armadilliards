@@ -3,6 +3,8 @@ local ballImages = {}
 
 love.window.setMode(0,0)
 
+local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
+
 local bounds = {x = 4096,y = 4096}
 
 
@@ -157,15 +159,15 @@ function Ball:constraint()
     end
 end
 
-local count = 360
+local count = 4
 for i = 1,count do
     local speed = 5
-    local ball = Ball:new(400,300)
+    local ball = Ball:new(windowDims.x/2,windowDims.y/2)
     local angle = i / (count/2) * math.pi
     ball.vx = speed * math.cos(angle)
     ball.vy = speed * math.sin(angle)
-    ball.x = ball.x + ball.vx * 10
-    ball.y = ball.y + ball.vy * 10
+    ball.x = ball.x + ball.vx * 2
+    ball.y = ball.y + ball.vy * 2
     table.insert(balls,ball)
 end
 
@@ -203,12 +205,12 @@ function Camera:getOffset()
     if self.following == nil then
         return 0,0
     else 
-        return 400 - self.x, 300 - self.y
+        return windowDims.x/2 - self.x, windowDims.y/2 - self.y
     end
 end
 
 function Camera:getPosition()
-    return 400 - (self.x - self.following.x),300 - (self.y - self.following.y)
+    return windowDims.x/2 - (self.x - self.following.x),windowDims.y/2 - (self.y - self.following.y)
 end
 
 local ropeObjects = {}
@@ -222,6 +224,7 @@ function Rope:new(source, target)
     object.tAngle = nil
     object.tLength = nil
     object.target = nil
+    if not target[1] then object.target = target end
     object.endX = 0
     object.endY = 0
     object.tAngle = target[1]
@@ -243,7 +246,15 @@ end
 
 function Rope:update()
     if self.target then
-        --Code for when a specific target ball is given
+        local angle = yawAngle(self.endX-self.target.x,self.endY-self.target.y)
+
+        local dx = math.cos(angle) * self.tLength / 20
+        local dy = math.sin(angle) * self.tLength / 20
+        self.endX = self.endX + dx
+        self.endY = self.endY + dy
+        if ((self.endX)^2 + (self.endY)^2)^0.5 >= self.tLength then
+            return true
+        end
     elseif self.tAngle and self.tLength then
         local dx = math.cos(self.tAngle) * self.tLength / 20
         local dy = math.sin(self.tAngle) * self.tLength / 20
@@ -420,6 +431,7 @@ local function dashActive()
 end
 
 local function ropeActive()
+    local offsetX,offsetY = Camera:getOffset()
     local centreX,centreY = Camera:getPosition()
     local mx,my = love.mouse.getPosition()
     local centre = {x=centreX,y=centreY}
@@ -428,18 +440,26 @@ local function ropeActive()
 
     if length > 150 then length = 150 end
 
+    local rx = mx - (windowDims.x/2)
+    local ry = my - (windowDims.y/2)
+    
     local minDistance = 1000000
     local closestBall = nil
 
     for i,ball in ipairs(balls) do
         if ball ~= playerBall then
-            local distance = ((mx - ball.x)^2 + (my - ball.y)^2)^0.5
+
+            local ballRx = ball.x + offsetX - windowDims.x/2
+            local ballRy = ball.y + offsetY - windowDims.y/2
+            
+            local distance = ((rx - ballRx)^2 + (ry - ballRy)^2)^0.5
             if distance < minDistance then
                 minDistance = distance
                 closestBall = ball
             end
         end
     end
+
     if closestBall and minDistance < playerBall.radius then
         local nRope = Rope:new(playerBall,closestBall)
         table.insert(ropeObjects,nRope)
@@ -491,6 +511,7 @@ local function processPlayerInputs()
 end
 
 local function playerGhostInput(ability)
+    local offsetX,offsetY = Camera:getOffset()
     local centreX,centreY = Camera:getPosition()
     local ball = playerBall
     local centre = {x=centreX, y=centreY}
@@ -508,6 +529,7 @@ local function playerGhostInput(ability)
     
     local function localMousePointer(rad,adjustable)
         local mx,my = love.mouse.getPosition()
+
         local length = ((centre.x-mx)^2 + (centre.y-my)^2)^0.5
         
         if length > rad or not adjustable then
@@ -516,21 +538,30 @@ local function playerGhostInput(ability)
             my = centre.y - rad * math.sin(angle)
         end
 
+        local rx = mx - (windowDims.x/2)
+        local ry = my - (windowDims.y/2)
+
         local minDistance = 1000000
         local closestBall = nil
-
+        local hovering = nil
         for i,ball in ipairs(balls) do
             if ball ~= playerBall then
-                local distance = ((mx - ball.x)^2 + (my - ball.y)^2)^0.5
+
+                local ballRx = ball.x + offsetX - windowDims.x/2
+                local ballRy = ball.y + offsetY - windowDims.y/2
+                
+                local distance = ((rx - ballRx)^2 + (ry - ballRy)^2)^0.5
                 if distance < minDistance then
                     minDistance = distance
                     closestBall = ball
                 end
             end
         end
-        if closestBall then love.graphics.print(minDistance) end
-        if closestBall then
-            mx,my = closestBall.x,closestBall.y
+
+        if closestBall and minDistance < playerBall.radius then
+            mx = closestBall.x + offsetX
+            my = closestBall.y + offsetY
+            hovering = closestBall
         end
 
         love.graphics.line(
@@ -545,7 +576,7 @@ local function playerGhostInput(ability)
             mx+4,
             my-4
         )
-        return mx,my
+        return mx,my,hovering
     end
     local function lineToMouse(mx,my)
         love.graphics.line(
@@ -560,7 +591,7 @@ local function playerGhostInput(ability)
             "fill",
             mx,
             my,
-            ball.radius
+            ball.radius + 4
         )
     end
     
@@ -575,7 +606,8 @@ local function playerGhostInput(ability)
     elseif ability == "rope" then
 
         local range = abilityRange(150)
-        local mx,my = localMousePointer(range,true)
+        local mx,my,hovering = localMousePointer(range,true)
+        if hovering then ghostPlayerAtMouse(mx,my) end
         lineToMouse(mx,my)
 
     elseif ability == "pistol" then
