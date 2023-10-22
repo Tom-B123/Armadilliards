@@ -29,14 +29,18 @@ function Shape:draw()
 end
 
 function Shape:move(x,y)
-    
+    for i,v in ipairs(self.coords) do
+        if i % 2 == 1 then self.coords[i] = self.coords[i] + x
+        else self.coords[i] = self.coords[i] + y
+        end
+    end
 end
 
 local circle = Shape:new("circle",{100,100,50},{1,1,1},false)
 local triangle = Shape:new("poly",{200,200,300,200,250,300},{1,1,1},false)
 
 function love.update()
-    circle.x = circle.x + 1
+    circle:move(1,0)
 end
 
 function love.draw()
