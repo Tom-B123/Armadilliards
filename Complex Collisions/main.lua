@@ -85,7 +85,7 @@ function Shape:getLines()
             if not isInf(gradient) then
                 yInt = y - gradient * x
             end
-            local line = {gradient,yInt}
+            local line = {gradient,yInt,lx,x}
             table.insert(lines,line)
         end
         lx = x
@@ -143,7 +143,8 @@ function love.draw()
     square:draw()
     triangle:draw()
     for i,line in ipairs(triangle:getLines()) do
-        love.graphics.circle("fill",0,line[2],10)
+        love.graphics.circle("fill",line[3],line[2],10)
+        love.graphics.circle("fill",line[4],line[2],10)
         love.graphics.print(line[1]..","..line[2],0,i*20)
     end
 end
