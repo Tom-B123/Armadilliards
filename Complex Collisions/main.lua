@@ -36,11 +36,35 @@ function Shape:move(x,y)
     end
 end
 
+function Shape:getLines()
+    local lx,ly = nil,nil
+    local dx,dy = nil,nil
+    local lines = {}
+    for i,coord in ipairs(self.coords) do
+        if i % 2 == 1 then
+            local x = coord
+            if lx ~= nil then
+                dx = lx - x
+            end
+            lx = x
+        else
+            local y = coord
+            if ly ~= nil then
+                dy = ly - y
+            end
+            table.insert(lines,(dy/dx))
+            ly = y
+        end
+    end
+    return lines
+end
+
 local circle = Shape:new("circle",{100,100,50},{1,1,1},false)
 local triangle = Shape:new("poly",{200,200,300,200,250,300},{1,1,1},false)
 
 function love.update()
     circle:move(1,0)
+    triangle:move(2,0)
 end
 
 function love.draw()
