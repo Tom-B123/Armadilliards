@@ -1,3 +1,7 @@
+
+local function getAngle(x,y)
+end
+
 Shape = {}
 Shape.__index = Shape
 
@@ -43,12 +47,12 @@ function Shape:getLines()
     local lx,ly = nil,nil
     local dx,dy = nil,nil
     local lines = {}
-    local corners = #self.coords / 2
+    local points = #self.coords / 2
     --If it is a point or a line, loop one less time
-    if corners < 3 then
-        corners = corners - 1
+    if points < 3 then
+        points = points - 1
     end
-    for i = 1,(corners + 1) * 2 do
+    for i = 1,(points + 1) * 2 do
         local coord = self.coords[i]
         if i > #self.coords then 
             coord = self.coords[i-#self.coords]
@@ -77,6 +81,27 @@ function Shape:getLines()
         end
     end
     return lines
+end
+
+function Shape:rotate(angle)
+    local centre = {x=0,y=0}
+    local points = #self.coords / 2
+    for i,coord in ipairs(self.coords) do
+        if i % 2 == 1 then
+            centre.x = centre.x + coord
+        else
+            centre.y = centre.y + coord
+        end
+    end
+    centre.x = centre.x / points
+    centre.y = centre.t / points
+    for i,coord in ipairs(self.coords) do
+        if i % 2 == 1 then
+
+        else
+
+        end
+    end
 end
 
 local circle = Shape:new("circle",{100,100,50},{1,1,1},false)
