@@ -93,7 +93,7 @@ function Shape:getLines()
                 if not isInf(gradient) then
                     yInt = y - gradient * x
                 end
-                local line = {gradient,yInt,lx,x}
+                local line = {gradient,yInt,lx,x,ly,y}
                 table.insert(lines,line)
             end
             lx = x
@@ -111,37 +111,53 @@ function Shape:intersects(shape)
         
         for i,line1 in ipairs(lines1) do
             for j,line2 in ipairs(lines2) do
-                local minimums = {
+                local xMinimums = {
                     math.min(line1[3],line1[4]),
                     math.min(line2[3],line2[4])
                 }
-                local maximums = {
+                local xMaximums = {
                     math.max(line1[3],line1[4]),
                     math.max(line2[3],line2[4])
                 }
-                local overlap = {
-                    math.max(minimums[1],minimums[2]),
-                    math.min(maximums[1],maximums[2])
+                local yMinimums = {
+                    math.min(line1[5],line1[6]),
+                    math.min(line2[5],line2[6])
+                }
+                local yMaximums = {
+                    math.max(line1[5],line1[6]),
+                    math.max(line2[5],line2[6])
+                }
+                local xOverlap = {
+                    math.max(xMinimums[1],xMinimums[2]),
+                    math.min(xMaximums[1],xMaximums[2])
+                }
+                local yOverlap = {
+                    math.max(yMinimums[1],yMinimums[2]),
+                    math.min(yMaximums[1],yMaximums[2])
                 }
 
                 local xIntersect
-
+                local yIntersect
+                
                 local lGradient = line1[1]
                 local lIntercept = line1[2]
                 local rGradient = line2[1]
                 local rIntercept = line2[2]
                 
-                if line1[3] == line1[4] then xIntersect = line1[3]
-                elseif line2[3] == line2[4] then xIntersect = line2[3]
+                if line1[3] == line1[4] then
+                    xIntersect = line1[3]
+                    yIntersect = xIntersect * rGradient * rIntercept
+                elseif line2[3] == line2[4] then
+                    xIntersect = line2[3]
+                    yIntersect = xIntersect * lGradient * lIntercept
                 else
-
-                    lGradient = lGradient - rGradient
-                    rIntercept = rIntercept - lIntercept
-
-                    xIntersect = rIntercept / lGradient
+                    xIntersect = (rIntercept - lIntercept) / (lGradient - rGradient)
+                    yIntersect = lGradient * xIntersect + lIntercept
                 end
-                if overlap[1] <= xIntersect and xIntersect <= overlap[2] then
-                    isIntersecting = true
+                if xOverlap[1] <= xIntersect and xIntersect <= xOverlap[2] then
+                    if yOverlap[1] <= yIntersect and yIntersect <= yOverlap[2] then
+                        isIntersecting = true
+                    end
                 end
                 -- love.graphics.setColor(1,0,0)
                 -- love.graphics.line(overlap[1],0,overlap[1],600)
