@@ -66,35 +66,38 @@ function Shape:getLines()
     if points < 3 then
         points = points - 1
     end
-    for i = 1,(points + 1) * 2 do
-        local coord = self.coords[i]
-        if i > #self.coords then 
-            coord = self.coords[i-#self.coords]
+    for i = 1,(points + 1) do
+        local x,y = self.coords[2*i-1],self.coords[2*i]
+        if i > points then 
+            x = self.coords[2*i-1-#self.coords]
+            y = self.coords[2*i-#self.coords]
         end
-        if i % 2 == 1 then
-            local x = coord
-            if lx ~= nil then
-                dx = lx - x
-            end
-            lx = x
-        else
-            local y = coord
-            if ly ~= nil then
-                dy = ly - y
-            end
-            if dx and dy then
-                local gradient = dy/dx
-                local yInt = "none"
-                if not isInf(gradient) then
-                    yInt = y - gradient * lx
-                end
-                local line = {gradient,yInt}
-                table.insert(lines,line)
-            end
-            ly = y
+        if lx ~= nil then
+            dx = lx - x
         end
+        
+        if ly ~= nil then
+            dy = ly - y
+        end
+        if dx and dy then
+            local gradient = dy/dx
+            local yInt = "none"
+            if not isInf(gradient) then
+                yInt = y - gradient * x
+            end
+            local line = {gradient,yInt}
+            table.insert(lines,line)
+        end
+        lx = x
+        ly = y
     end
     return lines
+end
+
+function Shape:intersects(shape)
+    if self.shape == "poly" and shape.shape == "poly" then
+        
+    end
 end
 
 function Shape:rotate(angle)
@@ -120,20 +123,27 @@ function Shape:rotate(angle)
     
 end
 
-local circle = Shape:new("circle",{100,100,50},{1,1,1},false)
-local square = Shape:new("poly",{300,300,400,300,400,400,300,400},{1,1,1},false)
+
+local circle = Shape:new("circle",{100,350,50},{1,1,1},false)
+local square = Shape:new("poly",{400,300,500,300,500,400,400,400},{1,1,1},false)
+local triangle = Shape:new("poly",{400,300,500,300,450,400},{1,1,1},false)
+
+triangle:move(-300,0)
 
 function love.update(dt)
-    circle:move(100 * dt,0)
-    square:move(50 * dt,0)
-    square:rotate(math.pi / 3 * dt)
+    -- circle:move(100 * dt,0)
+    -- square:move(50 * dt,0)
+    -- triangle:move(10*dt,0)
+    triangle:rotate(math.pi / 180)
 end
 
 function love.draw()
+    love.graphics.print("fps: "..tostring(love.timer.getFPS()),600,0)
     circle:draw()
     square:draw()
-    
-    for i,line in ipairs(square:getLines()) do
-        love.graphics.print(line[1]..line[2],10,i*20)
+    triangle:draw()
+    for i,line in ipairs(triangle:getLines()) do
+        love.graphics.circle("fill",0,line[2],10)
+        love.graphics.print(line[1]..","..line[2],0,i*20)
     end
 end
