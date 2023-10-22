@@ -166,8 +166,12 @@ function Shape:intersects(shape)
             end
         end
     end
-    if isIntersecting then self.fill = "fill"
-    else self.fill = "line"
+    if isIntersecting then 
+        self.fill = "fill"
+        shape.fill = "fill"
+    else 
+        self.fill = "line"
+        shape.fill = "line"
     end
     return isIntersecting
 end
@@ -200,31 +204,18 @@ local circle = Shape:new("circle",{100,350,50},{1,1,1},false)
 local square = Shape:new("poly",{400,300,500,300,500,400,400,400},{1,1,1},false)
 local triangle = Shape:new("poly",{400,300,500,300,450,400},{1,1,1},false)
 
-local line1 = Shape:new("poly",{5,500,500,5,5,5},{1,1,1},false)
-local line2 = Shape:new("poly",{100,100,400,400,100,400},{1,1,1},false)
-
 triangle:move(-300,0)
 
 function love.update(dt)
-    local mx,my = love.mouse.getPosition()
-    line1:move(-(lmx-mx),-(lmy-my))
-    line1:rotate(math.pi/180)
-    lmx = mx
-    lmy = my
+    square:move(-0.5,0)
+    square:rotate(0.01)
+    triangle:move(0.5,0)
 end
 
 function love.draw()
     love.graphics.setColor(1,1,1)
     love.graphics.print("fps: "..tostring(love.timer.getFPS()),600,0)
-    line1:draw()
-    line2:draw()
-    line1:intersects(line2)
-    -- circle:draw()
-    -- square:draw()
-    -- triangle:draw()
-    -- for i,line in ipairs(triangle:getLines()) do
-    --     love.graphics.circle("fill",line[3],line[2],10)
-    --     love.graphics.circle("fill",line[4],line[2],10)
-    --     love.graphics.print(line[1]..","..line[2],0,i*20)
-    -- end
+    square:draw()
+    triangle:draw()
+    square:intersects(triangle)
 end
