@@ -1,5 +1,19 @@
 
 local function getAngle(x,y)
+    local ax,ay = math.abs(x),math.abs(y)
+    if x > 0 and y >= 0 then
+        return math.atan(ay/ax)
+    elseif x <= 0 and y > 0 then
+        return math.atan(ax/ay) + math.pi / 2
+    elseif x < 0 and y <= 0 then
+        return math.atan(ay/ax) + math.pi
+    elseif x >= 0 and y < 0 then
+        return math.atan(ax/ay) + math.pi * 3 / 2
+    end
+end
+
+local function getDistance(x,y)
+    return (x^2+y^2)^0.5
 end
 
 Shape = {}
@@ -94,27 +108,33 @@ function Shape:rotate(angle)
         end
     end
     centre.x = centre.x / points
-    centre.y = centre.t / points
-    for i,coord in ipairs(self.coords) do
-        if i % 2 == 1 then
-
-        else
-
-        end
+    centre.y = centre.y / points
+    for i = 1,points do
+        local x,y = self.coords[2*i-1],self.coords[2*i]
+        local distanceTo = getDistance(centre.x-x,centre.y-y)
+        local angleTo = getAngle(centre.x-x,centre.y-y)
+        love.graphics.print(distanceTo..","..angleTo,100,i*20)
     end
+    --     local newAngle = angleTo + angle
+    --     self.coords[2*i-1] = self.coords[2*i-1] + distanceTo*math.cos(newAngle)
+    --     self.coords[2*i] = self.coords[2*i] + distanceTo*math.sin(newAngle)
+    -- end
+    
 end
 
 local circle = Shape:new("circle",{100,100,50},{1,1,1},false)
-local square = Shape:new("poly",{300,380,400,310,440,410,340,410},{1,1,1},false)
+local square = Shape:new("poly",{300,300,400,300,350,400},{1,1,1},false)
 
 function love.update()
     circle:move(1,0)
-    square:move(2,0)
+    -- square:move(2,0)
+    
 end
 
 function love.draw()
     circle:draw()
     square:draw()
+    square:rotate(0)
     for i,line in ipairs(square:getLines()) do
         love.graphics.print(line[1]..line[2],10,i*20)
     end
