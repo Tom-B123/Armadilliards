@@ -16,6 +16,8 @@ local function getDistance(x,y)
     return (x^2+y^2)^0.5
 end
 
+local lmx,lmy = love.mouse.getPosition()
+
 Shape = {}
 Shape.__index = Shape
 
@@ -138,7 +140,7 @@ function Shape:intersects(shape)
 
                     xIntersect = rIntercept / lGradient
                 end
-                if overlap[1] < xIntersect and xIntersect < overlap[2] then
+                if overlap[1] <= xIntersect and xIntersect <= overlap[2] then
                     isIntersecting = true
                 end
                 -- love.graphics.setColor(1,0,0)
@@ -188,12 +190,11 @@ local line2 = Shape:new("poly",{100,100,400,400,100,400},{1,1,1},false)
 triangle:move(-300,0)
 
 function love.update(dt)
-    -- circle:move(100 * dt,0)
-    -- square:move(50 * dt,0)
-    -- triangle:move(10*dt,0)
-    line2:move(0.1,0)
-    line1:rotate(math.pi / 180)
-    line1:move(1,0)
+    local mx,my = love.mouse.getPosition()
+    line1:move(-(lmx-mx),-(lmy-my))
+    line1:rotate(math.pi/180)
+    lmx = mx
+    lmy = my
 end
 
 function love.draw()
