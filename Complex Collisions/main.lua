@@ -102,7 +102,7 @@ function Shape:getLines()
 end
 
 function Shape:intersects(shape)
-    -- local overlap
+    local isIntersecting = false
     if self.shape == "poly" and shape.shape == "poly" then
         local lines1 = self:getLines()
         local lines2 = shape:getLines()
@@ -121,14 +121,37 @@ function Shape:intersects(shape)
                     math.max(minimums[1],minimums[2]),
                     math.min(maximums[1],maximums[2])
                 }
-                love.graphics.setColor(1,0,0)
-                love.graphics.line(overlap[1],0,overlap[1],600)
-                love.graphics.setColor(0,0,1)
-                love.graphics.line(overlap[2],0,overlap[2],600)
+
+                local xIntersect
+
+                local lGradient = line1[1]
+                local lIntercept = line1[2]
+                local rGradient = line2[1]
+                local rIntercept = line2[2]
+                
+                if line1[3] == line1[4] then xIntersect = line1[3]
+                elseif line2[3] == line2[4] then xIntersect = line2[3]
+                else
+
+                    lGradient = lGradient - rGradient
+                    rIntercept = rIntercept - lIntercept
+
+                    xIntersect = rIntercept / lGradient
+                end
+                if overlap[1] < xIntersect and xIntersect < overlap[2] then
+                    isIntersecting = true
+                end
+                -- love.graphics.setColor(1,0,0)
+                -- love.graphics.line(overlap[1],0,overlap[1],600)
+                -- love.graphics.setColor(0,0,1)
+                -- love.graphics.line(overlap[2],0,overlap[2],600)
             end
         end
     end
-    -- return overlap
+    if isIntersecting then self.fill = "fill"
+    else self.fill = "line"
+    end
+    return isIntersecting
 end
 
 function Shape:rotate(angle)
@@ -168,10 +191,13 @@ function love.update(dt)
     -- circle:move(100 * dt,0)
     -- square:move(50 * dt,0)
     -- triangle:move(10*dt,0)
-    -- triangle:rotate(math.pi / 180)
+    line2:move(0.1,0)
+    line1:rotate(math.pi / 180)
+    line1:move(1,0)
 end
 
 function love.draw()
+    love.graphics.setColor(1,1,1)
     love.graphics.print("fps: "..tostring(love.timer.getFPS()),600,0)
     line1:draw()
     line2:draw()
