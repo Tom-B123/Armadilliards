@@ -47,6 +47,7 @@ Ball.__index = Ball
 function Ball:new(x,y)
     local object = {}
     setmetatable(object,Ball)
+    --Positional vectors
     object.x = x
     object.y = y
     object.vx = 0
@@ -58,8 +59,12 @@ function Ball:new(x,y)
     object.lvx = 0
     object.lvy = 0
     object.radius = 14
+    --Model to draw
     object.model = "ball"
-    object.team = "neutral"
+    --Innate team of the ball
+    object.team = nil
+    --Temporary team for neutral balls when struck
+    object.tempTeam = {nil,0}
     --rotation in the z axis
     object.yaw = 0
     --rotation stage of the ball
@@ -85,7 +90,7 @@ function Ball:draw(offsetX,offsetY)
     local function tryDraw()
         love.graphics.setColor(0,0,0,0.4)
 
-        if self.team == "team 1" then love.graphics.setColor(0,0,1,0.4) end
+        if self.team == "team 1" or self.tempTeam[1] == "team 1" then love.graphics.setColor(0,0,1,0.4) end
 
         love.graphics.circle(
             "fill",
@@ -163,15 +168,29 @@ function Ball:constraint()
     end
 end
 
-local count = 4
+function Ball:getTeam()
+    if self.team then return self.team
+    elseif self.tempTeam[1] then return self.tempTeam[1]
+    end
+end
+
+function Ball:setTeam(team)
+    if not self.team then self.tempTeam = {team,200} end
+end
+
+function Ball:update(dt)
+    if self.tempTeam[2] > 1 then
+        self.tempTeam[2] = self.tempTeam[2] - 1
+    else
+        self.tempTeam[1] = nil
+    end
+    self:verlet(dt)
+    self:constraint()
+end
+
+local count = 64
 for i = 1,count do
-    local speed = 5
-    local ball = Ball:new(windowDims.x/2,windowDims.y/2)
-    local angle = i / (count/2) * math.pi
-    ball.vx = speed * math.cos(angle)
-    ball.vy = speed * math.sin(angle)
-    ball.x = ball.x + ball.vx * 2
-    ball.y = ball.y + ball.vy * 2
+    local ball = Ball:new(50 + i%20 * 32,50 + math.floor(i/20) * 32)
     table.insert(balls,ball)
 end
 
@@ -228,7 +247,7 @@ function Rope:new(source, target)
     object.tAngle = nil
     object.tLength = nil
     object.target = nil
-    if not target[1] then object.target = target end
+    -- if not target[1] then object.target = target end
     object.endX = 0
     object.endY = 0
     object.tAngle = target[1]
@@ -249,17 +268,17 @@ local function ropeLink(ball)
 end
 
 function Rope:update()
-    if self.target then
-        local angle = -yawAngle(self.source.x-self.target.x,self.source.y-self.target.y)
-        local distance = findDistance(self.source.x-self.target.x,self.source.y-self.target.y)
-        local dx = math.cos(angle) * distance / 20
-        local dy = math.sin(angle) * distance / 20
-        self.endX = self.endX + dx
-        self.endY = self.endY + dy
-        if findDistance(self.endX,self.endY) >= distance then
-            return true
-        end
-    elseif self.tAngle and self.tLength then
+    -- if self.target then
+    --     local angle = -yawAngle(self.source.x-self.target.x,self.source.y-self.target.y)
+    --     local distance = findDistance(self.source.x-self.target.x,self.source.y-self.target.y)
+    --     local dx = math.cos(angle) * distance / 20
+    --     local dy = math.sin(angle) * distance / 20
+    --     self.endX = self.endX + dx
+    --     self.endY = self.endY + dy
+    --     if findDistance(self.endX,self.endY) >= distance then
+    --         return true
+    --     end
+    if self.tAngle and self.tLength then
         local dx = math.cos(self.tAngle) * self.tLength / 20
         local dy = math.sin(self.tAngle) * self.tLength / 20
         self.endX = self.endX + dx
@@ -305,6 +324,7 @@ Bullet.__index = Bullet
 function Bullet:new(source,angle)
     local object = {}
     setmetatable(object,Bullet)
+    object.source = source
     object.x = source.x
     object.y = source.y
     object.radius = 4
@@ -313,7 +333,11 @@ function Bullet:new(source,angle)
     return object
 end
 
-local function bulletHit(object,fx,fy)
+function Bullet:hit(object)
+    local speed = 10
+    object:setTeam(self.source:getTeam())
+    local fx = speed * math.cos(self.angle)
+    local fy = speed * math.sin(self.angle)
     object.vx = object.vx + fx
     object.vy = object.vy + fy
     object.lvx = object.lvx + fx
@@ -337,7 +361,7 @@ function Bullet:update()
         end
     end
     if closestBall and minDistance < playerBall.radius + self.radius then
-        bulletHit(closestBall,speed * math.cos(self.angle), speed * math.sin(self.angle))
+        self:hit(closestBall)
         return true
     end
     if self.distance == 300 then
@@ -350,18 +374,6 @@ function Bullet:draw(offsetX,offsetY)
     love.graphics.circle("fill",self.x + offsetX,self.y + offsetY,self.radius)
 end
 
-local function verlet(objects,dt)
-    for i,ball in ipairs(objects) do
-        ball:verlet(dt)
-    end
-end
-
-local function constraint(objects)
-    for i,ball in ipairs(objects) do
-        ball:constraint()
-    end
-end
-
 local function expensiveCollisions(objects)
     local bounce = 1
     for i, obj1 in ipairs(objects) do
@@ -370,9 +382,25 @@ local function expensiveCollisions(objects)
                 local collisionAxis = {x=0,y=0}
                 collisionAxis.x = obj1.x - obj2.x
                 collisionAxis.y = obj1.y - obj2.y
-                local distance = (collisionAxis.x^2 + collisionAxis.y^2) ^ 0.5
+                local distance = findDistance(collisionAxis.x,collisionAxis.y)
                 local diameter = obj1.radius + obj2.radius
+                --If they collide:
                 if distance < diameter then
+                    local speed1 = findDistance(obj1.vx,obj1.vy)
+                    local speed2 = findDistance(obj2.vx,obj2.vy)
+                    local team1 = obj1:getTeam()
+                    local team2 = obj2:getTeam()
+                    --Changing temporary teams
+                    if speed1 >= speed2 then
+                        if team1 and not team2 then
+                            obj2:setTeam(team1)
+                        end
+                    else
+                        if team2 and not team1 then
+                            obj1:setTeam(team2)
+                        end
+                    end
+
                     local n = collisionAxis
                     n.x = n.x / distance
                     n.y = n.y / distance
@@ -389,6 +417,13 @@ local function expensiveCollisions(objects)
             end
         end
     end
+end
+
+local function updateBalls(dt)
+    for i,ball in ipairs(balls) do
+        ball:update(dt)
+    end
+    expensiveCollisions(balls)
 end
 
 local function processRopes()
@@ -439,10 +474,7 @@ local function ropeActive()
     local centreX,centreY = Camera:getPosition()
     local mx,my = love.mouse.getPosition()
     local centre = {x=centreX,y=centreY}
-    local angle = yawAngle(centre.x-mx,centre.y-my)
-    local length = findDistance(centre.x-mx,centre.y-my)
-
-    if length > 150 then length = 150 end
+    
 
     local rx = mx - (windowDims.x/2)
     local ry = my - (windowDims.y/2)
@@ -465,12 +497,17 @@ local function ropeActive()
     end
 
     if closestBall and minDistance < playerBall.radius then
-        local nRope = Rope:new(playerBall,closestBall)
-        table.insert(ropeObjects,nRope)
-    else
-        local nRope = Rope:new(playerBall,{angle + math.pi,length})
-        table.insert(ropeObjects,nRope)
+        mx = closestBall.x + offsetX + playerBall.vx
+        my = closestBall.y + offsetY + playerBall.vy
     end
+
+    local angle = yawAngle(centre.x-mx,centre.y-my)
+    local length = findDistance(centre.x-mx,centre.y-my)
+
+    if length > 150 then length = 150 end
+
+    local nRope = Rope:new(playerBall,{angle + math.pi,length})
+    table.insert(ropeObjects,nRope)
 end
 
 local function pistolActive()
@@ -669,11 +706,7 @@ end
 
 function love.update(dt)
 
-    constraint(balls)
-
-    expensiveCollisions(balls)
-
-    verlet(balls,dt)
+    updateBalls(dt)
 
     processPlayerInputs()
 
