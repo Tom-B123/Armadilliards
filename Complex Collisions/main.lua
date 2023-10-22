@@ -96,8 +96,26 @@ end
 
 function Shape:intersects(shape)
     if self.shape == "poly" and shape.shape == "poly" then
-        
+        local lines1 = self:getLines()
+        local lines2 = shape:getlines()
+        for i,line1 in ipairs(lines1) do
+            for j,line2 in ipairs(lines2) do
+                local minimums = {
+                    math.min(line1[3],line1[4]),
+                    math.min(line2[3],line2[4])
+                }
+                local maximums = {
+                    math.max(line1[3],line1[4]),
+                    math.max(line2[3],line2[4])
+                }
+                local overlap = {
+                    math.max(minimums[1],minimums[2]),
+                    math.min(maximums[1],maximums[2])
+                }
+            end
+        end
     end
+
 end
 
 function Shape:rotate(angle)
@@ -128,13 +146,14 @@ local circle = Shape:new("circle",{100,350,50},{1,1,1},false)
 local square = Shape:new("poly",{400,300,500,300,500,400,400,400},{1,1,1},false)
 local triangle = Shape:new("poly",{400,300,500,300,450,400},{1,1,1},false)
 
+
 triangle:move(-300,0)
 
 function love.update(dt)
     -- circle:move(100 * dt,0)
     -- square:move(50 * dt,0)
     -- triangle:move(10*dt,0)
-    triangle:rotate(math.pi / 180)
+    -- triangle:rotate(math.pi / 180)
 end
 
 function love.draw()
