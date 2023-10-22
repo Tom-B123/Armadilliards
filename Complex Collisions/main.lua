@@ -39,10 +39,15 @@ function Shape:new(shape,dims,colour,fill)
 end
 
 function Shape:draw()
+    love.graphics.setColor(self.colour)
     if self.shape == "circle" then
         love.graphics.circle(self.fill,self.coords[1],self.coords[2],self.radius)
     elseif self.shape == "poly" then
-        love.graphics.polygon(self.fill,self.coords)
+        if #self.coords == 4 then
+            love.graphics.line(self.coords)
+        elseif #self.coords > 4 then
+            love.graphics.polygon(self.fill,self.coords)
+        end
     end
 end
 
@@ -72,32 +77,36 @@ function Shape:getLines()
             x = self.coords[2*i-1-#self.coords]
             y = self.coords[2*i-#self.coords]
         end
-        if lx ~= nil then
-            dx = lx - x
-        end
-        
-        if ly ~= nil then
-            dy = ly - y
-        end
-        if dx and dy then
-            local gradient = dy/dx
-            local yInt = "none"
-            if not isInf(gradient) then
-                yInt = y - gradient * x
+        if x and y then 
+            if lx ~= nil then
+                dx = lx - x
             end
-            local line = {gradient,yInt,lx,x}
-            table.insert(lines,line)
+            
+            if ly ~= nil then
+                dy = ly - y
+            end
+            if dx and dy then
+                local gradient = dy/dx
+                local yInt = "none"
+                if not isInf(gradient) then
+                    yInt = y - gradient * x
+                end
+                local line = {gradient,yInt,lx,x}
+                table.insert(lines,line)
+            end
+            lx = x
+            ly = y
         end
-        lx = x
-        ly = y
     end
     return lines
 end
 
 function Shape:intersects(shape)
+    -- local overlap
     if self.shape == "poly" and shape.shape == "poly" then
         local lines1 = self:getLines()
-        local lines2 = shape:getlines()
+        local lines2 = shape:getLines()
+        
         for i,line1 in ipairs(lines1) do
             for j,line2 in ipairs(lines2) do
                 local minimums = {
@@ -112,10 +121,14 @@ function Shape:intersects(shape)
                     math.max(minimums[1],minimums[2]),
                     math.min(maximums[1],maximums[2])
                 }
+                love.graphics.setColor(1,0,0)
+                love.graphics.line(overlap[1],0,overlap[1],600)
+                love.graphics.setColor(0,0,1)
+                love.graphics.line(overlap[2],0,overlap[2],600)
             end
         end
     end
-
+    -- return overlap
 end
 
 function Shape:rotate(angle)
@@ -146,6 +159,8 @@ local circle = Shape:new("circle",{100,350,50},{1,1,1},false)
 local square = Shape:new("poly",{400,300,500,300,500,400,400,400},{1,1,1},false)
 local triangle = Shape:new("poly",{400,300,500,300,450,400},{1,1,1},false)
 
+local line1 = Shape:new("poly",{5,500,500,5,5,5},{1,1,1},false)
+local line2 = Shape:new("poly",{100,100,400,400,100,400},{1,1,1},false)
 
 triangle:move(-300,0)
 
@@ -158,12 +173,15 @@ end
 
 function love.draw()
     love.graphics.print("fps: "..tostring(love.timer.getFPS()),600,0)
-    circle:draw()
-    square:draw()
-    triangle:draw()
-    for i,line in ipairs(triangle:getLines()) do
-        love.graphics.circle("fill",line[3],line[2],10)
-        love.graphics.circle("fill",line[4],line[2],10)
-        love.graphics.print(line[1]..","..line[2],0,i*20)
-    end
+    line1:draw()
+    line2:draw()
+    line1:intersects(line2)
+    -- circle:draw()
+    -- square:draw()
+    -- triangle:draw()
+    -- for i,line in ipairs(triangle:getLines()) do
+    --     love.graphics.circle("fill",line[3],line[2],10)
+    --     love.graphics.circle("fill",line[4],line[2],10)
+    --     love.graphics.print(line[1]..","..line[2],0,i*20)
+    -- end
 end
