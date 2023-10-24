@@ -152,12 +152,10 @@ function Shape:intersects(shape)
                 if xOverlap[1] <= xIntersect and xIntersect <= xOverlap[2] then
                     if yOverlap[1] <= yIntersect and yIntersect <= yOverlap[2] then
                         isIntersecting = true
+                        love.graphics.setColor(1,1,1)
+                        
                     end
                 end
-                -- love.graphics.setColor(1,0,0)
-                -- love.graphics.line(overlap[1],0,overlap[1],600)
-                -- love.graphics.setColor(0,0,1)
-                -- love.graphics.line(overlap[2],0,overlap[2],600)
             end
         end
     end
@@ -197,10 +195,10 @@ end
 
 local triangle = Shape:new("poly",{100,100,200,100,150,200},{1,1,1},false)
 local rectangle = Shape:new("poly",{400,50,450,50,450,550,400,550},{0,0,1},false)
-triangle:move(-100,0)
+triangle:move(150,0)
 rectangle:rotate(0.01)
 function love.update(dt)
-    triangle:move(1,0)
+    triangle:move(0.25,0)
 end
 
 function love.draw()
