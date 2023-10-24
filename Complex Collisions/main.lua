@@ -87,13 +87,22 @@ function Shape:getLines()
             if ly ~= nil then
                 dy = ly - y
             end
-            if dx and dy then
+            if dx and dy and lx and ly then
                 local gradient = dy/dx
                 local yInt = "none"
                 if not isInf(gradient) then
                     yInt = y - gradient * x
                 end
-                local line = {gradient,yInt,lx,x,ly,y}
+                
+                
+                local line = {
+                    gradient,
+                    yInt,
+                    math.min(lx,x),
+                    math.max(lx,x),
+                    math.min(ly,y),
+                    math.max(ly,y)
+                }
                 table.insert(lines,line)
             end
             lx = x
@@ -111,29 +120,15 @@ function Shape:intersects(shape)
         
         for i,line1 in ipairs(lines1) do
             for j,line2 in ipairs(lines2) do
-                local xMinimums = {
-                    math.min(line1[3],line1[4]),
-                    math.min(line2[3],line2[4])
-                }
-                local xMaximums = {
-                    math.max(line1[3],line1[4]),
-                    math.max(line2[3],line2[4])
-                }
-                local yMinimums = {
-                    math.min(line1[5],line1[6]),
-                    math.min(line2[5],line2[6])
-                }
-                local yMaximums = {
-                    math.max(line1[5],line1[6]),
-                    math.max(line2[5],line2[6])
-                }
+                --The overlap of the left and right side of the lines
                 local xOverlap = {
-                    math.max(xMinimums[1],xMinimums[2]),
-                    math.min(xMaximums[1],xMaximums[2])
+                    math.max(line1[3],line2[3]),
+                    math.min(line1[4],line2[4])
                 }
+                --The overlap of the top and bottom side of the lines
                 local yOverlap = {
-                    math.max(yMinimums[1],yMinimums[2]),
-                    math.min(yMaximums[1],yMaximums[2])
+                    math.max(line1[5],line2[5]),
+                    math.min(line1[6],line2[6])
                 }
 
                 local xIntersect
@@ -200,22 +195,20 @@ function Shape:rotate(angle)
 end
 
 
-local circle = Shape:new("circle",{100,350,50},{1,1,1},false)
-local square = Shape:new("poly",{400,300,500,300,500,400,400,400},{1,1,1},false)
-local triangle = Shape:new("poly",{400,300,500,300,450,400},{1,1,1},false)
-
-triangle:move(-300,0)
-
+local triangle = Shape:new("poly",{100,100,200,100,150,200},{1,1,1},false)
+local rectangle = Shape:new("poly",{400,50,450,50,450,550,400,550},{0,0,1},false)
+triangle:move(-100,0)
+rectangle:rotate(0.01)
 function love.update(dt)
-    square:move(-0.5,0)
-    square:rotate(0.01)
-    triangle:move(0.5,0)
+    triangle:move(1,0)
 end
 
 function love.draw()
     love.graphics.setColor(1,1,1)
     love.graphics.print("fps: "..tostring(love.timer.getFPS()),600,0)
-    square:draw()
+
+    love.graphics.print(tostring(triangle:intersects(rectangle)))
     triangle:draw()
-    square:intersects(triangle)
+    
+    rectangle:draw()
 end
