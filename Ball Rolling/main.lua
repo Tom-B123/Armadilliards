@@ -1,3 +1,5 @@
+require("list")
+
 local porcupineImages = {}
 local ballImages = {}
 
@@ -731,6 +733,7 @@ function love.draw()
     local lMouse = love.mouse.isDown(1)
     local mMouse = love.mouse.isDown(3)
     local rMouse = love.mouse.isDown(2)
+    
     if lMouse then
         playerGhostInput("dash")
     elseif rMouse then
@@ -738,5 +741,4 @@ function love.draw()
     elseif mMouse then
         playerGhostInput("pistol")
     end
-
 end
