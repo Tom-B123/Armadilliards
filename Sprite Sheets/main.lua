@@ -38,8 +38,7 @@ function love.draw()
     love.graphics.setColor(colour)
     love.graphics.draw(teamBall,0,0,0,0.5,0.5)
     love.graphics.setColor(1,1,1)
-    -- love.graphics.draw(ballSheet,ballQuads[(tick%32)+1])
-    local i = (math.floor(tick / 5) % (15))+1
+    local i = (math.floor(tick / 2) % (15))+1
     love.graphics.draw(numberSheet,numberQuads[i],positions[i],80-16)
     
 end
