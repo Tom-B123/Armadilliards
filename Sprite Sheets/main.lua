@@ -13,7 +13,7 @@ local positions = {}
 local angle = math.pi / 15
 
 for i = 0,15 do
-    positions[i] = -80*math.cos(angle*i) + 80 - 16
+    positions[i] = -80*math.cos(angle*i) + 80 - 20
 end
 
 for i = 1,32 do
