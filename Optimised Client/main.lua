@@ -149,7 +149,6 @@ local function sendToServer(data)
 end
 
 local function receiveFromServer()
-    
     local data, err = client:receive()
     if data then
         return data
