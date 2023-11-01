@@ -47,4 +47,10 @@ function Button:update()
     self.mouseState = love.mouse.isDown(1)
 end
 
+function Button:draw()
+    love.graphics.setColor(self.colour)
+    love.graphics.print(self.text,self.x1,self.y1)
+    love.graphics.rectangle("line",self.x1,self.y1,self.x2-self.x1,self.y2-self.y1)
+end
+
 return Button
