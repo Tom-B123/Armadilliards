@@ -1,5 +1,6 @@
 require("lists")
 require("switch")
+require("button")
 
 local switch = Switch:new()
 switch:addCase("data",function() love.graphics.print("data") end)
