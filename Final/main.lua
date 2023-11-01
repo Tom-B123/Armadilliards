@@ -15,16 +15,16 @@ local function getState()
 end
 
 local stateSwitch = Switch:new()
+local newStateSwitch = Switch:new()
+local drawStateSwitch = Switch:new()
 
 stateSwitch:addCase("main menu",function() 
-    print("menu") 
+    
 end)
 
 stateSwitch:addCase("gamemode select",function() 
-    print("gamemode") 
+    
 end)
-
-local newStateSwitch = Switch:new()
 
 newStateSwitch:addCase("main menu",function() 
     print("change to menu") 
@@ -38,25 +38,27 @@ newStateSwitch:addCase("paused",function()
     print("paused") 
 end)
 
-local drawStateSwitch = Switch:new()
-
-drawStateSwitch:addCase("main menu",function() 
-    love.graphics.print("main menu graphics",100,100) 
+drawStateSwitch:addCase("main menu",function()
+    love.graphics.print("press any key to continue",100,100)
 end)
 
-drawStateSwitch:addCase("gamemode select",function() 
-    love.graphics.print("gamemode select graphics",100,100) 
+drawStateSwitch:addCase("gamemode select",function()
+    love.graphics.print("press space to pause",100,100)
 end)
 
 drawStateSwitch:addCase("paused",function() 
-    love.graphics.print("paused graphics",100,100) 
+    love.graphics.print("press space to unpause",100,100)
 end)
 
 function love.keypressed(key)
     if state == "main menu" then
         state = "gamemode select"
-    else
-        state = "paused"
+    elseif key == "space" then
+        if state == "gamemode select" then
+            state = "paused"
+        else
+            state = "gamemode select"
+        end
     end
 end
 
