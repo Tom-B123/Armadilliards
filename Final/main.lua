@@ -3,14 +3,22 @@ require("switch")
 require("button")
 require("net")
 
-local switch = Switch:new()
-switch:addCase("data",function() love.graphics.print("data") end)
+local state = "main"
+local lState = state
+
+local function getNewState()
+    if state ~= lState then return state end
+end
+
+local function getState()
+    return state
+end
+
+
 
 function love.update()
+
 end
 
 function love.draw()
-    switch:case("data")
-    love.graphics.print(root.val,0,root.val/10)
-    root = root.prev
 end
