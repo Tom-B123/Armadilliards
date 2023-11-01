@@ -15,13 +15,42 @@ local function getState()
 end
 
 local stateSwitch = Switch:new()
-stateSwitch:addCase("main menu",function() print("menu") end)
-stateSwitch:addCase("gamemode select",function() print("gamemode") end)
+
+stateSwitch:addCase("main menu",function() 
+    print("menu") 
+end)
+
+stateSwitch:addCase("gamemode select",function() 
+    print("gamemode") 
+end)
 
 local newStateSwitch = Switch:new()
-newStateSwitch:addCase("main menu",function() print("change to menu") end)
-newStateSwitch:addCase("gamemode select",function() print("change to gamemode") end)
-newStateSwitch:addCase("paused",function() print("paused") end)
+
+newStateSwitch:addCase("main menu",function() 
+    print("change to menu") 
+end)
+
+newStateSwitch:addCase("gamemode select",function() 
+    print("change to gamemode") 
+end)
+
+newStateSwitch:addCase("paused",function() 
+    print("paused") 
+end)
+
+local drawStateSwitch = Switch:new()
+
+drawStateSwitch:addCase("main menu",function() 
+    love.graphics.print("main menu graphics",100,100) 
+end)
+
+drawStateSwitch:addCase("gamemode select",function() 
+    love.graphics.print("gamemode select graphics",100,100) 
+end)
+
+drawStateSwitch:addCase("paused",function() 
+    love.graphics.print("paused graphics",100,100) 
+end)
 
 function love.keypressed(key)
     if state == "main menu" then
@@ -41,5 +70,6 @@ function love.update()
 end
 
 function love.draw()
+    drawStateSwitch:case(getState())
     love.graphics.print(state)
 end
