@@ -62,10 +62,35 @@ end)
 newStateSwitch:addCase("gamemode select",function()
     clearButtons()
     print("change to gamemode select")
-    newButton("click to pause",{1,1,1},100,300,300,350,function()
+    newButton("multiplayer",{1,1,1},100,300,300,350,function()
+        --Connect to the lobby selection server
+        state = "searching for lobby"
     end)
 end)
 
+newStateSwitch:addCase("searching for lobby",function()
+    clearButtons()
+    print("change to searching for lobby")
+    newButton("player name",{1,1,1},100,25,300,75,function()
+        --Edit player name
+        print("editing player name")
+    end)
+    newButton("Create new lobby",{1,1,1},100,150,300,200,function()
+        state = "lobby settings"
+    end)
+end)
+
+newStateSwitch:addCase("lobby settings",function()
+    clearButtons()
+    print("change to lobby settings")
+    newButton("back",{1,1,1},100,25,300,75,function()
+        state = "searching for lobby"
+    end)
+    newButton("Lobby settings",{1,1,1},100,150,300,200,function()
+        --Settings for the lobby, eg max player count
+        print("editing lobby settings")
+    end)
+end)
 
 drawStateSwitch:addCase("main menu",function()
     love.graphics.print("This is the main menu",100,100)
@@ -73,6 +98,16 @@ drawStateSwitch:addCase("main menu",function()
 end)
 
 drawStateSwitch:addCase("gamemode select",function()
+    love.graphics.print("Leaderboard",100,100)
+    drawButtons()
+end)
+
+drawStateSwitch:addCase("searching for lobby",function()
+    love.graphics.print("Lobbies list",100,100)
+    drawButtons()
+end)
+
+drawStateSwitch:addCase("lobby settings",function()
     drawButtons()
 end)
 
