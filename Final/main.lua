@@ -37,25 +37,25 @@ local function getState()
     return state
 end
 
+--To run every frame a state is active.
 local stateSwitch = Switch:new()
+--To run the first frame a state is active
 local newStateSwitch = Switch:new()
+--To draw every frame a state is active.
 local drawStateSwitch = Switch:new()
 
+--Adding cases to the switch statements
 stateSwitch:addCase("main menu",function()
 end)
 
 stateSwitch:addCase("gamemode select",function()
 end)
 
-stateSwitch:addCase("paused",function()
-end)
-
 newStateSwitch:addCase("main menu",function()
     clearButtons()
     print("change to menu")
-    newButton("click to start",{1,1,1},100,100,300,150,function()
+    newButton("click to start",{1,1,1},100,300,300,350,function()
         state = "gamemode select"
-        
     end)
 end)
 
@@ -63,47 +63,29 @@ newStateSwitch:addCase("gamemode select",function()
     clearButtons()
     print("change to gamemode select")
     newButton("click to pause",{1,1,1},100,300,300,350,function()
-        state = "paused"
     end)
 end)
 
-newStateSwitch:addCase("paused",function()
-    clearButtons()
-    print("paused")
-    newButton("click to unpause",{1,1,1},100,300,300,350,function()
-        state = "gamemode select"
-    end)
-end)
 
 drawStateSwitch:addCase("main menu",function()
-    love.graphics.print("",100,100)
+    love.graphics.print("This is the main menu",100,100)
     drawButtons()
 end)
 
 drawStateSwitch:addCase("gamemode select",function()
-    love.graphics.print("press space to pause",100,100)
     drawButtons()
 end)
 
-drawStateSwitch:addCase("paused",function() 
-    love.graphics.print("press space to unpause",100,100)
-    drawButtons()
-end)
-
+--Handle keyboard inputs
 function love.keypressed(key)
     if key == "escape" then love.event.quit() end
 
     if state == "main menu" then
         state = "gamemode select"
-    elseif key == "space" then
-        if state == "gamemode select" then
-            state = "paused"
-        else
-            state = "gamemode select"
-        end
     end
 end
 
+--Process each frame
 function love.update()
 
     updateButtons()
@@ -115,6 +97,7 @@ function love.update()
     lState = state
 end
 
+--Draw each frame
 function love.draw()
     drawStateSwitch:case(getState())
     love.graphics.print(state)
