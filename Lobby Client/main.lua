@@ -246,11 +246,14 @@ local function toggleReady()
 end
 
 local function backToMain()
-    for i = 1,#players do
-        players[i] = nil
-    end
+    -- for i = 1,#players do
+    --     players[i] = nil
+    -- end
     if client then sendToServer("exit:"..playerName)
-    else connectToMainLobby() end
+    elseif server then
+        connectToMainLobby()
+        sendToServer("clse:"..server.name)
+    end
 end
 
 newLobbyButton("Ready",{1,1,1},futuraL,200,200,300,300,toggleReady)
@@ -287,8 +290,9 @@ local function comWithLobby()
             local commandData = split(serverMessage,":")
 
             if commandData[1] == "exit" then
-                love.graphics.print("exit")
+                local tmp = lobbyName
                 connectToMainLobby()
+                sendToServer("exit:"..tmp)
 
                 quit = true
 
@@ -429,7 +433,6 @@ function love.quit()
         local tmp = lobbyName
         connectToMainLobby()
         sendToServer("exit:"..tmp)
-
     end
     if server then
         --Disconnect all connected clients when closing
@@ -508,20 +511,18 @@ function love.update()
         end
         updatePlayerName()
     end
-    
-    
 
-    
-end
-
-
-function love.draw()
     if server then comWithClients() end
 
     if client then comWithLobby()
     end
 
     lState = state
+
+end
+
+
+function love.draw()
 
     if lobbyName == "_Main" then 
         displayLobbies()
