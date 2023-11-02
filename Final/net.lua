@@ -3,7 +3,7 @@ Server = {}
 Server.__index = Server
 
 local mainIp = socket.dns.toip(socket.dns.gethostname( )) 
-local mainPort = 1000
+local mainPort = 500
 
 function Server:new(port)
     local object = {}
@@ -78,8 +78,13 @@ function Lobby:new(name,port,ip,hostName,isActive,maxPlayers)
     object.hostName = hostName
     object.isActive = isActive
     object.playerCount = 1
-    if maxPlayers < 2 then maxPlayers = 2
-    elseif maxPlayers > 8 then maxPlayers = 8 end
+
+    if maxPlayers > 8 then maxPlayers = 8 
+    elseif maxPlayers == -1 then 
+        maxPlayers = 10^6 
+        object.playerCount = 0
+    end
+    
     object.maxPlayers = maxPlayers
     if isActive then
         object.server = Server:new(port)
@@ -87,6 +92,11 @@ function Lobby:new(name,port,ip,hostName,isActive,maxPlayers)
         --Add to lobbies table
     end
     return object
+end
+
+
+function Lobby:hostMain()
+    return Lobby:new("__main lobby__", mainPort, mainIp,"main host",true,-1)
 end
 
 function Lobby:send(clients,message)

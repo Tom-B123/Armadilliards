@@ -197,6 +197,7 @@ function love.update()
 
     updateButtons()
 
+    --Loop through all state changes this frame
     local nState = getNewState()
     while nState do
         newStateSwitch:case(nState)
