@@ -65,7 +65,7 @@ newStateSwitch:addCase("gamemode select",function()
     print("change to gamemode select")
     newButton("multiplayer",{1,1,1},100,300,300,350,function()
         --Connect to the lobby selection server
-        state = "searching for lobby"
+        state = "connecting to server"
     end)
     newButton("settings",{1,1,1},100,375,300,425,function()
         tempState = state
@@ -73,6 +73,28 @@ newStateSwitch:addCase("gamemode select",function()
     end)
     newButton("back",{1,1,1},100,450,300,500,function()
         state = "main menu"
+    end)
+end)
+
+
+newStateSwitch:addCase("connecting to server",function()
+    clearButtons()
+    print("connecting to server")
+    lState = "connecting to server"
+    local nPlayer = Player:tryConnect()
+    if not nPlayer then
+        state = "connection error"
+    end
+end)
+
+newStateSwitch:addCase("connection error",function()
+    clearButtons()
+    print("connection error")
+    newButton("retry",{1,1,1},100,375,300,425,function()
+        state = "connecting to server"
+    end)
+    newButton("back",{1,1,1},100,450,300,500,function()
+        state = "gamemode select"
     end)
 end)
 
@@ -126,6 +148,16 @@ end)
 drawStateSwitch:addCase("gamemode select",function()
     love.graphics.print("Leaderboard",100,100)
     drawButtons()
+end)
+
+drawStateSwitch:addCase("connecting to server",function()
+    drawButtons()
+    love.graphics.print("connecting to server...",100,100)
+end)
+
+drawStateSwitch:addCase("connection error",function()
+    drawButtons()
+    love.graphics.print("connection error",100,100)
 end)
 
 drawStateSwitch:addCase("settings",function()

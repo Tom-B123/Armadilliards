@@ -139,11 +139,14 @@ function Player:create(lobby)
     --requests server to become a host of a new lobby.
 end
 
-local function tryConnect(port,ip)
+function Player:tryConnect()
     local function nClient()
-        Client:new(port,ip)
+        return self:new("new player")
     end
-    if not pcall(nClient) then
+    local nPlayer = pcall(nClient)
+    if nPlayer == nil then
         print("error connecting to server")
+        return false
     end
+    return nPlayer
 end
