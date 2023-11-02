@@ -15,14 +15,10 @@ function Server:new(port)
 end
 
 function Server:update()
-    -- if not pcall(function()
-        local nClient = self.server:accept()
-        if nClient then
-            table.insert(self.clients, nClient)
-        end
-    -- end) then
-    --     print("server update error")
-    -- end
+    local nClient = self.server:accept()
+    if nClient then
+        table.insert(self.clients, nClient)
+    end
 end
 
 function Server:send(clients,message)
@@ -119,8 +115,6 @@ function Lobby:receive(clients)
 end
 
 function Lobby:update()
-    print(self.server == nil)
-    print("updating lobby's server")
     self.server:update()
 end
 
