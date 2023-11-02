@@ -6,7 +6,13 @@ require("net")
 local player = nil
 local lobby = nil
 
+local messageLog = {}
+
 local buttons = {}
+
+local function newMessage(message)
+    table.insert(messageLog,message)
+end
 
 local function updateButtons()
     for i,button in ipairs(buttons) do
@@ -50,10 +56,17 @@ local drawStateSwitch = Switch:new()
 
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
-    if lobby then lobby:update() end
+    if lobby then
+        lobby:update()
+        lobby:send("all","welcome to the lobby!")
+    end
 end)
 
-stateSwitch:addCase("gamemode select",function()
+stateSwitch:addCase("searching for lobby",function()
+    if player then
+        local data = player:receive()
+        newMessage(data)
+    end
 end)
 
 newStateSwitch:addCase("main menu",function()
@@ -204,6 +217,9 @@ end)
 
 drawStateSwitch:addCase("searching for lobby",function()
     love.graphics.print("Lobbies list",100,100)
+    for i,message in ipairs(messageLog) do
+        love.graphics.print(message,50,i*20 + 400)
+    end
     drawButtons()
 end)
 

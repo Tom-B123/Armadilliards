@@ -143,6 +143,14 @@ function Player:new(name,client)
     return object
 end
 
+function Player:send(message)
+    self.client:send(message)
+end
+
+function Player:receive()
+    return self.client:receive()
+end
+
 function Player:connectToMain()
     --connect to the main lobby
 end
@@ -163,10 +171,9 @@ function Player:tryConnect()
     local function nClient()
         return self:new("new player")
     end
-    local nPlayer = pcall(nClient)
-    if nPlayer == false then
+    if pcall(nClient) then return nClient()
+    else
         print("error connecting to main server")
         return false
     end
-    return nPlayer
 end
