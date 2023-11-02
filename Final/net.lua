@@ -16,7 +16,7 @@ end
 
 function Server:update()
     -- if not pcall(function()
-        local nClient = self.server.server:accept()
+        local nClient = self.server:accept()
         if nClient then
             table.insert(self.clients, nClient)
         end
@@ -51,7 +51,7 @@ function Server:close()
 end
 
 Client = {}
-Client.__index = Server
+Client.__index = Client
 
 function Client:new(port, ip)
     local object = {}
@@ -77,7 +77,7 @@ function Client:receive()
 end
 
 Lobby = {}
-Lobby.__index = Server
+Lobby.__index = Lobby
 
 function Lobby:new(name,port,ip,hostName,isActive,maxPlayers)
     local object = {}
@@ -140,7 +140,7 @@ function Lobby:create(client,name,port,ip,hostName)
 end
 
 Player = {}
-Player.__index = Server
+Player.__index = Player
 
 function Player:new(name)
     local object = {}
