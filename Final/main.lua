@@ -26,6 +26,7 @@ local function clearButtons()
     buttons = {}
 end
 
+local tempState = nil
 local state = "main menu"
 local lState = nil
 
@@ -66,6 +67,28 @@ newStateSwitch:addCase("gamemode select",function()
         --Connect to the lobby selection server
         state = "searching for lobby"
     end)
+    newButton("settings",{1,1,1},100,375,300,425,function()
+        tempState = state
+        state = "settings"
+    end)
+    newButton("back",{1,1,1},100,450,300,500,function()
+        state = "main menu"
+    end)
+end)
+
+newStateSwitch:addCase("settings",function()
+    clearButtons()
+    print("change to settings")
+    newButton("configure settings",{1,1,1},100,325,300,375,function()
+        --Settings for the player to alter
+        print("configuring settings")
+    end)
+    newButton("back",{1,1,1},100,400,300,450,function()
+        if tempState then state = tempState end
+    end)
+    newButton("quit",{1,1,1},100,475,300,525,function()
+        love.event.quit()
+    end)
 end)
 
 newStateSwitch:addCase("searching for lobby",function()
@@ -77,6 +100,9 @@ newStateSwitch:addCase("searching for lobby",function()
     end)
     newButton("Create new lobby",{1,1,1},100,150,300,200,function()
         state = "lobby settings"
+    end)
+    newButton("back",{1,1,1},100,225,300,275,function()
+        state = "gamemode select"
     end)
 end)
 
@@ -102,6 +128,10 @@ drawStateSwitch:addCase("gamemode select",function()
     drawButtons()
 end)
 
+drawStateSwitch:addCase("settings",function()
+    drawButtons()
+end)
+
 drawStateSwitch:addCase("searching for lobby",function()
     love.graphics.print("Lobbies list",100,100)
     drawButtons()
@@ -113,7 +143,10 @@ end)
 
 --Handle keyboard inputs
 function love.keypressed(key)
-    if key == "escape" then love.event.quit() end
+    if key == "escape" then
+        tempState = state
+        state = "settings"
+    end
 
     if state == "main menu" then
         state = "gamemode select"
