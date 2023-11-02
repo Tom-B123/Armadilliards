@@ -90,6 +90,10 @@ newStateSwitch:addCase("connecting to server",function()
         lState = "connecting to server"
         state = "hosting main"
         lobby = Lobby:hostMain()
+    else
+        lState = "connecting to server"
+        state = "searching for lobby"
+        player = nPlayer
     end
 end)
 
@@ -188,6 +192,9 @@ drawStateSwitch:addCase("hosting main",function()
     drawButtons()
     love.graphics.setColor(1,1,1)
     love.graphics.print("You are now the main host",100,500)
+    if lobby then
+        love.graphics.print("player Count: "..lobby.playerCount,50,400)
+    end
 end)
 
 drawStateSwitch:addCase("settings",function()

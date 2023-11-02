@@ -164,7 +164,7 @@ function Player:tryConnect()
         return self:new("new player")
     end
     local nPlayer = pcall(nClient)
-    if nPlayer == nil then
+    if nPlayer == false then
         print("error connecting to server")
         return false
     end
