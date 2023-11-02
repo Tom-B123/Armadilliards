@@ -58,6 +58,7 @@ newStateSwitch:addCase("main menu",function()
     newButton("click to start",{1,1,1},100,300,300,350,function()
         state = "gamemode select"
     end)
+    lState = state
 end)
 
 newStateSwitch:addCase("gamemode select",function()
@@ -74,15 +75,17 @@ newStateSwitch:addCase("gamemode select",function()
     newButton("back",{1,1,1},100,450,300,500,function()
         state = "main menu"
     end)
+    lState = state
 end)
 
 
 newStateSwitch:addCase("connecting to server",function()
     clearButtons()
     print("connecting to server")
-    lState = "connecting to server"
+    newButton("connecting",{1,1,1},100,100,200,200,function() end)
     local nPlayer = Player:tryConnect()
     if not nPlayer then
+        lState = "connecting to server"
         state = "connection error"
     end
 end)
@@ -96,6 +99,7 @@ newStateSwitch:addCase("connection error",function()
     newButton("back",{1,1,1},100,450,300,500,function()
         state = "gamemode select"
     end)
+    lState = state
 end)
 
 newStateSwitch:addCase("settings",function()
@@ -111,6 +115,7 @@ newStateSwitch:addCase("settings",function()
     newButton("quit",{1,1,1},100,475,300,525,function()
         love.event.quit()
     end)
+    lState = state
 end)
 
 newStateSwitch:addCase("searching for lobby",function()
@@ -126,6 +131,7 @@ newStateSwitch:addCase("searching for lobby",function()
     newButton("back",{1,1,1},100,225,300,275,function()
         state = "gamemode select"
     end)
+    lState = state
 end)
 
 newStateSwitch:addCase("lobby settings",function()
@@ -138,6 +144,7 @@ newStateSwitch:addCase("lobby settings",function()
         --Settings for the lobby, eg max player count
         print("editing lobby settings")
     end)
+    lState = state
 end)
 
 drawStateSwitch:addCase("main menu",function()
@@ -190,11 +197,13 @@ function love.update()
 
     updateButtons()
 
-    newStateSwitch:case(getNewState())
+    local nState = getNewState()
+    while nState do
+        newStateSwitch:case(nState)
+        nState = getNewState()
+    end
 
     stateSwitch:case(getState())
-    
-    lState = state
 end
 
 --Draw each frame
