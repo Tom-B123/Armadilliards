@@ -57,7 +57,7 @@ end)
 
 newStateSwitch:addCase("main menu",function()
     clearButtons()
-    print("change to menu")
+    print("menu")
     newButton("click to start",{1,1,1},100,300,300,350,function()
         state = "gamemode select"
     end)
@@ -66,7 +66,7 @@ end)
 
 newStateSwitch:addCase("gamemode select",function()
     clearButtons()
-    print("change to gamemode select")
+    print("gamemode select")
     newButton("multiplayer",{1,1,1},100,300,300,350,function()
         --Connect to the lobby selection server
         state = "connecting to server"
@@ -85,13 +85,18 @@ end)
 newStateSwitch:addCase("connecting to server",function()
     clearButtons()
     print("connecting to server")
-    newButton("connecting",{1,1,1},100,100,200,200,function() end)
     local nPlayer = Player:tryConnect()
     if not nPlayer then
         lState = "connecting to server"
         state = "hosting main"
         lobby = Lobby:hostMain()
     end
+end)
+
+newStateSwitch:addCase("hosting main",function()
+    clearButtons()
+    print("hosting main")
+    lState = "hosting main"
 end)
 
 newStateSwitch:addCase("connection error",function()
@@ -108,7 +113,7 @@ end)
 
 newStateSwitch:addCase("settings",function()
     clearButtons()
-    print("change to settings")
+    print("settings")
     newButton("configure settings",{1,1,1},100,325,300,375,function()
         --Settings for the player to alter
         print("configuring settings")
@@ -124,7 +129,7 @@ end)
 
 newStateSwitch:addCase("searching for lobby",function()
     clearButtons()
-    print("change to searching for lobby")
+    print("searching for lobby")
     newButton("player name",{1,1,1},100,25,300,75,function()
         --Edit player name
         print("editing player name")
@@ -140,7 +145,7 @@ end)
 
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
-    print("change to lobby settings")
+    print("lobby settings")
     newButton("back",{1,1,1},100,25,300,75,function()
         state = "searching for lobby"
     end)
