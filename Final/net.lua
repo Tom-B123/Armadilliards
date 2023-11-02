@@ -9,6 +9,7 @@ function Server:new(port)
     local object = {}
     setmetatable(object,Server)
     object.server = assert(socket.bind("*",port))
+    object.server:settimeout(0)
     object.clients = {}
     return object
 end
@@ -89,7 +90,6 @@ function Lobby:new(name,port,ip,hostName,isActive,maxPlayers)
     object.maxPlayers = maxPlayers
     if isActive then
         object.server = Server:new(port)
-        object.server.settimeout(0)
     else
         --Add to lobbies table
     end
