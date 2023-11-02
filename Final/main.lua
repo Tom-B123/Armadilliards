@@ -59,8 +59,7 @@ stateSwitch:addCase("hosting main",function()
     if lobby then
         lobby:update()
         lobby:send("all","welcome to the lobby!")
-        local data = lobby:receive()
-        newMessage(data)
+        -- local data = lobby:receive("all")
     end
 end)
 
@@ -68,7 +67,6 @@ stateSwitch:addCase("searching for lobby",function()
     if player then
         player:send("I am a player!")
         local data = player:receive()
-        newMessage(data)
     end
 end)
 
