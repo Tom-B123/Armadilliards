@@ -15,10 +15,14 @@ function Server:new(port)
 end
 
 function Server:update()
-    local nClient = self.server:accept()
-    if nClient then
-        table.insert(self.clients, nClient)
-    end
+    -- if not pcall(function()
+        local nClient = self.server.server:accept()
+        if nClient then
+            table.insert(self.clients, nClient)
+        end
+    -- end) then
+    --     print("server update error")
+    -- end
 end
 
 function Server:send(clients,message)
@@ -102,7 +106,8 @@ end
 
 
 function Lobby:hostMain()
-    return Lobby:new("__main lobby__", mainPort, mainIp,"main host",true,-1)
+    local nLobby = Lobby:new("__main lobby__", mainPort, mainIp,"main host",true,-1)
+    return nLobby
 end
 
 function Lobby:send(clients,message)
@@ -114,6 +119,8 @@ function Lobby:receive(clients)
 end
 
 function Lobby:update()
+    print(self.server == nil)
+    print("updating lobby's server")
     self.server:update()
 end
 
@@ -165,7 +172,7 @@ function Player:tryConnect()
     end
     local nPlayer = pcall(nClient)
     if nPlayer == false then
-        print("error connecting to server")
+        print("error connecting to main server")
         return false
     end
     return nPlayer

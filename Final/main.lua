@@ -49,7 +49,8 @@ local newStateSwitch = Switch:new()
 local drawStateSwitch = Switch:new()
 
 --Adding cases to the switch statements
-stateSwitch:addCase("main menu",function()
+stateSwitch:addCase("hosting main",function()
+    if lobby then lobby:update() end
 end)
 
 stateSwitch:addCase("gamemode select",function()
