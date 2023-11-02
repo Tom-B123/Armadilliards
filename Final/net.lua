@@ -42,6 +42,10 @@ function Server:receive(clients)
     return out
 end
 
+function Server:close()
+    self.server:close()
+end
+
 Client = {}
 Client.__index = Server
 
@@ -111,6 +115,10 @@ end
 
 function Lobby:update()
     self.server:update()
+end
+
+function Lobby:close()
+    self.server:close()
 end
 
 function Lobby:join(client,name)

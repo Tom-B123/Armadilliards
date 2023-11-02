@@ -95,8 +95,17 @@ end)
 
 newStateSwitch:addCase("hosting main",function()
     clearButtons()
-    print("hosting main")
-    lState = "hosting main"
+    if lobby then
+        print("hosting main")
+        newButton("close main server",{1,0,0},50,50,750,250,function()
+            state = "gamemode select"
+            lobby:close()
+        end)
+        lState = "hosting main"
+    else
+        lState = "connecting to server"
+        state = "connection error"
+    end
 end)
 
 newStateSwitch:addCase("connection error",function()
@@ -168,12 +177,17 @@ end)
 
 drawStateSwitch:addCase("connecting to server",function()
     drawButtons()
-    love.graphics.print("connecting to server...",100,100)
 end)
 
 drawStateSwitch:addCase("connection error",function()
     drawButtons()
     love.graphics.print("connection error",100,100)
+end)
+
+drawStateSwitch:addCase("hosting main",function()
+    drawButtons()
+    love.graphics.setColor(1,1,1)
+    love.graphics.print("You are now the main host",100,500)
 end)
 
 drawStateSwitch:addCase("settings",function()
@@ -219,5 +233,6 @@ end
 --Draw each frame
 function love.draw()
     drawStateSwitch:case(getState())
+    love.graphics.setColor(1,1,1)
     love.graphics.print(state)
 end
