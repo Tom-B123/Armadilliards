@@ -139,7 +139,7 @@ function Player:new(name,client)
     local object = {}
     setmetatable(object,Player)
     object.name = name
-    object.client = client
+    object.client = Client:new(mainPort,mainIp)
     return object
 end
 
@@ -160,16 +160,13 @@ function Player:create(lobby)
 end
 
 function Player:tryConnect()
-    local function connectToMain()
-        local client = Client:new(mainPort,mainIp)
-        return client
+    local function nClient()
+        return self:new("new player")
     end
-    local nClient = connectToMain()
-    if nClient == false then
+    local nPlayer = pcall(nClient)
+    if nPlayer == false then
         print("error connecting to main server")
         return false
-    else
-        local nPlayer = Player:new("new player",nClient)
-        return nPlayer
     end
+    return nPlayer
 end
