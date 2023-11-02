@@ -53,7 +53,6 @@ function Client:new(port, ip)
     local object = {}
     setmetatable(object,Client)
     object.client = assert(socket.connect(ip, port))
-    object.client.settimeout(0)
     object.ip = ip
     object.port = port
     return object
@@ -136,11 +135,11 @@ end
 Player = {}
 Player.__index = Player
 
-function Player:new(name)
+function Player:new(name,client)
     local object = {}
     setmetatable(object,Player)
     object.name = name
-    object.client = Client:new(mainPort,mainIp)
+    object.client = client
     return object
 end
 
@@ -161,13 +160,16 @@ function Player:create(lobby)
 end
 
 function Player:tryConnect()
-    local function nClient()
-        return self:new("new player")
+    local function connectToMain()
+        local client = Client:new(mainPort,mainIp)
+        return client
     end
-    local nPlayer = pcall(nClient)
-    if nPlayer == false then
+    local nClient = connectToMain()
+    if nClient == false then
         print("error connecting to main server")
         return false
+    else
+        local nPlayer = Player:new("new player",nClient)
+        return nPlayer
     end
-    return nPlayer
 end
