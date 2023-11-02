@@ -71,6 +71,10 @@ function Client:receive()
     end
 end
 
+function Client:close()
+    self.client:close()
+end
+
 Lobby = {}
 Lobby.__index = Lobby
 
@@ -135,10 +139,11 @@ end
 Player = {}
 Player.__index = Player
 
-function Player:new(name,client)
+function Player:new(name)
     local object = {}
     setmetatable(object,Player)
     object.name = name
+    object.ip = socket.dns.toip(socket.dns.gethostname( ))
     object.client = Client:new(mainPort,mainIp)
     return object
 end
@@ -151,20 +156,24 @@ function Player:receive()
     return self.client:receive()
 end
 
-function Player:connectToMain()
-    --connect to the main lobby
+function Player:close()
+    self.client:close()
 end
 
-function Player:getInfo()
-    --return name,port,ip,player name
+function Player:connectToMain()
+    --Send messages before closing
+    self:close()
+    self.client = Client:new(mainPort,mainIp)
 end
 
 function Player:join(lobby)
-    --requests server to join the lobby
+    --sends data to server for joining a lobby
+    self:send("join:"..lobby)
 end
 
 function Player:create(lobby)
-    --requests server to become a host of a new lobby.
+    --sends data to server for making a lobby
+    self:send("create:"..lobby.."_"..self.ip.."_"..self.name)
 end
 
 function Player:tryConnect()
