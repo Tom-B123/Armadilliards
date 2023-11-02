@@ -3,6 +3,9 @@ require("switch")
 require("button")
 require("net")
 
+local player = nil
+local lobby = nil
+
 local buttons = {}
 
 local function updateButtons()
@@ -86,7 +89,8 @@ newStateSwitch:addCase("connecting to server",function()
     local nPlayer = Player:tryConnect()
     if not nPlayer then
         lState = "connecting to server"
-        state = "connection error"
+        state = "hosting main"
+        lobby = Lobby:hostMain()
     end
 end)
 
