@@ -16,7 +16,7 @@ end
 
 function Server:update()
     local nClient = self.server:accept()
-    if nClient and nClient ~= self.lClient then
+    if nClient and not self.lClient then
         self.lClient = nClient
         print(nClient)
         nClient:settimeout(0)
