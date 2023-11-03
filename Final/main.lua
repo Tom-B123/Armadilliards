@@ -17,15 +17,10 @@ local function newMessage(message)
 end
 
 local function drawMessages()
-    if type(messageLog[1]) == "table" then
-        for i,source in ipairs(messageLog) do
-            for j,message in ipairs(source) do
-                love.graphics.print(message,50 + j*100,i*20 + 400)
-            end
-        end
-    else
-        for i,message in ipairs(messageLog) do
-            love.graphics.print(message,50,i*20 + 400)
+    for i,client in ipairs(messageLog) do
+        for j,message in ipairs(client) do
+            print(message)
+            love.graphics.print(message,j,i)
         end
     end
 end
@@ -79,7 +74,6 @@ stateSwitch:addCase("hosting main",function()
     if lobby and tick % 2 == 0 then
         lobby:update()
         lobby:send("all","welcome to the lobby!")
-        
     end
     if lobby then
         local data = lobby:receive("all")
@@ -92,8 +86,10 @@ end)
 stateSwitch:addCase("searching for lobby",function()
     if player then
         player:send("I am a player!")
-        local data = player:receive()
-        if data then newMessage(data) end
+        local data = {player:receive()}
+        if data then 
+            newMessage(data)
+        end
     end
 end)
 
@@ -235,10 +231,10 @@ drawStateSwitch:addCase("connection error",function()
 end)
 
 drawStateSwitch:addCase("hosting main",function()
+    drawMessages()
     drawButtons()
     love.graphics.setColor(1,1,1)
     love.graphics.print("You are now the main host",100,500)
-    drawMessages()
     if lobby then
         love.graphics.print("player Count: "..lobby.playerCount,50,400)
     end
@@ -268,6 +264,15 @@ function love.keypressed(key)
     if state == "main menu" then
         state = "gamemode select"
     end
+end
+
+
+function love.quit()
+    --return true to prevent quitting?
+    if player then
+        player:close()
+    end
+    -- return true
 end
 
 --Process each frame

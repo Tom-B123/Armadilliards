@@ -116,12 +116,12 @@ function Lobby:send(clients,message)
 end
 
 function Lobby:receive(clients)
-    self.server:receive(clients)
+    return self.server:receive(clients)
 end
 
 function Lobby:update()
     self.server:update()
-    self.playerCount = self.server.playerCount
+    self.playerCount = #self.server.clients
 end
 
 function Lobby:close()
