@@ -16,13 +16,17 @@ end
 
 function Server:update()
     local nClient = self.server:accept()
-    if nClient then
+    if nClient and nClient ~= self.lClient then
+        self.lClient = nClient
+        print(nClient)
         nClient:settimeout(0)
         table.insert(self.clients, nClient)
         print(#self.clients)
         return true
+    else
+        self.lClient = nil
+        return false
     end
-    return false
 end
 
 function Server:send(clients,message)

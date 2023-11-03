@@ -75,7 +75,9 @@ stateSwitch:addCase("hosting main",function()
     end
     if lobby then
         local data = lobby:receive("all")
-        if data then newMessage(data) end
+        if data and data[1] then
+            newMessage(data[1])
+        end
     end
 end)
 
