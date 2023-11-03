@@ -19,7 +19,9 @@ function Server:update()
     if nClient then
         nClient:settimeout(0)
         table.insert(self.clients, nClient)
+        return true
     end
+    return false
 end
 
 function Server:send(clients,message)
@@ -119,7 +121,9 @@ function Lobby:receive(clients)
 end
 
 function Lobby:update()
-    self.server:update()
+    if self.server:update() then 
+        self.playerCount = self.playerCount + 1
+    end
 end
 
 function Lobby:close()
