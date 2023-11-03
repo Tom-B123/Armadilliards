@@ -68,7 +68,7 @@ local drawStateSwitch = Switch:new()
 
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
-    if lobby and tick % 2 == 0 then
+    if lobby and tick % 10 == 0 then
         lobby:update()
         lobby:send("all","welcome to the lobby!")
         local data = lobby:receive("all")
