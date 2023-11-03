@@ -16,9 +16,9 @@ function Switch:isCase(value)
     return self.cases[value]
 end
 
-function Switch:case(value)
+function Switch:case(value,args)
     if self:isCase(value) then
-        self.cases[value]()
+        self.cases[value](args)
     end
 end
 

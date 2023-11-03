@@ -68,6 +68,8 @@ local stateSwitch = Switch:new()
 local newStateSwitch = Switch:new()
 --To draw every frame a state is active.
 local drawStateSwitch = Switch:new()
+--Convert message to function
+local netSwitch = Switch:new()
 
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
@@ -253,6 +255,12 @@ end)
 drawStateSwitch:addCase("lobby settings",function()
     drawButtons()
 end)
+
+netSwitch:addCase("msg",function(args)
+    newMessage({args})
+end)
+
+netSwitch:case("msg","hello")
 
 --Handle keyboard inputs
 function love.keypressed(key)
