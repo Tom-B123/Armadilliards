@@ -17,8 +17,16 @@ local function newMessage(message)
 end
 
 local function drawMessages()
-    for i,message in ipairs(messageLog) do
-        love.graphics.print(message,50,i*20 + 400)
+    if type(messageLog[1]) == "table" then
+        for i,source in ipairs(messageLog) do
+            for j,message in ipairs(source) do
+                love.graphics.print(message,50 + j*100,i*20 + 400)
+            end
+        end
+    else
+        for i,message in ipairs(messageLog) do
+            love.graphics.print(message,50,i*20 + 400)
+        end
     end
 end
 
@@ -75,8 +83,8 @@ stateSwitch:addCase("hosting main",function()
     end
     if lobby then
         local data = lobby:receive("all")
-        if data and data[1] then
-            newMessage(data[1])
+        if data then
+            newMessage(data)
         end
     end
 end)

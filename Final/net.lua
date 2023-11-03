@@ -121,6 +121,7 @@ end
 
 function Lobby:update()
     self.server:update()
+    self.playerCount = self.server.playerCount
 end
 
 function Lobby:close()
