@@ -19,6 +19,7 @@ function Server:update()
     if nClient then
         nClient:settimeout(0)
         table.insert(self.clients, nClient)
+        print(#self.clients)
         return true
     end
     return false
@@ -40,6 +41,7 @@ function Server:receive(clients)
         elseif err == "closed" then
             client:close()
             table.remove(clients, i)
+            print(#self.clients)
         end
     end
     return out
@@ -90,7 +92,7 @@ function Lobby:new(name,port,ip,hostName,isActive,maxPlayers)
     object.hostName = hostName
     object.isActive = isActive
     object.playerCount = 1
-
+    object.clients = {}
     if maxPlayers > 8 then maxPlayers = 8 
     elseif maxPlayers == -1 then 
         maxPlayers = 10^6 
@@ -121,9 +123,7 @@ function Lobby:receive(clients)
 end
 
 function Lobby:update()
-    if self.server:update() then 
-        self.playerCount = self.playerCount + 1
-    end
+    self.server:update()
 end
 
 function Lobby:close()
