@@ -260,7 +260,7 @@ netSwitch:addCase("msg",function(args)
     newMessage({args})
 end)
 
-netSwitch:case("msg","hello")
+
 
 --Handle keyboard inputs
 function love.keypressed(key)
