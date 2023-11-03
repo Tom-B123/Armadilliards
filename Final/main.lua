@@ -14,6 +14,16 @@ local function newMessage(message)
     table.insert(messageLog,message)
 end
 
+local function drawMessages()
+    for i,message in ipairs(messageLog) do
+        love.graphics.print(message,50,i*20 + 400)
+    end
+end
+
+local function clearMessages()
+    messageLog = {}
+end
+
 local function updateButtons()
     for i,button in ipairs(buttons) do
         button:update()
@@ -59,7 +69,8 @@ stateSwitch:addCase("hosting main",function()
     if lobby then
         lobby:update()
         lobby:send("all","welcome to the lobby!")
-        -- local data = lobby:receive("all")
+        local data = lobby:receive("all")
+        if data then newMessage(data) end
     end
 end)
 
@@ -67,6 +78,7 @@ stateSwitch:addCase("searching for lobby",function()
     if player then
         player:send("I am a player!")
         local data = player:receive()
+        if data then newMessage(data) end
     end
 end)
 
@@ -207,6 +219,7 @@ drawStateSwitch:addCase("hosting main",function()
     drawButtons()
     love.graphics.setColor(1,1,1)
     love.graphics.print("You are now the main host",100,500)
+    drawMessages()
     if lobby then
         love.graphics.print("player Count: "..lobby.playerCount,50,400)
     end
@@ -218,9 +231,7 @@ end)
 
 drawStateSwitch:addCase("searching for lobby",function()
     love.graphics.print("Lobbies list",100,100)
-    for i,message in ipairs(messageLog) do
-        love.graphics.print(message,50,i*20 + 400)
-    end
+    drawMessages()
     drawButtons()
 end)
 

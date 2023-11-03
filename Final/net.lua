@@ -17,6 +17,7 @@ end
 function Server:update()
     local nClient = self.server:accept()
     if nClient then
+        nClient:settimeout(0)
         table.insert(self.clients, nClient)
     end
 end
