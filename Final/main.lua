@@ -6,6 +6,8 @@ require("net")
 local player = nil
 local lobby = nil
 
+local tick = 0
+
 local messageLog = {}
 
 local buttons = {}
@@ -66,7 +68,7 @@ local drawStateSwitch = Switch:new()
 
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
-    if lobby then
+    if lobby and tick % 2 == 0 then
         lobby:update()
         lobby:send("all","welcome to the lobby!")
         local data = lobby:receive("all")
@@ -178,6 +180,10 @@ newStateSwitch:addCase("searching for lobby",function()
         state = "lobby settings"
     end)
     newButton("back",{1,1,1},100,225,300,275,function()
+        if player then
+            player:close()
+            player = nil
+        end
         state = "gamemode select"
     end)
     lState = state
@@ -264,6 +270,8 @@ function love.update()
     end
 
     stateSwitch:case(getState())
+
+    tick = tick + 1
 end
 
 --Draw each frame
