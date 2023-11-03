@@ -16,16 +16,9 @@ end
 
 function Server:update()
     local nClient = self.server:accept()
-    if nClient and not self.lClient then
-        self.lClient = nClient
-        print(nClient)
+    if nClient then
         nClient:settimeout(0)
         table.insert(self.clients, nClient)
-        print(#self.clients)
-        return true
-    else
-        self.lClient = nil
-        return false
     end
 end
 
@@ -189,7 +182,10 @@ function Player:tryConnect()
     local function nClient()
         return self:new("new player")
     end
-    if pcall(nClient) then return nClient()
+    local success,client = pcall(nClient)
+    if success then
+        print("successfully connected to main server")
+        return client
     else
         print("error connecting to main server")
         return false
