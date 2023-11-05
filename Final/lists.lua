@@ -133,7 +133,7 @@ function List:append(val)
     self.length = self.length + 1
 end
 
---Returns an iterator function, similar to ipairs, for use in for loops
+--Returns an iterator function to read the Linked List closer to an array
 function List:iterator()
     local current = self.head
     local firstIteration = true
