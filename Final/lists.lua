@@ -57,11 +57,10 @@ function List:addStart(val)
         self.head = nNode
     else
         local nNode = Node:new(val)
-        local prev = self.head.prev
-        local next = self.head.next
         nNode.next = self.head
-        nNode.prev = prev
-        prev.next = nNode
+        nNode.prev = self.head.prev
+        self.head.prev.next = nNode
+        self.head.prev = nNode
         self.head = nNode
     end
     self.length = self.length + 1
@@ -69,11 +68,15 @@ end
 
 local list = List:new()
 local nList = list
-for i = 1,10 do
+for i = 1,5 do
     nList:addStart(i)
 end
 for i = 1,50 do
     print(nList:getVal())
-    nList:next()
     nList:prev()
+end
+print("--------------------------")
+for i = 1,50 do
+    print(nList:getVal())
+    nList:next()
 end
