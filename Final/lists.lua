@@ -50,10 +50,10 @@ function List:addStart(val)
         self.head.prev = self.head
     elseif self.length == 1 then
         local nNode = Node:new(val)
-        nNode.prev = self.head
         nNode.next = self.head
-        self.head.prev = nNode
+        nNode.prev = self.head
         self.head.next = nNode
+        self.head.prev = nNode
         self.head = nNode
     else
         local nNode = Node:new(val)
@@ -73,10 +73,10 @@ function List:addEnd(val)
         self.head.prev = self.head
     elseif self.length == 1 then
         local nNode = Node:new(val)
-        nNode.prev = self.head
         nNode.next = self.head
-        self.head.prev = nNode
+        nNode.prev = self.head
         self.head.next = nNode
+        self.head.prev = nNode
     else
         local nNode = Node:new(val)
         nNode.next = self.head
