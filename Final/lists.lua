@@ -136,15 +136,3 @@ function List:append(val)
     end
     self.length = self.length + 1
 end
-
-local list = List:new()
-local nList = list
-nList:enqueue(5)
-nList:enqueue(10)
-nList:enqueue(15)
-nList:enqueue(20)
-nList:enqueue(25)
-
-for i = 1,10 do
-    print(nList:dequeue())
-end
