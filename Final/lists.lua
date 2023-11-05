@@ -68,7 +68,7 @@ function List:push(val)
         self.head.next = nNode
         self.head.prev = nNode
         self.head = nNode
-    else
+    elseif self.length >= 2 then
         local nNode = Node:new(val)
         nNode.next = self.head
         nNode.prev = self.head.prev
@@ -97,24 +97,7 @@ function List:pop()
 end
 
 function List:enqueue(val)
-    if self.length == 0 then
-        self.head = Node:new(val)
-        self.head.next = self.head
-        self.head.prev = self.head
-    elseif self.length == 1 then
-        local nNode = Node:new(val)
-        nNode.next = self.head
-        nNode.prev = self.head
-        self.head.next = nNode
-        self.head.prev = nNode
-    else
-        local nNode = Node:new(val)
-        nNode.next = self.head
-        nNode.prev = self.head.prev
-        self.head.prev.next = nNode
-        self.head.prev = nNode
-    end
-    self.length = self.length + 1
+    self:push(val)
 end
 
 function List:dequeue()
@@ -125,23 +108,43 @@ function List:dequeue()
         val = self.head.val
         self.head = nil
     elseif self.length >= 2 then
-        val = self.head.val
-        self.head.prev.next = self.head.next
-        self.head.next.prev = self.head.prev
-        self.head = self.head.next
+        val = self.head.prev.val
+        self.head.prev.prev.next = self.head
+        self.head.prev = self.head.prev.prev
     end
     self.length = self.length - 1
     return val
 end
 
+function List:pushBack(val)
+    if self.length == 0 then
+        self.head = Node:new(val)
+        self.head.next = self.head
+        self.head.prev = self.head
+    elseif self.length == 1 then
+        local nNode = Node:new(val)
+        nNode.next = self.head
+        nNode.prev = self.head
+        self.head.next = nNode
+        self.head.prev = nNode
+    elseif self.length >= 2 then
+        local nNode = Node:new(val)
+        nNode.next = self.head
+        nNode.prev = self.head.prev
+        self.head.prev.next = nNode
+        self.head.prev = nNode
+    end
+    self.length = self.length + 1
+end
+
 local list = List:new()
 local nList = list
-nList:push(5)
-nList:push(10)
-nList:push(15)
-nList:push(20)
-nList:push(25)
+nList:enqueue(5)
+nList:enqueue(10)
+nList:enqueue(15)
+nList:enqueue(20)
+nList:enqueue(25)
 
-for i = 1,5 do
-    print(nList:pop())
+for i = 1,10 do
+    print(nList:dequeue())
 end
