@@ -50,7 +50,7 @@ function List:addStart(val)
         self.head.prev = self.head
     elseif self.length == 1 then
         local nNode = Node:new(val)
-        nNode.prev = self.head.prev
+        nNode.prev = self.head
         nNode.next = self.head
         self.head.prev = nNode
         self.head.next = nNode
@@ -66,17 +66,33 @@ function List:addStart(val)
     self.length = self.length + 1
 end
 
+function List:addEnd(val)
+    if self.length == 0 then
+        self.head = Node:new(val)
+        self.head.next = self.head
+        self.head.prev = self.head
+    elseif self.length == 1 then
+        local nNode = Node:new(val)
+        nNode.prev = self.head
+        nNode.next = self.head
+        self.head.prev = nNode
+        self.head.next = nNode
+    else
+        local nNode = Node:new(val)
+        nNode.next = self.head
+        nNode.prev = self.head.prev
+        self.head.prev.next = nNode
+        self.head.prev = nNode
+    end
+    self.length = self.length + 1
+end
+
 local list = List:new()
 local nList = list
-for i = 1,5 do
-    nList:addStart(i)
-end
+nList:addStart("middle")
+nList:addEnd("End")
+nList:addStart("Start")
 for i = 1,50 do
     print(nList:getVal())
     nList:prev()
-end
-print("--------------------------")
-for i = 1,50 do
-    print(nList:getVal())
-    nList:next()
 end
