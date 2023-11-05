@@ -116,7 +116,7 @@ function List:dequeue()
     return val
 end
 
-function List:pushBack(val)
+function List:append(val)
     if self.length == 0 then
         self.head = Node:new(val)
         self.head.next = self.head
