@@ -1,26 +1,13 @@
-Node = {}
-
-Node.__index = Node
-
-function Node:new(val,next,prev)
-    local object = {}
-    setmetatable(object,Node)
-    object.val = val
-    object.next = next
-    object.prev = prev
-    return object
-end
-
-function Node:add(head,val)
-    self.next = self:new(val,head,self)
-    head.prev = self.next
-    return head
+--Creates a new node object
+local function newNode(val)
+    return {val = val, next = nil, prev = nil}
 end
 
 List = {}
 
 List.__index = List
 
+--Creates a new list object
 function List:new()
     local object = {}
     setmetatable(object,List)
@@ -29,6 +16,7 @@ function List:new()
     return object
 end
 
+--Returns the current head value
 function List:getVal()
     if self.head then
         return self.head.val
@@ -36,10 +24,12 @@ function List:getVal()
     return nil
 end
 
+--Returns the length of the list
 function List:getLength()
     return self.length
 end
 
+--Moves the head forwards one place
 function List:next()
     if self.head then
         self.head = self.head.next
@@ -48,6 +38,7 @@ function List:next()
     return false
 end
 
+--Moves the head back one place
 function List:prev()
     if self.head then
         self.head = self.head.prev
@@ -56,20 +47,21 @@ function List:prev()
     return false
 end
 
+--Adds a new value to the head of the list
 function List:push(val)
     if self.length == 0 then
-        self.head = Node:new(val)
+        self.head = newNode(val)
         self.head.next = self.head
         self.head.prev = self.head
     elseif self.length == 1 then
-        local nNode = Node:new(val)
+        local nNode = newNode(val)
         nNode.next = self.head
         nNode.prev = self.head
         self.head.next = nNode
         self.head.prev = nNode
         self.head = nNode
     elseif self.length >= 2 then
-        local nNode = Node:new(val)
+        local nNode = newNode(val)
         nNode.next = self.head
         nNode.prev = self.head.prev
         self.head.prev.next = nNode
@@ -79,6 +71,7 @@ function List:push(val)
     self.length = self.length + 1
 end
 
+--Removes and returns the head value of the list
 function List:pop()
     local val
     if self.length <= 0 then
@@ -96,10 +89,12 @@ function List:pop()
     return val
 end
 
+--Adds a new value to the head of the list
 function List:enqueue(val)
     self:push(val)
 end
 
+--Removes and returns the end value of the list
 function List:dequeue()
     local val
     if self.length <= 0 then
@@ -116,23 +111,41 @@ function List:dequeue()
     return val
 end
 
+--Adds a value to the end of the list
 function List:append(val)
     if self.length == 0 then
-        self.head = Node:new(val)
+        self.head = newNode(val)
         self.head.next = self.head
         self.head.prev = self.head
     elseif self.length == 1 then
-        local nNode = Node:new(val)
+        local nNode = newNode(val)
         nNode.next = self.head
         nNode.prev = self.head
         self.head.next = nNode
         self.head.prev = nNode
     elseif self.length >= 2 then
-        local nNode = Node:new(val)
+        local nNode = newNode(val)
         nNode.next = self.head
         nNode.prev = self.head.prev
         self.head.prev.next = nNode
         self.head.prev = nNode
     end
     self.length = self.length + 1
+end
+
+--Returns an iterator function, similar to ipairs, for use in for loops
+function List:iterator()
+    local current = self.head
+    local firstIteration = true
+    return function ()
+        if current then
+            local val = current.val
+            current = current.next
+            if current == self.head and not firstIteration then
+                current = nil
+            end
+            firstIteration = false
+            return val
+        end
+    end
 end
