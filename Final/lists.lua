@@ -30,20 +30,33 @@ function List:new()
 end
 
 function List:getVal()
-    return self.head.val
+    if self.head then
+        return self.head.val
+    end
+    return nil
+end
+
+function List:getLength()
+    return self.length
 end
 
 function List:next()
-    self.head = self.head.next
-    return self
+    if self.head then
+        self.head = self.head.next
+        return self
+    end
+    return false
 end
 
 function List:prev()
-    self.head = self.head.prev
-    return self
+    if self.head then
+        self.head = self.head.prev
+        return self
+    end
+    return false
 end
 
-function List:addStart(val)
+function List:push(val)
     if self.length == 0 then
         self.head = Node:new(val)
         self.head.next = self.head
@@ -66,7 +79,24 @@ function List:addStart(val)
     self.length = self.length + 1
 end
 
-function List:addEnd(val)
+function List:pop()
+    local val
+    if self.length <= 0 then
+        val = nil
+    elseif self.length == 1 then
+        val = self.head.val
+        self.head = nil
+    elseif self.length >= 2 then
+        val = self.head.val
+        self.head.prev.next = self.head.next
+        self.head.next.prev = self.head.prev
+        self.head = self.head.next
+    end
+    self.length = self.length - 1
+    return val
+end
+
+function List:enqueue(val)
     if self.length == 0 then
         self.head = Node:new(val)
         self.head.next = self.head
@@ -89,10 +119,12 @@ end
 
 local list = List:new()
 local nList = list
-nList:addStart("middle")
-nList:addEnd("End")
-nList:addStart("Start")
-for i = 1,50 do
-    print(nList:getVal())
-    nList:prev()
+nList:push(5)
+nList:push(10)
+nList:push(15)
+nList:push(20)
+nList:push(25)
+
+for i = 1,5 do
+    print(nList:pop())
 end
