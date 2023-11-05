@@ -82,7 +82,7 @@ end
 function List:pop()
     local val
     if self.length <= 0 then
-        val = nil
+        return nil
     elseif self.length == 1 then
         val = self.head.val
         self.head = nil
@@ -115,6 +115,23 @@ function List:enqueue(val)
         self.head.prev = nNode
     end
     self.length = self.length + 1
+end
+
+function List:dequeue()
+    local val
+    if self.length <= 0 then
+        return nil
+    elseif self.length == 1 then
+        val = self.head.val
+        self.head = nil
+    elseif self.length >= 2 then
+        val = self.head.val
+        self.head.prev.next = self.head.next
+        self.head.next.prev = self.head.prev
+        self.head = self.head.next
+    end
+    self.length = self.length - 1
+    return val
 end
 
 local list = List:new()
