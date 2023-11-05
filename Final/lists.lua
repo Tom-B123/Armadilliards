@@ -75,4 +75,5 @@ end
 for i = 1,50 do
     print(nList:getVal())
     nList:next()
+    nList:prev()
 end
