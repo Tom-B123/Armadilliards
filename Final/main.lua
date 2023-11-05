@@ -5,12 +5,23 @@ require("net")
 
 local player = nil
 local lobby = nil
-
+local canQuit = false
 local tick = 0
 
 local messageLog = {}
 
 local buttons = {}
+
+local function split (inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(t, str)
+    end
+    return t
+end
 
 local function newMessage(message)
     table.insert(messageLog,message)
@@ -75,22 +86,32 @@ local netSwitch = Switch:new()
 stateSwitch:addCase("hosting main",function()
     if lobby and tick % 2 == 0 then
         lobby:update()
-        lobby:send("all","welcome to the lobby!")
+        lobby:send("all","msg:welcome to the lobby!")
     end
     if lobby then
         local data = lobby:receive("all")
-        if data then
-            newMessage(data)
+        print(data)
+        for i,client in ipairs(data) do
+            for j, message in ipairs(client) do
+                local splitData = split(message,":")
+                local key,args = splitData[1],splitData[2]
+                netSwitch:case(key,args)
+            end
         end
     end
 end)
 
 stateSwitch:addCase("searching for lobby",function()
     if player then
-        player:send("I am a player!")
-        local data = {player:receive()}
-        if data then 
-            newMessage(data)
+        player:send("msg:I am a player!")
+        local data = player:receive()
+        print(data)
+        for i,client in ipairs({data}) do
+            for j, message in ipairs(client) do
+                local splitData = split(message,":")
+                local key,args = splitData[1],splitData[2]
+                netSwitch:case(key,args)
+            end
         end
     end
 end)
@@ -260,7 +281,22 @@ netSwitch:addCase("msg",function(args)
     newMessage({args})
 end)
 
+netSwitch:addCase("quit",function(args)
+    if lobby then
+        lobby:send("quit"..args)
+    elseif player then
+        canQuit = true
+        love.event.quit()
+    end
+end)
 
+netSwitch:addCase("join",function(args)
+    --Join the server given in [args]
+end)
+
+netSwitch:addCase("create",function(args)
+    --Start a server given in [args]
+end)
 
 --Handle keyboard inputs
 function love.keypressed(key)
@@ -278,7 +314,8 @@ end
 function love.quit()
     --return true to prevent quitting?
     if player then
-        player:close()
+        player:send("exit:"..player.name)
+        return not canQuit
     end
     -- return true
 end
