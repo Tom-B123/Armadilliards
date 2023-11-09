@@ -5,26 +5,33 @@ for i = 1,9 do
     for j = 1,2^i do
         grids[i][j] = {}
         for k = 1,2^i do
-            grids[i][j][k] = 0
+            grids[i][j][k] = k
         end
     end
 end
 
-local function recSearch(level,lx,ly)
-    lx = lx - 1
-    ly = ly - 1
-    local x = 2^(lx * level) - 1
-    local y = 2^(ly * level) - 1
-    print("level: "..level.." x: "..x.." y:"..y)
+local steps = 9
+local found = 0
+local checks = 0
+local function findOccupiedCells(step, x, y)
+    checks = checks + 1
+    if step == steps + 1 then
+        found = found + 1
+    else
+        --check the internal cells of the previously occupied cells
+        for subX = 0, 1 do
+            for subY = 0, 1 do
+                local nX = ((2 * x) - 1) + subX
+                local nY = ((2 * y) - 1) + subY
+                if grids[step][nY][nX] > 0 then findOccupiedCells(step + 1, nX, nY) end
+            end
+        end
+    end
 end
-
-for i = 1,9 do
-    recSearch(i,1,1)
-    recSearch(i,1,2)
-    recSearch(i,2,1)
-    recSearch(i,2,2)
-end
-
+print("start")
+findOccupiedCells(1,1,1)
+print("found: "..found.." possible: "..(512*512).." checked: "..checks)
+print("end")
 local function updateRoutines()
     for i,co in ipairs(routines) do
         if not coroutine.resume(co) then
