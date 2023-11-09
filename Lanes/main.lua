@@ -1,1 +1,2 @@
-local lanes = require "lanes".configure()
+local lanes = package.preload["lanes"]
+lanes.configure()
