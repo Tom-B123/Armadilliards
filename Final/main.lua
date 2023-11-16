@@ -8,47 +8,6 @@ local lobbyServer = nil
 local canQuit = false
 local tick = 0
 
---record all player ids in the lobby
-LobbyPlayer = {
-    IDTable = {},
-    NameDict = {},
-    ReadyDict = {},
-    TeamDict = {}
-}
-function LobbyPlayer:new(id)
-    table.insert(self.IDTable,id)
-end
-
-function LobbyPlayer:getName(id)
-    --returns the player name, or nil
-    local name = self.NameDict[id]
-    return name
-end
-
-function LobbyPlayer:setName(id,name)
-   self.NameDict[id] = name
-end
-
-function LobbyPlayer:getTeam(id)
-    --returns the player name, or nil
-    local team = self.TeamDict[id]
-    return team
-end
-
-function LobbyPlayer:setTeam(id,team)
-    self.TeamDict[id] = team
-end
-
-function LobbyPlayer:getReady(id)
-    --returns the player name, or nil
-    local isReady = self.ReadyDict[id]
-    return isReady
-end
-
-function LobbyPlayer:setReady(id,ready)
-    self.ReadyDict[id] = ready
-end
-
 local messageLog = {}
 
 local buttons = {}
@@ -314,6 +273,11 @@ end)
 
 netSwitch:addCase("msg",function(args)
     newMessage({args})
+end)
+
+netSwitch:addCase("ncon",function(args)
+    local id = args
+    LobbyPlayer:new(id)
 end)
 
 netSwitch:addCase("quit",function(args)
