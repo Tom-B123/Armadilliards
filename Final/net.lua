@@ -1,15 +1,15 @@
-local socket = require("socket")
+Socket = require("socket")
 
 Server = {}
 Server.__index = Server
 
-local mainIp = socket.dns.toip(socket.dns.gethostname( )) 
+local mainIp = Socket.dns.toip(Socket.dns.gethostname( )) 
 local mainPort = 500
 
 function Server:new(port)
     local object = {}
     setmetatable(object,Server)
-    object.server = assert(socket.bind("*",port))
+    object.server = assert(Socket.bind("*",port))
     object.server:settimeout(0)
     object.clients = {}
     return object
@@ -55,7 +55,7 @@ Client.__index = Client
 function Client:new(port, ip)
     local object = {}
     setmetatable(object,Client)
-    object.client = assert(socket.connect(ip, port))
+    object.client = assert(Socket.connect(ip, port))
     object.ip = ip
     object.port = port
     return object
@@ -147,7 +147,7 @@ function Player:new(name)
     local object = {}
     setmetatable(object,Player)
     object.name = name
-    object.ip = socket.dns.toip(socket.dns.gethostname( ))
+    object.ip = Socket.dns.toip(Socket.dns.gethostname( ))
     object.client = Client:new(mainPort,mainIp)
     return object
 end
