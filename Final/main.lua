@@ -99,6 +99,7 @@ stateSwitch:addCase("hosting main",function()
         server:update()
     end
     if server then
+        server:send("all","no dat")
         local data = server:receive("all")
         for i,message in ipairs(data) do
             local splitData = split(message,":")
