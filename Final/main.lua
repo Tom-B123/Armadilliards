@@ -150,6 +150,7 @@ newStateSwitch:addCase("connecting to server",function()
         lState = "connecting to server"
         state = "searching for lobby"
         player = nPlayer
+        player:send("msg:Hello I am a player and I have just connected to you server!!!!!!!!")
     end
 end)
 
@@ -289,7 +290,7 @@ end)
 
 netSwitch:addCase("updt",function(args)
     local splitData = split(args,"_")
-    
+
     local id = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
