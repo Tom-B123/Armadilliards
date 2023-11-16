@@ -6,6 +6,9 @@ require("net")
 local player = nil
 local server = nil
 
+--Long and Short ID, for on main server and small lobbies?
+local id = ""
+
 local canQuit = false
 local tick = 0
 
@@ -22,6 +25,11 @@ local function split (inputstr, sep)
         table.insert(t, str)
     end
     return t
+end
+
+local function calculateID(length)
+    local seed = os.time()
+    return seed
 end
 
 local function newMessage(message)
@@ -345,6 +353,8 @@ end
 
 --Process each frame
 function love.update()
+
+    print(calculateID(10))
 
     updateButtons()
 
