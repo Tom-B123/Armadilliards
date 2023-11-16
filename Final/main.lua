@@ -8,6 +8,7 @@ local server = nil
 
 --Long and Short ID, for on main server and small lobbies?
 local id = ""
+local name = "new player"
 
 local canQuit = false
 local tick = 0
@@ -159,7 +160,9 @@ newStateSwitch:addCase("connecting to server",function()
         lState = "connecting to server"
         state = "searching for lobby"
         player = nPlayer
-        player:send("msg:Hello I am a player and I have just connected to you server!!!!!!!!")
+        id = calculateID(8)
+        --send data to create a new LobbyPlayer object
+        player:send("ncon:"..id.."_"..name)
     end
 end)
 
@@ -287,26 +290,30 @@ netSwitch:addCase("msg",function(args)
 end)
 
 netSwitch:addCase("ncon",function(args)
+    
     local splitData = split(args,"_")
-    local id = splitData[1]
+    --sender ID
+    local sId = splitData[1]
     local name = splitData[2]
-    LobbyPlayer:new(id)
-    LobbyPlayer:setName(id,name)
-    LobbyPlayer:setReady(id,false)
+
+    LobbyPlayer:new(sId)
+    LobbyPlayer:setName(sId,name)
+    LobbyPlayer:setReady(sId,false)
     --automatically assigned team set here
-    LobbyPlayer:setTeam(id,"team 1")
+    LobbyPlayer:setTeam(sId,"team 1")
+
 end)
 
 netSwitch:addCase("updt",function(args)
     local splitData = split(args,"_")
-
-    local id = splitData[1]
+    --sender ID
+    local sId = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
 
-    if field == "name" then LobbyPlayer:setName(id,value)
-    elseif field == "ready" then LobbyPlayer:setReady(id,value)
-    elseif field == "team" then LobbyPlayer:setTeam(id,value)
+    if field == "name" then LobbyPlayer:setName(sId,value)
+    elseif field == "ready" then LobbyPlayer:setReady(sId,value)
+    elseif field == "team" then LobbyPlayer:setTeam(sId,value)
     end
 end)
 
@@ -354,8 +361,6 @@ end
 
 --Process each frame
 function love.update()
-
-    print(calculateID(1))
 
     updateButtons()
 
