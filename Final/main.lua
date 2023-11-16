@@ -29,7 +29,8 @@ end
 
 local function calculateID(length)
     local seed = Socket.gettime() * 10000
-    return seed
+    math.randomseed(seed)
+    return tostring(math.random(1,10^length))
 end
 
 local function newMessage(message)
@@ -354,7 +355,7 @@ end
 --Process each frame
 function love.update()
 
-    print(calculateID(10))
+    print(calculateID(1))
 
     updateButtons()
 
