@@ -3,8 +3,9 @@ require("switch")
 require("button")
 require("net")
 
-local lobbyPlayer = nil
-local lobbyServer = nil
+local player = nil
+local server = nil
+
 local canQuit = false
 local tick = 0
 
@@ -84,12 +85,12 @@ local netSwitch = Switch:new()
 
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
-    if lobbyServer and tick % 2 == 0 then
-        lobbyServer:update()
-        lobbyServer:send("all","msg:welcome to the lobby!")
+    if server and tick % 2 == 0 then
+        server:update()
+        server:send("all","msg:welcome to the lobby!")
     end
-    if lobbyServer then
-        local data = lobbyServer:receive("all")
+    if server then
+        local data = server:receive("all")
         for i,message in ipairs(data) do
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
@@ -99,9 +100,9 @@ stateSwitch:addCase("hosting main",function()
 end)
 
 stateSwitch:addCase("searching for lobby",function()
-    if lobbyPlayer then
-        lobbyPlayer:send("msg:I am a player!")
-        local data = lobbyPlayer:receive()
+    if player then
+        player:send("msg:I am a player!")
+        local data = player:receive()
         for i,message in ipairs({data}) do
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
@@ -144,21 +145,21 @@ newStateSwitch:addCase("connecting to server",function()
     if not nPlayer then
         lState = "connecting to server"
         state = "hosting main"
-        lobbyServer = Lobby:hostMain()
+        server = Lobby:hostMain()
     else
         lState = "connecting to server"
         state = "searching for lobby"
-        lobbyPlayer = nPlayer
+        player = nPlayer
     end
 end)
 
 newStateSwitch:addCase("hosting main",function()
     clearButtons()
-    if lobbyServer then
+    if server then
         print("hosting main")
         newButton("close main server",{1,0,0},50,50,750,250,function()
             state = "gamemode select"
-            lobbyServer:close()
+            server:close()
         end)
         lState = "hosting main"
     else
@@ -206,9 +207,9 @@ newStateSwitch:addCase("searching for lobby",function()
         state = "lobby settings"
     end)
     newButton("back",{1,1,1},100,225,300,275,function()
-        if lobbyPlayer then
-            lobbyPlayer:close()
-            lobbyPlayer = nil
+        if player then
+            player:close()
+            player = nil
         end
         state = "gamemode select"
     end)
@@ -252,8 +253,8 @@ drawStateSwitch:addCase("hosting main",function()
     drawButtons()
     love.graphics.setColor(1,1,1)
     love.graphics.print("You are now the main host",100,500)
-    if lobbyServer then
-        love.graphics.print("player Count: "..lobbyServer.playerCount,50,400)
+    if server then
+        love.graphics.print("player Count: "..server.playerCount,50,400)
     end
 end)
 
@@ -281,9 +282,9 @@ netSwitch:addCase("ncon",function(args)
 end)
 
 netSwitch:addCase("quit",function(args)
-    if lobbyServer then
-        lobbyServer:send("quit"..args)
-    elseif lobbyPlayer then
+    if server then
+        server:send("quit"..args)
+    elseif player then
         canQuit = true
         love.event.quit()
     end
@@ -312,8 +313,8 @@ end
 
 function love.quit()
     --return true to prevent quitting?
-    if lobbyPlayer then
-        lobbyPlayer:send("exit:"..lobbyPlayer.name)
+    if player then
+        player:send("exit:"..player.name)
         return not canQuit
     end
     -- return true
