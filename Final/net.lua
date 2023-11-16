@@ -204,6 +204,14 @@ function LobbyPlayer:new(id)
     table.insert(self.IDTable,id)
 end
 
+function LobbyPlayer:getIDs()
+    return self.IDTable
+end
+
+function LobbyPlayer:removeID(id)
+    --remove all values attributed to that ID
+end
+
 function LobbyPlayer:getName(id)
     --returns the player name, or nil
     local name = self.NameDict[id]
