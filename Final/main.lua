@@ -90,13 +90,10 @@ stateSwitch:addCase("hosting main",function()
     end
     if lobby then
         local data = lobby:receive("all")
-        print(data)
-        for i,client in ipairs(data) do
-            for j, message in ipairs(client) do
-                local splitData = split(message,":")
-                local key,args = splitData[1],splitData[2]
-                netSwitch:case(key,args)
-            end
+        for i,message in ipairs(data) do
+            local splitData = split(message,":")
+            local key,args = splitData[1],splitData[2]
+            netSwitch:case(key,args)
         end
     end
 end)
@@ -106,12 +103,10 @@ stateSwitch:addCase("searching for lobby",function()
         player:send("msg:I am a player!")
         local data = player:receive()
         print(data)
-        for i,client in ipairs({data}) do
-            for j, message in ipairs(client) do
-                local splitData = split(message,":")
-                local key,args = splitData[1],splitData[2]
-                netSwitch:case(key,args)
-            end
+        for i,message in ipairs({data}) do
+            local splitData = split(message,":")
+            local key,args = splitData[1],splitData[2]
+            netSwitch:case(key,args)
         end
     end
 end)
