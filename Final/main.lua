@@ -277,13 +277,33 @@ netSwitch:addCase("msg",function(args)
 end)
 
 netSwitch:addCase("ncon",function(args)
-    local id = args
+    local splitData = split(args,"_")
+    local id = splitData[1]
+    local name = splitData[2]
     LobbyPlayer:new(id)
+    LobbyPlayer:setName(id,name)
+    LobbyPlayer:setReady(id,false)
+    --automatically assigned team set here
+    LobbyPlayer:setTeam(id,"team 1")
+end)
+
+netSwitch:addCase("updt",function(args)
+    local splitData = split(args,"_")
+    
+    local id = splitData[1]
+    local field = splitData[2]
+    local value = splitData[3]
+
+    if field == "name" then LobbyPlayer:setName(id,value)
+    elseif field == "ready" then LobbyPlayer:setReady(id,value)
+    elseif field == "team" then LobbyPlayer:setTeam(id,value)
+    end
 end)
 
 netSwitch:addCase("quit",function(args)
+    local serverToQuit = args
     if server then
-        server:send("quit"..args)
+        server:send("quit"..serverToQuit)
     elseif player then
         canQuit = true
         love.event.quit()
@@ -291,10 +311,12 @@ netSwitch:addCase("quit",function(args)
 end)
 
 netSwitch:addCase("join",function(args)
+    local serverToJoin = args
     --Join the server given in [args]
 end)
 
 netSwitch:addCase("create",function(args)
+    local serverToCreate = args
     --Start a server given in [args]
 end)
 
