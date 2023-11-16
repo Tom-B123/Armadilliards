@@ -97,7 +97,6 @@ local netSwitch = Switch:new()
 stateSwitch:addCase("hosting main",function()
     if server and tick % 2 == 0 then
         server:update()
-        server:send("all","msg:welcome to the lobby!")
     end
     if server then
         local data = server:receive("all")
@@ -111,7 +110,6 @@ end)
 
 stateSwitch:addCase("searching for lobby",function()
     if player then
-        player:send("msg:I am a player!")
         local data = player:receive()
         for i,message in ipairs({data}) do
             local splitData = split(message,":")
@@ -294,10 +292,11 @@ netSwitch:addCase("ncon",function(args)
     local splitData = split(args,"_")
     --sender ID
     local sId = splitData[1]
-    local name = splitData[2]
+    --sender name
+    local sName = splitData[2]
 
     LobbyPlayer:new(sId)
-    LobbyPlayer:setName(sId,name)
+    LobbyPlayer:setName(sId,sName)
     LobbyPlayer:setReady(sId,false)
     --automatically assigned team set here
     LobbyPlayer:setTeam(sId,"team 1")
@@ -362,6 +361,14 @@ end
 --Process each frame
 function love.update()
 
+    local ids = LobbyPlayer:getIDs()
+
+    if #ids > 0 then
+        for i, sId in ipairs(ids) do
+            print("id: "..sId.." name: "..LobbyPlayer:getName(sId))
+        end
+        
+    end
     updateButtons()
 
     --Loop through all state changes this frame
