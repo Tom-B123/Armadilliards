@@ -28,7 +28,7 @@ local function split (inputstr, sep)
 end
 
 local function calculateID(length)
-    local seed = Socket.gettime()
+    local seed = Socket.gettime() * 10000
     return seed
 end
 
