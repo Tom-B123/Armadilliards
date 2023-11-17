@@ -287,7 +287,7 @@ drawStateSwitch:addCase("lobby settings",function()
 end)
 
 netSwitch:addCase("msg",function(args)
-    newMessage({args})
+    newMessage(args)
 end)
 
 netSwitch:addCase("ncon",function(args)
@@ -347,16 +347,6 @@ netSwitch:addCase("updt",function(args)
     if field == "name" then LobbyPlayer:setName(id,value)
     elseif field == "ready" then LobbyPlayer:setReady(id,value)
     elseif field == "team" then LobbyPlayer:setTeam(id,value)
-    end
-end)
-
-netSwitch:addCase("quit",function(args)
-    local serverToQuit = args
-    if server then
-        server:send("quit"..serverToQuit)
-    elseif player then
-        canQuit = true
-        love.event.quit()
     end
 end)
 
