@@ -385,10 +385,17 @@ end)
 netSwitch:addCase("create",function(args)
     if server then
         local splitData = split(args,"_")
-        local lobbyName, hostID, IP, port, playerCount = 
+        local hostID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
         --Make a new joinable lobby object in the lobbies list, calculating a lobby ID
+        server:send("all","create:"..hostID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
+        local splitData = split(args,"_")
+        local hostID, lobbyName, IP, port, maxPlayers = 
+        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
+
+        if player.ID == hostID then state = "searching for lobbies" end
+
         local splitData = split(args,"_")
         local hostID, lobbyID, conf = 
         splitData[1], splitData[2], splitData[3]
@@ -403,10 +410,6 @@ function love.keypressed(key)
     if key == "escape" then
         tempState = state
         state = "settings"
-    end
-
-    if key == "space" and player then
-        JoinableLobby:new("new lobby",player.ID,"ip address","port number")
     end
 
     if state == "main menu" then
