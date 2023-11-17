@@ -95,7 +95,7 @@ function Lobby:new(name,port,ip,hostName,isActive,maxPlayers)
     object.clients = {}
     if maxPlayers > 8 then maxPlayers = 8 
     elseif maxPlayers == -1 then 
-        maxPlayers = 10^6 
+        maxPlayers = 10^6
         object.playerCount = 0
     end
     
@@ -203,6 +203,7 @@ LobbyPlayer = {
     ReadyDict = {},
     TeamDict = {}
 }
+
 function LobbyPlayer:new(id)
     table.insert(self.IDTable,id)
 end
@@ -244,3 +245,4 @@ end
 function LobbyPlayer:setReady(id,ready)
     self.ReadyDict[id] = ready
 end
+

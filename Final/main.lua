@@ -135,7 +135,6 @@ newStateSwitch:addCase("gamemode select",function()
     clearButtons()
     print("gamemode select")
     newButton("multiplayer",{1,1,1},100,300,300,350,function()
-        --Connect to the lobby selection server
         state = "connecting to server"
     end)
     newButton("settings",{1,1,1},100,375,300,425,function()
@@ -222,10 +221,9 @@ newStateSwitch:addCase("searching for lobby",function()
     end)
     newButton("back",{1,1,1},100,225,300,275,function()
         if player then
-            player:close()
-            player = nil
+            --End connection with main server
+            player:send("econ:"..player.id)
         end
-        state = "gamemode select"
     end)
     lState = state
 end)
@@ -331,6 +329,8 @@ netSwitch:addCase("econ",function(args)
         local id = args
         if id == player.id then
             print("confirmed end connection")
+            player:close()
+            state = "gamemode select"
         else
             newMessage("a player has left the main server")
         end
@@ -351,8 +351,13 @@ netSwitch:addCase("updt",function(args)
 end)
 
 netSwitch:addCase("join",function(args)
-    local serverToJoin = args
-    --Join the server given in [args]
+    if server then
+        local splitData = split(args,"_")
+        local lobbyID, playerID = splitData[1], splitData[2]
+        --get info from lobby ID and send data to the player
+    elseif player then
+        --Connect to the hosted lobby server
+    end
 end)
 
 netSwitch:addCase("create",function(args)
