@@ -296,6 +296,8 @@ netSwitch:addCase("ncon",function(args)
     --sender name
     local sName = splitData[2]
 
+    print("new connection of id: "..sId.." and name: "..sName)
+
     LobbyPlayer:new(sId)
     LobbyPlayer:setName(sId,sName)
     LobbyPlayer:setReady(sId,false)
@@ -364,12 +366,11 @@ function love.update()
 
     local ids = LobbyPlayer:getIDs()
 
-    if #ids > 0 then
-        for i, sId in ipairs(ids) do
-            print("id: "..sId.." name: "..LobbyPlayer:getName(sId))
-        end
-        
-    end
+    -- if #ids > 0 then
+    --     for i, sId in ipairs(ids) do
+    --         print("id: "..sId.." name: "..LobbyPlayer:getName(sId))
+    --     end
+    -- end
     updateButtons()
 
     --Loop through all state changes this frame
