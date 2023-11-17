@@ -130,6 +130,13 @@ stateSwitch:addCase("searching for lobby",function()
     end
 end)
 
+stateSwitch:addCase("lobby settings",function()
+    if player then
+        processReceived()
+        player:send("no dat")
+    end
+end)
+
 newStateSwitch:addCase("main menu",function()
     clearButtons()
     print("menu")
@@ -248,7 +255,7 @@ newStateSwitch:addCase("lobby settings",function()
     end)
     newButton("Create",{1,1,1},100,225,300,275,function()
         if player then
-            player:send("create:"..player.ID)
+            player:send("create:"..player.ID.."_new server_server IP_server port_8")
         end
     end)
     lState = state
