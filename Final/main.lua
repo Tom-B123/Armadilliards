@@ -423,7 +423,7 @@ netSwitch:addCase("uplobs",function(args)
         --Sets the player name to display, as it may not be known
         if not LobbyPlayer:getName(hostID) then
             LobbyPlayer:new(hostID)
-            LobbyPlayer:setName(hostName)
+            LobbyPlayer:setName(hostID,hostName)
         end
 
         --Adds and updates the info to display for the lobby
