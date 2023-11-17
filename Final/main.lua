@@ -126,7 +126,7 @@ end)
 stateSwitch:addCase("searching for lobby",function()
     if player then
         processReceived()
-        if tick % 20 == 0 then
+        if tick % 60 == 0 then
             player:send("uplobs:")
         else
             player:send("no dat")
