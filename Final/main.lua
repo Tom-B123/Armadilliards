@@ -39,11 +39,8 @@ local function newMessage(message)
 end
 
 local function drawMessages()
-    for i,client in ipairs(messageLog) do
-        for j,message in ipairs(client) do
-            print(message)
-            love.graphics.print(message,j,i)
-        end
+    for i,message in ipairs(messageLog) do
+        love.graphics.print(message,100,500 - (i*20))
     end
 end
 
