@@ -401,8 +401,8 @@ netSwitch:addCase("create",function(args)
         local hostID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
 
-        if player.ID == hostID then state = "searching for lobbies" end
-
+        if player.ID == hostID then state = "searching for lobby" end
+        
         local splitData = split(args,"_")
         local hostID, lobbyID, conf = 
         splitData[1], splitData[2], splitData[3]
