@@ -356,8 +356,19 @@ netSwitch:addCase("join",function(args)
 end)
 
 netSwitch:addCase("create",function(args)
-    local serverToCreate = args
-    --Start a server given in [args]
+    if server then
+        local splitData = split(args,"_")
+        local lobbyName, hostID, IP, port, playerCount = 
+        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
+        --Make a new joinable lobby object in the lobbies list, calculating a lobby ID
+    elseif player then
+        local splitData = split(args,"_")
+        local hostID, lobbyID, conf = 
+        splitData[1], splitData[2], splitData[3]
+        if conf and hostID == player.id then
+            --create a hosted lobby object and host a server
+        end
+    end
 end)
 
 --Handle keyboard inputs
