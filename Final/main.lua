@@ -102,6 +102,7 @@ stateSwitch:addCase("hosting main",function()
         server:send("all","no dat")
         local data = server:receive("all")
         for i,message in ipairs(data) do
+            print(message)
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
             netSwitch:case(key,args)
