@@ -94,21 +94,16 @@ local drawStateSwitch = Switch:new()
 local netSwitch = Switch:new()
 
 local function processReceived()
+    local data
     if server then
-        local data = server:receive("all")
-        for i,message in ipairs(data) do
-            print(message)
-            local splitData = split(message,":")
-            local key,args = splitData[1],splitData[2]
-            netSwitch:case(key,args)
-        end
+        data = server:receive("all")
     elseif player then
-        local data = player:receive()
-        for i,message in ipairs({data}) do
-            local splitData = split(message,":")
-            local key,args = splitData[1],splitData[2]
-            netSwitch:case(key,args)
-        end
+        data = {player:receive()}
+    end
+    for i,message in ipairs(data) do
+        local splitData = split(message,":")
+        local key,args = splitData[1],splitData[2]
+        netSwitch:case(key,args)
     end
 end
 

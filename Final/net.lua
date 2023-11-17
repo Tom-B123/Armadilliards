@@ -55,7 +55,9 @@ Client.__index = Client
 function Client:new(port, ip)
     local object = {}
     setmetatable(object,Client)
-    object.client = assert(Socket.connect(ip, port))
+    local client = assert(Socket.connect(ip, port))
+    client:settimeout(0)
+    object.client = client
     object.ip = ip
     object.port = port
     return object
