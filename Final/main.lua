@@ -68,6 +68,13 @@ local function clearButtons()
     buttons = {}
 end
 
+local function drawLobbies(offset)
+    for i, ID in ipairs(JoinableLobby.lobbies) do
+        local lobby = JoinableLobby.lobbiesDict[ID]
+        love.graphics.print(lobby.name.." "..lobby.ID.." "..lobby.hostID,100,i*20 + 100 + offset)
+    end
+end
+
 local tempState = nil
 local state = "main menu"
 local lState = nil
@@ -161,8 +168,8 @@ newStateSwitch:addCase("connecting to server",function()
         state = "searching for lobby"
 
         player = nPlayer
-        player.id = calculateID(8)
-        player:send("ncon:"..player.id.."_"..player.name)
+        player.ID = calculateID(8)
+        player:send("ncon:"..player.ID.."_"..player.name)
     end
 end)
 
@@ -222,7 +229,7 @@ newStateSwitch:addCase("searching for lobby",function()
     newButton("back",{1,1,1},100,225,300,275,function()
         if player then
             --End connection with main server
-            player:send("econ:"..player.id)
+            player:send("econ:"..player.ID)
         end
     end)
     lState = state
@@ -276,6 +283,7 @@ end)
 
 drawStateSwitch:addCase("searching for lobby",function()
     love.graphics.print("Lobbies list",100,100)
+    drawLobbies()
     drawMessages()
     drawButtons()
 end)
@@ -292,26 +300,26 @@ netSwitch:addCase("ncon",function(args)
     if server then
         local splitData = split(args,"_")
 
-        local id = splitData[1]
+        local ID = splitData[1]
         local name = splitData[2]
 
-        print("new connection of id: "..id.." and name: "..name)
+        print("new connection of ID: "..ID.." and name: "..name)
 
-        LobbyPlayer:new(id)
-        LobbyPlayer:setName(id,name)
-        LobbyPlayer:setReady(id,false)
+        LobbyPlayer:new(ID)
+        LobbyPlayer:setName(ID,name)
+        LobbyPlayer:setReady(ID,false)
         --automatically assigned team set here
-        LobbyPlayer:setTeam(id,"team 1")
+        LobbyPlayer:setTeam(ID,"team 1")
 
-        server:send("all","ncon:"..id.."_confirm")
+        server:send("all","ncon:"..ID.."_confirm")
 
     elseif player then
         local splitData = split(args,"_")
 
-        local id, conf = splitData[1],splitData[2]
+        local ID, conf = splitData[1],splitData[2]
 
         if conf == "confirm" then
-            if id == player.id then
+            if ID == player.ID then
                 print("confirmed connection")
             else
                 newMessage("a new player has connected to the main server")
@@ -322,12 +330,13 @@ end)
 
 netSwitch:addCase("econ",function(args)
     if server then
-        local id = args
-        server:send("all","econ:"..id)
-        LobbyPlayer:removeID(id)
+        local ID = args
+        server:send("all","econ:"..ID)
+        --end the connection with client
+        LobbyPlayer:removeID(ID)
     elseif player then
-        local id = args
-        if id == player.id then
+        local ID = args
+        if ID == player.ID then
             print("confirmed end connection")
             player:close()
             state = "gamemode select"
@@ -340,13 +349,13 @@ end)
 netSwitch:addCase("updt",function(args)
     local splitData = split(args,"_")
     --sender ID
-    local id = splitData[1]
+    local ID = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
 
-    if field == "name" then LobbyPlayer:setName(id,value)
-    elseif field == "ready" then LobbyPlayer:setReady(id,value)
-    elseif field == "team" then LobbyPlayer:setTeam(id,value)
+    if field == "name" then LobbyPlayer:setName(ID,value)
+    elseif field == "ready" then LobbyPlayer:setReady(ID,value)
+    elseif field == "team" then LobbyPlayer:setTeam(ID,value)
     end
 end)
 
@@ -370,7 +379,7 @@ netSwitch:addCase("create",function(args)
         local splitData = split(args,"_")
         local hostID, lobbyID, conf = 
         splitData[1], splitData[2], splitData[3]
-        if conf and hostID == player.id then
+        if conf and hostID == player.ID then
             --create a hosted lobby object and host a server
         end
     end
@@ -383,6 +392,10 @@ function love.keypressed(key)
         state = "settings"
     end
 
+    if key == "space" and player then
+        JoinableLobby:new("new lobby",player.ID,"ip address","port number")
+    end
+
     if state == "main menu" then
         state = "gamemode select"
     end
@@ -392,7 +405,7 @@ end
 function love.quit()
     --return true to prevent quitting?
     if player then
-        player:send("econ:"..player.id)
+        player:send("econ:"..player.ID)
         return not canQuit
     end
     -- return true
@@ -401,7 +414,7 @@ end
 --Process each frame
 function love.update()
 
-    local ids = LobbyPlayer:getIDs()
+    local IDs = LobbyPlayer:getIDs()
 
     updateButtons()
 

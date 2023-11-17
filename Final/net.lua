@@ -14,6 +14,12 @@ local function split (inputstr, sep)
     return t
 end
 
+local function calculateID(length)
+    local seed = Socket.gettime() * 10000
+    math.randomseed(seed)
+    return tostring(math.random(0,10^length - 1))
+end
+
 local mainIp = Socket.dns.toip(Socket.dns.gethostname( )) 
 local mainPort = 500
 
@@ -53,8 +59,8 @@ function Server:receive(clients)
             if string.sub(data,1,4) == "ncon" then
                 print("server found new connection")
                 local splitData = split(data,":")
-                local id = splitData[2]
-                table.insert(newPlayerIDs, {client,id})
+                local ID = splitData[2]
+                table.insert(newPlayerIDs, {client,ID})
             end
         elseif err == "closed" then
             client:close()
@@ -119,8 +125,17 @@ function Lobby:new(name,port,ip,hostName)
     return object
 end
 
-function Lobby:endConnection(id)
-    --remove player from connected players table
+function Lobby:endConnection(ID)
+    local clientToRemove = self.playersDict[ID]
+    local ind = 0
+    for i, client in ipairs(self.clients) do
+        if client == clientToRemove then ind = i end
+    end
+    if ind then
+        print("removed client at "..ind)
+        table.remove(self.clients,ind)
+        self.playersDict[ID] = nil
+    end
 end
 
 function Lobby:hostMain()
@@ -135,8 +150,8 @@ end
 function Lobby:receive(clients)
     local data, newClients = self.server:receive(clients)
     for i,clientPair in ipairs(newClients) do
-        local client,id = clientPair[1],clientPair[2]
-        self.playersDict[id] = client
+        local client,ID = clientPair[1],clientPair[2]
+        self.playersDict[ID] = client
     end
     return data
 end
@@ -150,10 +165,22 @@ function Lobby:close()
     self.server:close()
 end
 
-function Lobby:join(client,name)
-    --get the lobby of valid
-    --send the lobby to the client
-    --increment player count
+JoinableLobby = {lobbies = {},lobbiesDict = {}}
+JoinableLobby.__index = JoinableLobby
+
+function JoinableLobby:new(name, hostID, ip, port)
+    local object = {}
+    setmetatable(object, JoinableLobby)
+    object.name = name
+    object.hostID = hostID
+    object.ip = ip
+    object.port = port
+    object.ID = calculateID(6)
+
+    --Add the ID to the IDs table, and the lobby's info to the dictionary
+    table.insert(self.lobbies,object.ID)
+    self.lobbiesDict[object.ID] = object
+    return object
 end
 
 function Lobby:create(client,name,port,ip,hostName)
@@ -168,7 +195,7 @@ function Player:new()
     local object = {}
     setmetatable(object,Player)
     object.name = "new player"
-    object.id = ""
+    object.ID = ""
     object.ip = Socket.dns.toip(Socket.dns.gethostname( ))
     object.client = Client:new(mainPort,mainIp)
     return object
@@ -192,9 +219,10 @@ function Player:connectToMain()
     self.client = Client:new(mainPort,mainIp)
 end
 
-function Player:join(lobby)
-    --sends data to server for joining a lobby
-    self:send("join:"..lobby)
+function Player:join(lobbyID)
+
+    self:send("join:"..self.ID.."_"..lobbyID)
+
 end
 
 function Player:create(lobby)
@@ -223,45 +251,45 @@ LobbyPlayer = {
     TeamDict = {}
 }
 
-function LobbyPlayer:new(id)
-    table.insert(self.IDTable,id)
+function LobbyPlayer:new(ID)
+    table.insert(self.IDTable,ID)
 end
 
 function LobbyPlayer:getIDs()
     return self.IDTable
 end
 
-function LobbyPlayer:removeID(id)
+function LobbyPlayer:removeID(ID)
     --remove all values attributed to that ID
 end
 
-function LobbyPlayer:getName(id)
+function LobbyPlayer:getName(ID)
     --returns the player name, or nil
-    local name = self.NameDict[id]
+    local name = self.NameDict[ID]
     return name
 end
 
-function LobbyPlayer:setName(id,name)
-   self.NameDict[id] = name
+function LobbyPlayer:setName(ID,name)
+   self.NameDict[ID] = name
 end
 
-function LobbyPlayer:getTeam(id)
+function LobbyPlayer:getTeam(ID)
     --returns the player name, or nil
-    local team = self.TeamDict[id]
+    local team = self.TeamDict[ID]
     return team
 end
 
-function LobbyPlayer:setTeam(id,team)
-    self.TeamDict[id] = team
+function LobbyPlayer:setTeam(ID,team)
+    self.TeamDict[ID] = team
 end
 
-function LobbyPlayer:getReady(id)
+function LobbyPlayer:getReady(ID)
     --returns the player name, or nil
-    local isReady = self.ReadyDict[id]
+    local isReady = self.ReadyDict[ID]
     return isReady
 end
 
-function LobbyPlayer:setReady(id,ready)
-    self.ReadyDict[id] = ready
+function LobbyPlayer:setReady(ID,ready)
+    self.ReadyDict[ID] = ready
 end
 
