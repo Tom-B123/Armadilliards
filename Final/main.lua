@@ -283,7 +283,7 @@ end)
 
 drawStateSwitch:addCase("searching for lobby",function()
     love.graphics.print("Lobbies list",100,100)
-    drawLobbies()
+    drawLobbies(0)
     drawMessages()
     drawButtons()
 end)
