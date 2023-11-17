@@ -411,11 +411,17 @@ netSwitch:addCase("uplobs",function(args)
     if server then
         for i,id in ipairs(JoinableLobby.lobbies) do
             local lobby = JoinableLobby.lobbiesDict[id]
-            server:send("all","uplobs:"..lobby.ID.."_"..lobby.hostID.."_"..lobby.name.."_"..lobby.playerCount)
+            server:send("all","uplobs:"..lobby.name.."_"..lobby.hostID.."_"..
+            lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount)
         end
     elseif player then
         local splitData = split(args,"_")
-        local lobbyID, hostID, lobbyName, playerCount = splitData[1], splitData[2], splitData[3], splitData[4]
+        local lobbyName, hostID, IP, port, lobbyID, playerCount = 
+        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
+        --If the lobby doesn't exitst:
+        if not JoinableLobby.lobbiesDict[lobbyID] then
+            JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount)
+        end
     end
 end)
 

@@ -168,16 +168,20 @@ end
 JoinableLobby = {lobbies = {},lobbiesDict = {}}
 JoinableLobby.__index = JoinableLobby
 
-function JoinableLobby:new(name, hostID, ip, port)
+function JoinableLobby:new(name, hostID, ip, port, ID, playerCount)
     local object = {}
     setmetatable(object, JoinableLobby)
     object.name = name
     object.hostID = hostID
     object.ip = ip
     object.port = port
-    object.playerCount = 0
-    object.ID = calculateID(6)
 
+    if playerCount then object.playerCount = playerCount
+    else object.playerCount = 0 end
+
+    if ID then object.ID = ID
+    else object.ID = calculateID(6) end
+    
     --Add the ID to the IDs table, and the lobby's info to the dictionary
     table.insert(self.lobbies,object.ID)
     self.lobbiesDict[object.ID] = object
