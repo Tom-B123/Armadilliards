@@ -213,7 +213,6 @@ newStateSwitch:addCase("settings",function()
     print("settings")
     newButton("configure settings",{1,1,1},100,325,300,375,function()
         --Settings for the player to alter
-        print("configuring settings")
     end)
     newButton("back",{1,1,1},100,400,300,450,function()
         if tempState then state = tempState end
@@ -229,7 +228,6 @@ newStateSwitch:addCase("searching for lobby",function()
     print("searching for lobby")
     newButton("player name",{1,1,1},100,25,300,75,function()
         --Edit player name
-        print("editing player name")
     end)
     newButton("Create new lobby",{1,1,1},100,150,300,200,function()
         state = "lobby settings"
@@ -251,7 +249,6 @@ newStateSwitch:addCase("lobby settings",function()
     end)
     newButton("Lobby settings",{1,1,1},100,150,300,200,function()
         --Settings for the lobby, eg max player count
-        print("editing lobby settings")
     end)
     newButton("Create",{1,1,1},100,225,300,275,function()
         if player then
@@ -316,8 +313,6 @@ netSwitch:addCase("ncon",function(args)
         local ID = splitData[1]
         local name = splitData[2]
 
-        print("new connection of ID: "..ID.." and name: "..name)
-
         LobbyPlayer:new(ID)
         LobbyPlayer:setName(ID,name)
         LobbyPlayer:setReady(ID,false)
@@ -357,7 +352,7 @@ netSwitch:addCase("econ",function(args)
     elseif player then
         local ID = args
         if ID == player.ID then
-            print("confirmed end connection")
+            print("confirmed end of connection")
             player:close()
             state = "gamemode select"
         else
@@ -397,7 +392,6 @@ netSwitch:addCase("create",function(args)
         
         local nLobby = JoinableLobby:new(lobbyName,hostID,IP,port)
         
-        print("The new lobby has an ID of: "..nLobby.ID)
         server:send("all","create:"..hostID.."_"..nLobby.ID.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
         local splitData = split(args,"_")
