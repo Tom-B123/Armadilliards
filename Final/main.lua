@@ -129,7 +129,7 @@ stateSwitch:addCase("searching for lobby",function()
     end
 end)
 
-stateSwitch:addCase("sending inital data",function()
+stateSwitch:addCase("sending initial data",function()
     if player then
         id = calculateID(8)
         --send data to create a new LobbyPlayer object
