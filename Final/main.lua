@@ -312,7 +312,7 @@ netSwitch:addCase("ncon",function(args)
 
         server:send("all","ncon:confirm")
     elseif player then
-        local conf = args[1]
+        local conf = args
         if conf == "confirm" then
             print("confirmed connection")
         end
