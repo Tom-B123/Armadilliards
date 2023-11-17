@@ -93,13 +93,8 @@ local drawStateSwitch = Switch:new()
 --Convert message to function
 local netSwitch = Switch:new()
 
---Adding cases to the switch statements
-stateSwitch:addCase("hosting main",function()
-    if server and tick % 2 == 0 then
-        server:update()
-    end
+local function processReceived()
     if server then
-        server:send("all","no dat")
         local data = server:receive("all")
         for i,message in ipairs(data) do
             print(message)
@@ -107,17 +102,39 @@ stateSwitch:addCase("hosting main",function()
             local key,args = splitData[1],splitData[2]
             netSwitch:case(key,args)
         end
-    end
-end)
-
-stateSwitch:addCase("searching for lobby",function()
-    if player then
+    elseif player then
         local data = player:receive()
         for i,message in ipairs({data}) do
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
             netSwitch:case(key,args)
         end
+    end
+end
+
+--Adding cases to the switch statements
+stateSwitch:addCase("hosting main",function()
+    if server and tick % 2 == 0 then
+        server:update()
+    end
+    if server then
+        server:send("all","no dat")
+        processReceived()
+    end
+end)
+
+stateSwitch:addCase("searching for lobby",function()
+    if player then
+        processReceived()
+    end
+end)
+
+stateSwitch:addCase("sending inital data",function()
+    if player then
+        id = calculateID(8)
+        --send data to create a new LobbyPlayer object
+        player:send("ncon:"..id.."_"..name)
+        processReceived()
     end
 end)
 
@@ -158,12 +175,8 @@ newStateSwitch:addCase("connecting to server",function()
         server = Lobby:hostMain()
     else
         lState = "connecting to server"
-        state = "searching for lobby"
+        state = "sending initial data"
         player = nPlayer
-        id = calculateID(8)
-        --send data to create a new LobbyPlayer object
-        player:send("ncon:"..id.."_"..name)
-        print("sending: ".."ncon:"..id.."_"..name)
     end
 end)
 
