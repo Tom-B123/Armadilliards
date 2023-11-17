@@ -162,6 +162,7 @@ newStateSwitch:addCase("connecting to server",function()
         id = calculateID(8)
         --send data to create a new LobbyPlayer object
         player:send("ncon:"..id.."_"..name)
+        print("sending: ".."ncon:"..id.."_"..name)
     end
 end)
 
