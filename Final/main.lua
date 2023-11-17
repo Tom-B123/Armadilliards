@@ -129,15 +129,6 @@ stateSwitch:addCase("searching for lobby",function()
     end
 end)
 
-stateSwitch:addCase("sending initial data",function()
-    if player then
-        id = calculateID(8)
-        --send data to create a new LobbyPlayer object
-        player:send("ncon:"..id.."_"..name)
-        processReceived()
-    end
-end)
-
 newStateSwitch:addCase("main menu",function()
     clearButtons()
     print("menu")
@@ -175,8 +166,11 @@ newStateSwitch:addCase("connecting to server",function()
         server = Lobby:hostMain()
     else
         lState = "connecting to server"
-        state = "sending initial data"
+        state = "searching for lobby"
         player = nPlayer
+        id = calculateID(8)
+        --send data to create a new LobbyPlayer object
+        player:send("ncon:"..id.."_"..name)
     end
 end)
 
