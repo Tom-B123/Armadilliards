@@ -309,12 +309,17 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setReady(sId,false)
         --automatically assigned team set here
         LobbyPlayer:setTeam(sId,"team 1")
-
-        server:send("all","ncon:confirm")
+        --sends confirmation of connection, allows player to detect a new connection
+        server:send("all","ncon:"..sId.."_"..sName.."_confirm")
     elseif player then
-        local conf = args
+        local splitData = split(args,"_")
+        local sId, sName, conf = splitData[1],splitData[2],splitData[3]
         if conf == "confirm" then
-            print("confirmed connection")
+            if sId == id then
+                print("confirmed connection")
+            else
+                newMessage(sName.." has connected to the main server")
+            end
         end
     end
 end)
