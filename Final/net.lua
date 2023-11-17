@@ -145,10 +145,11 @@ end
 Player = {}
 Player.__index = Player
 
-function Player:new(name)
+function Player:new()
     local object = {}
     setmetatable(object,Player)
-    object.name = name
+    object.name = "new player"
+    object.id = ""
     object.ip = Socket.dns.toip(Socket.dns.gethostname( ))
     object.client = Client:new(mainPort,mainIp)
     return object
@@ -184,7 +185,7 @@ end
 
 function Player:tryConnect()
     local function nClient()
-        return self:new("new player")
+        return self:new()
     end
     local success,client = pcall(nClient)
     if success then

@@ -7,8 +7,6 @@ local player = nil
 local server = nil
 
 --Long and Short ID, for on main server and small lobbies?
-local id = ""
-local name = "new player"
 
 local canQuit = false
 local tick = 0
@@ -40,7 +38,8 @@ end
 
 local function drawMessages()
     for i,message in ipairs(messageLog) do
-        love.graphics.print(message,100,500 - (i*20))
+        local topPos = 500 - #messageLog * 20
+        love.graphics.print(message,100,topPos + i*20)
     end
 end
 
@@ -163,8 +162,8 @@ newStateSwitch:addCase("connecting to server",function()
         state = "searching for lobby"
 
         player = nPlayer
-        id = calculateID(8)
-        player:send("ncon:"..id.."_"..name)
+        player.id = calculateID(8)
+        player:send("ncon:"..player.id.."_"..player.name)
     end
 end)
 
@@ -294,29 +293,46 @@ end)
 netSwitch:addCase("ncon",function(args)
     if server then
         local splitData = split(args,"_")
-        --sender ID
-        local sId = splitData[1]
-        --sender name
-        local sName = splitData[2]
 
-        print("new connection of id: "..sId.." and name: "..sName)
+        local id = splitData[1]
+        local name = splitData[2]
 
-        LobbyPlayer:new(sId)
-        LobbyPlayer:setName(sId,sName)
-        LobbyPlayer:setReady(sId,false)
+        print("new connection of id: "..id.." and name: "..name)
+
+        LobbyPlayer:new(id)
+        LobbyPlayer:setName(id,name)
+        LobbyPlayer:setReady(id,false)
         --automatically assigned team set here
-        LobbyPlayer:setTeam(sId,"team 1")
-        --sends confirmation of connection, allows player to detect a new connection
-        server:send("all","ncon:"..sId.."_"..sName.."_confirm")
+        LobbyPlayer:setTeam(id,"team 1")
+
+        server:send("all","ncon:"..id.."_confirm")
+
     elseif player then
         local splitData = split(args,"_")
-        local sId, sName, conf = splitData[1],splitData[2],splitData[3]
+
+        local id, conf = splitData[1],splitData[2]
+
         if conf == "confirm" then
-            if sId == id then
+            if id == player.id then
                 print("confirmed connection")
             else
-                newMessage(sName.." has connected to the main server")
+                newMessage("a new player has connected to the main server")
             end
+        end
+    end
+end)
+
+netSwitch:addCase("econ",function(args)
+    if server then
+        local id = args
+        server:send("all","econ:"..id)
+        LobbyPlayer:removeID(id)
+    elseif player then
+        local id = args
+        if id == player.id then
+            print("confirmed end connection")
+        else
+            newMessage("a player has left the main server")
         end
     end
 end)
@@ -324,13 +340,13 @@ end)
 netSwitch:addCase("updt",function(args)
     local splitData = split(args,"_")
     --sender ID
-    local sId = splitData[1]
+    local id = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
 
-    if field == "name" then LobbyPlayer:setName(sId,value)
-    elseif field == "ready" then LobbyPlayer:setReady(sId,value)
-    elseif field == "team" then LobbyPlayer:setTeam(sId,value)
+    if field == "name" then LobbyPlayer:setName(id,value)
+    elseif field == "ready" then LobbyPlayer:setReady(id,value)
+    elseif field == "team" then LobbyPlayer:setTeam(id,value)
     end
 end)
 
@@ -370,7 +386,7 @@ end
 function love.quit()
     --return true to prevent quitting?
     if player then
-        player:send("exit:"..player.name)
+        player:send("econ:"..player.id)
         return not canQuit
     end
     -- return true
@@ -381,11 +397,6 @@ function love.update()
 
     local ids = LobbyPlayer:getIDs()
 
-    -- if #ids > 0 then
-    --     for i, sId in ipairs(ids) do
-    --         print("id: "..sId.." name: "..LobbyPlayer:getName(sId))
-    --     end
-    -- end
     updateButtons()
 
     --Loop through all state changes this frame
