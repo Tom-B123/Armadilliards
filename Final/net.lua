@@ -83,34 +83,27 @@ end
 Lobby = {}
 Lobby.__index = Lobby
 
-function Lobby:new(name,port,ip,hostName,isActive,maxPlayers)
+function Lobby:new(name,port,ip,hostName)
     local object = {}
     setmetatable(object,Lobby)
     object.name = name
     object.port = port
     object.ip = ip
     object.hostName = hostName
-    object.isActive = isActive
-    object.playerCount = 1
+    object.playerCount = 0
     object.clients = {}
-    if maxPlayers > 8 then maxPlayers = 8 
-    elseif maxPlayers == -1 then 
-        maxPlayers = 10^6
-        object.playerCount = 0
-    end
     
-    object.maxPlayers = maxPlayers
-    if isActive then
-        object.server = Server:new(port)
-    else
-        --Add to lobbies table
-    end
+    object.server = Server:new(port)
+
     return object
 end
 
+function Lobby:endConnection(id)
+    --remove player from connected players table
+end
 
 function Lobby:hostMain()
-    local nLobby = Lobby:new("__main lobby__", mainPort, mainIp,"main host",true,-1)
+    local nLobby = Lobby:new("__main lobby__", mainPort, mainIp,"main host")
     return nLobby
 end
 
