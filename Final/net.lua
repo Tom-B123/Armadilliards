@@ -77,13 +77,13 @@ end
 Client = {}
 Client.__index = Client
 
-function Client:new(port, ip)
+function Client:new(port, IP)
     local object = {}
     setmetatable(object,Client)
-    local client = assert(Socket.connect(ip, port))
+    local client = assert(Socket.connect(IP, port))
     client:settimeout(0)
     object.client = client
-    object.ip = ip
+    object.IP = IP
     object.port = port
     return object
 end
@@ -108,12 +108,12 @@ end
 Lobby = {}
 Lobby.__index = Lobby
 
-function Lobby:new(name,port,ip,hostName)
+function Lobby:new(name,port,IP,hostName)
     local object = {}
     setmetatable(object,Lobby)
     object.name = name
     object.port = port
-    object.ip = ip
+    object.IP = IP
     object.hostName = hostName
 
     object.playerCount = 0
@@ -168,12 +168,12 @@ end
 JoinableLobby = {lobbies = {},lobbiesDict = {}}
 JoinableLobby.__index = JoinableLobby
 
-function JoinableLobby:new(name, hostID, ip, port, ID, playerCount)
+function JoinableLobby:new(name, hostID, IP, port, ID, playerCount)
     local object = {}
     setmetatable(object, JoinableLobby)
     object.name = name
     object.hostID = hostID
-    object.ip = ip
+    object.IP = IP
     object.port = port
 
     if playerCount then object.playerCount = playerCount
@@ -188,7 +188,7 @@ function JoinableLobby:new(name, hostID, ip, port, ID, playerCount)
     return object
 end
 
-function Lobby:create(client,name,port,ip,hostName)
+function Lobby:create(client,name,port,IP,hostName)
     --create a new inactive lobby object
     --send back to client
 end
@@ -201,7 +201,7 @@ function Player:new()
     setmetatable(object,Player)
     object.name = "new player"
     object.ID = ""
-    object.ip = Socket.dns.toip(Socket.dns.gethostname( ))
+    object.IP = Socket.dns.toip(Socket.dns.gethostname( ))
     object.client = Client:new(mainPort,mainIp)
     return object
 end
@@ -232,7 +232,7 @@ end
 
 function Player:create(lobby)
     --sends data to server for making a lobby
-    self:send("create:"..lobby.."_"..self.ip.."_"..self.name)
+    self:send("create:"..lobby.."_"..self.IP.."_"..self.name)
 end
 
 function Player:tryConnect()
