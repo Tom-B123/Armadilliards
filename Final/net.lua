@@ -3,6 +3,17 @@ Socket = require("socket")
 Server = {}
 Server.__index = Server
 
+local function split (inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(t, str)
+    end
+    return t
+end
+
 local mainIp = Socket.dns.toip(Socket.dns.gethostname( )) 
 local mainPort = 500
 
@@ -33,16 +44,24 @@ end
 function Server:receive(clients)
     if clients == "all" then clients = self.clients end
     local out = {}
+    local newPlayerIDs = {}
     for i,client in ipairs(clients) do
         local data,err = client:receive()
-        if data then out[i] = data
+        if data then
+            out[i] = data
+            --uses a substring for less performance impact of splitting every single incoming message
+            if string.sub(data,1,4) == "ncon" then
+                print("server found new connection")
+                local splitData = split(data,":")
+                local id = splitData[2]
+                table.insert(newPlayerIDs, {client,id})
+            end
         elseif err == "closed" then
             client:close()
             table.remove(clients, i)
-            print(#self.clients)
         end
     end
-    return out
+    return out, newPlayerIDs
 end
 
 function Server:close()
@@ -90,9 +109,11 @@ function Lobby:new(name,port,ip,hostName)
     object.port = port
     object.ip = ip
     object.hostName = hostName
+
     object.playerCount = 0
     object.clients = {}
-    
+    object.playersDict = {}
+
     object.server = Server:new(port)
 
     return object
@@ -112,7 +133,12 @@ function Lobby:send(clients,message)
 end
 
 function Lobby:receive(clients)
-    return self.server:receive(clients)
+    local data, newClients = self.server:receive(clients)
+    for i,clientPair in ipairs(newClients) do
+        local client,id = clientPair[1],clientPair[2]
+        self.playersDict[id] = client
+    end
+    return data
 end
 
 function Lobby:update()
