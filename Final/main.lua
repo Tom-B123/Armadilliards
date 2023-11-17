@@ -101,6 +101,7 @@ local function processReceived()
         data = {player:receive()}
     end
     for i,message in ipairs(data) do
+        if message ~= "no dat" then print(message) end
         local splitData = split(message,":")
         local key,args = splitData[1],splitData[2]
         netSwitch:case(key,args)
@@ -121,6 +122,7 @@ end)
 stateSwitch:addCase("searching for lobby",function()
     if player then
         processReceived()
+        player:send("no dat")
     end
 end)
 
