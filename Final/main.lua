@@ -394,21 +394,18 @@ netSwitch:addCase("create",function(args)
         local splitData = split(args,"_")
         local hostID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
-        --Make a new joinable lobby object in the lobbies list, calculating a lobby ID
-        server:send("all","create:"..hostID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
+        
+        local nLobby = JoinableLobby:new(lobbyName,hostID,IP,port)
+        
+        print("The new lobby has an ID of: "..nLobby.ID)
+        server:send("all","create:"..hostID.."_"..nLobby.ID.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
         local splitData = split(args,"_")
-        local hostID, lobbyName, IP, port, maxPlayers = 
+        local hostID, lobbyID, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
 
         if player.ID == hostID then state = "searching for lobby" end
         
-        local splitData = split(args,"_")
-        local hostID, lobbyID, conf = 
-        splitData[1], splitData[2], splitData[3]
-        if conf and hostID == player.ID then
-            --create a hosted lobby object and host a server
-        end
     end
 end)
 
