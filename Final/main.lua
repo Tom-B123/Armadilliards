@@ -126,7 +126,11 @@ end)
 stateSwitch:addCase("searching for lobby",function()
     if player then
         processReceived()
-        player:send("no dat")
+        if tick % 20 == 0 then
+            player:send("uplobs:")
+        else
+            player:send("no dat")
+        end
     end
 end)
 
@@ -400,6 +404,18 @@ netSwitch:addCase("create",function(args)
 
         if player.ID == hostID then state = "searching for lobby" end
         
+    end
+end)
+
+netSwitch:addCase("uplobs",function(args)
+    if server then
+        for i,id in ipairs(JoinableLobby.lobbies) do
+            local lobby = JoinableLobby.lobbiesDict[id]
+            server:send("all","uplobs:"..lobby.ID.."_"..lobby.hostID.."_"..lobby.name.."_"..lobby.playerCount)
+        end
+    elseif player then
+        local splitData = split(args,"_")
+        local lobbyID, hostID, lobbyName, playerCount = splitData[1], splitData[2], splitData[3], splitData[4]
     end
 end)
 

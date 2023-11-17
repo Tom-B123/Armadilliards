@@ -175,6 +175,7 @@ function JoinableLobby:new(name, hostID, ip, port)
     object.hostID = hostID
     object.ip = ip
     object.port = port
+    object.playerCount = 0
     object.ID = calculateID(6)
 
     --Add the ID to the IDs table, and the lobby's info to the dictionary
