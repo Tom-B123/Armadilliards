@@ -71,7 +71,8 @@ end
 local function drawLobbies(offset)
     for i, ID in ipairs(JoinableLobby.lobbies) do
         local lobby = JoinableLobby.lobbiesDict[ID]
-        love.graphics.print(lobby.name.." "..lobby.ID.." "..lobby.hostID,100,i*20 + 100 + offset)
+        local hostName = LobbyPlayer:getName(lobby.hostID)
+        love.graphics.print(lobby.name.." "..lobby.ID.." "..hostName,100,i*20 + 100 + offset)
     end
 end
 
@@ -311,14 +312,21 @@ netSwitch:addCase("ncon",function(args)
         --automatically assigned team set here
         LobbyPlayer:setTeam(ID,"team 1")
 
-        server:send("all","ncon:"..ID.."_confirm")
+        server:send("all","ncon:"..ID.."_"..name.."_confirm")
 
     elseif player then
         local splitData = split(args,"_")
 
-        local ID, conf = splitData[1],splitData[2]
+        local ID, name, conf = splitData[1],splitData[2],splitData[3]
 
         if conf == "confirm" then
+            
+            LobbyPlayer:new(ID)
+            LobbyPlayer:setName(ID,name)
+            LobbyPlayer:setReady(ID,false)
+            --automatically assigned team set here
+            LobbyPlayer:setTeam(ID,"team 1")
+
             if ID == player.ID then
                 print("confirmed connection")
             else
