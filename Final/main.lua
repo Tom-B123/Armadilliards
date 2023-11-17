@@ -332,14 +332,14 @@ netSwitch:addCase("ncon",function(args)
 
         if conf == "confirm" then
 
-            LobbyPlayer:new(ID)
-            LobbyPlayer:setName(ID,name)
-            LobbyPlayer:setReady(ID,false)
-            --automatically assigned team set here
-            LobbyPlayer:setTeam(ID,"team 1")
-
             if ID == player.ID then
                 print("confirmed connection")
+                LobbyPlayer:new(ID)
+                LobbyPlayer:setName(ID,name)
+                LobbyPlayer:setReady(ID,false)
+                --automatically assigned team set here
+                LobbyPlayer:setTeam(ID,"team 1")
+
             else
                 newMessage("a new player has connected to the main server")
             end
@@ -409,18 +409,28 @@ end)
 
 netSwitch:addCase("uplobs",function(args)
     if server then
-        for i,id in ipairs(JoinableLobby.lobbies) do
-            local lobby = JoinableLobby.lobbiesDict[id]
-            server:send("all","uplobs:"..lobby.name.."_"..lobby.hostID.."_"..
+        for i,ID in ipairs(JoinableLobby.lobbies) do
+            local lobby = JoinableLobby.lobbiesDict[ID]
+            local hostName = LobbyPlayer:getName(lobby.hostID)
+            server:send("all","uplobs:"..lobby.name.."_"..hostName.."_"..lobby.hostID.."_"..
             lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount)
         end
     elseif player then
         local splitData = split(args,"_")
-        local lobbyName, hostID, IP, port, lobbyID, playerCount = 
-        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
-        --If the lobby doesn't exitst:
+        local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount = 
+        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
+        
+        --Sets the player name to display, as it may not be known
+        if not LobbyPlayer:getName(hostID) then
+            LobbyPlayer:new(hostID)
+            LobbyPlayer:setName(hostName)
+        end
+
+        --Adds and updates the info to display for the lobby
         if not JoinableLobby.lobbiesDict[lobbyID] then
             JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount)
+        else
+            JoinableLobby.lobbiesDict[lobbyID].playerCount = playerCount
         end
     end
 end)

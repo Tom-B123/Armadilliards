@@ -188,6 +188,11 @@ function JoinableLobby:new(name, hostID, IP, port, ID, playerCount)
     return object
 end
 
+function JoinableLobby:setPlayerCount(id,playerCount)
+    local lobby = self.lobbiesDict[id]
+    lobby.playerCount = playerCount
+end
+
 function Lobby:create(client,name,port,IP,hostName)
     --create a new inactive lobby object
     --send back to client
