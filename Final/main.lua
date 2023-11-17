@@ -6,8 +6,6 @@ require("net")
 local player = nil
 local server = nil
 
---Long and Short ID, for on main server and small lobbies?
-
 local canQuit = false
 local tick = 0
 
@@ -38,8 +36,8 @@ end
 
 local function drawMessages()
     for i,message in ipairs(messageLog) do
-        local topPos = 500 - #messageLog * 20
-        love.graphics.print(message,100,topPos + i*20)
+        local topPos = 550 - #messageLog * 20
+        love.graphics.print(message,600,topPos + i*20)
     end
 end
 
@@ -233,10 +231,10 @@ newStateSwitch:addCase("searching for lobby",function()
     newButton("player name",{1,1,1},100,25,300,75,function()
         --Edit player name
     end)
-    newButton("Create new lobby",{1,1,1},100,150,300,200,function()
+    newButton("Create new lobby",{1,1,1},100,400,300,450,function()
         state = "lobby settings"
     end)
-    newButton("back",{1,1,1},100,225,300,275,function()
+    newButton("back",{1,1,1},100,475,300,525,function()
         if player then
             --End connection with main server
             player:send("econ:"..player.ID)
@@ -296,8 +294,7 @@ drawStateSwitch:addCase("settings",function()
 end)
 
 drawStateSwitch:addCase("searching for lobby",function()
-    love.graphics.print("Lobbies list",100,100)
-    drawLobbies(0)
+    -- drawLobbies(0)
     drawMessages()
     drawButtons()
 end)
@@ -429,6 +426,10 @@ netSwitch:addCase("uplobs",function(args)
         --Adds and updates the info to display for the lobby
         if not JoinableLobby.lobbiesDict[lobbyID] then
             JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount)
+            local y = #JoinableLobby.lobbies * 25
+            newButton("Click to join lobby",{1,1,1},100,100 + y,300,120 + y,function()
+                print(lobbyName..hostID..IP..port..lobbyID..playerCount)
+            end)
         else
             JoinableLobby.lobbiesDict[lobbyID].playerCount = playerCount
         end
