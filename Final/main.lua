@@ -246,6 +246,11 @@ newStateSwitch:addCase("lobby settings",function()
         --Settings for the lobby, eg max player count
         print("editing lobby settings")
     end)
+    newButton("Create",{1,1,1},100,225,300,275,function()
+        if player then
+            player:send("create:"..player.ID)
+        end
+    end)
     lState = state
 end)
 
@@ -320,7 +325,7 @@ netSwitch:addCase("ncon",function(args)
         local ID, name, conf = splitData[1],splitData[2],splitData[3]
 
         if conf == "confirm" then
-            
+
             LobbyPlayer:new(ID)
             LobbyPlayer:setName(ID,name)
             LobbyPlayer:setReady(ID,false)
