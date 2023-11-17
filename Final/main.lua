@@ -126,6 +126,15 @@ stateSwitch:addCase("searching for lobby",function()
     end
 end)
 
+stateSwitch:addCase("sending initial data",function()
+    if player then
+        processReceived()
+        --send data to create a new LobbyPlayer object
+        
+        lState = state
+    end
+end)
+
 newStateSwitch:addCase("main menu",function()
     clearButtons()
     print("menu")
@@ -163,11 +172,9 @@ newStateSwitch:addCase("connecting to server",function()
         server = Lobby:hostMain()
     else
         lState = "connecting to server"
-        state = "searching for lobby"
+        state = "sending initial data"
         player = nPlayer
         id = calculateID(8)
-        --send data to create a new LobbyPlayer object
-        player:send("ncon:"..id.."_"..name)
     end
 end)
 
@@ -295,21 +302,28 @@ netSwitch:addCase("msg",function(args)
 end)
 
 netSwitch:addCase("ncon",function(args)
-    
-    local splitData = split(args,"_")
-    --sender ID
-    local sId = splitData[1]
-    --sender name
-    local sName = splitData[2]
+    if server then
+        local splitData = split(args,"_")
+        --sender ID
+        local sId = splitData[1]
+        --sender name
+        local sName = splitData[2]
 
-    print("new connection of id: "..sId.." and name: "..sName)
+        print("new connection of id: "..sId.." and name: "..sName)
 
-    LobbyPlayer:new(sId)
-    LobbyPlayer:setName(sId,sName)
-    LobbyPlayer:setReady(sId,false)
-    --automatically assigned team set here
-    LobbyPlayer:setTeam(sId,"team 1")
+        LobbyPlayer:new(sId)
+        LobbyPlayer:setName(sId,sName)
+        LobbyPlayer:setReady(sId,false)
+        --automatically assigned team set here
+        LobbyPlayer:setTeam(sId,"team 1")
 
+        server:send("ncon:confirm")
+    elseif player then
+        local conf = args[1]
+        if conf == "confirm" then
+            state = "searching for lobby"
+        end
+    end
 end)
 
 netSwitch:addCase("updt",function(args)
