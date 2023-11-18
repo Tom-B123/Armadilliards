@@ -42,16 +42,18 @@ end
 function Grid:search()
     local out = {}
     local function recSearch(x,y,level)
+        --If the searched cell is empty, it has no children so can't contain a ball, so return
+        if self:lookup(x,y,level) == nil then
+            return
+        end
+        --Terminate search at the finest detail.
+        if level >= self.levels then
+            return
+        end
         --grid x and y
         local gx = 2 * x - 1
         local gy = 2 * y - 1
         print("level: "..level.." x: "..x.." y: "..y)
-        if self:lookup(x,y,level) == nil then
-            return
-        end
-        if level >= self.levels then
-            return
-        end
         for lx = 0,1 do
             for ly = 0,1 do
                 recSearch(gx + lx, gy + ly, level + 1)
@@ -61,5 +63,12 @@ function Grid:search()
     recSearch(1,1,1)
 end
 
+function Grid:populate(x,y)
+    if x < 0 or x > self.size or y < 0 or y > self.size then
+        return "invalid position"
+    end
+end
+
 local grid = Grid:new(2048,512)
+grid:store(1,1,1,10)
 grid:search()
