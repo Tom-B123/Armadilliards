@@ -58,7 +58,6 @@ function Grid:search()
         --Terminate search at the finest detail.
         if level >= self.levels then
             table.insert(out,{x,y})
-            print(self:lookup(x,y,level))
             return
         end
         --grid x and y
@@ -89,7 +88,9 @@ function Grid:populate(x,y,id)
             val = self:lookup(nx,ny,level) + 1
         else
             val = self:lookup(nx,ny,level)
-            table.insert(val,id)
+            if type(val) == "table" then
+                table.insert(val,id)
+            end
         end
         self:store(nx,ny,level,val)
     end
@@ -97,12 +98,12 @@ end
 
 local grid = Grid:new(2048,32)
 print("start")
-for i = 1,10000 do
+for i = 1,2 do
     grid:populate(math.random(1,2040),math.random(1,2040),math.random(1,2040))
 end
 print("populated")
 local found = grid:search()
 for i, pos in ipairs(found) do
-    -- print("x: "..pos[1].." y: "..pos[2])
+    print("x: "..pos[1].." y: "..pos[2])
 end
 print("total: "..#found)
