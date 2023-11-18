@@ -14,10 +14,16 @@ function Grid:new(size,resolution)
 
     object.grid = {}
 
-    local maxLength = 2^(object.levels + 1) - 1
-    for x = 1,maxLength do
-        object.grid[x] = {}
+    for level = 1,object.levels do
+        local extraX = 2^(level-1)-1
+        for x = 1,2^(level-1) do
+            object.grid[x + extraX] = {}
+            for y = 1,2^(level-1) do
+                object.grid[x + extraX][y] = 0
+            end
+        end
     end
+
     return object
 end
 
@@ -43,7 +49,8 @@ function Grid:search()
     local out = {}
     local function recSearch(x,y,level)
         --If the searched cell is empty, it has no children so can't contain a ball, so return
-        if self:lookup(x,y,level) == nil then
+        if self:lookup(x,y,level) == 0 then
+            print("level: "..level.." x: "..x.." y: "..y.." is empty")
             return
         end
         --Terminate search at the finest detail.
@@ -53,7 +60,7 @@ function Grid:search()
         --grid x and y
         local gx = 2 * x - 1
         local gy = 2 * y - 1
-        print("level: "..level.." x: "..x.." y: "..y)
+        
         for lx = 0,1 do
             for ly = 0,1 do
                 recSearch(gx + lx, gy + ly, level + 1)
@@ -67,8 +74,14 @@ function Grid:populate(x,y)
     if x < 0 or x > self.size or y < 0 or y > self.size then
         return "invalid position"
     end
+    for level = 1,self.levels do
+        local cells = 2^(level-1)
+        print(cells)
+    end
 end
 
 local grid = Grid:new(2048,512)
 grid:store(1,1,1,10)
+grid:store(1,1,2,10)
+
 grid:search()
