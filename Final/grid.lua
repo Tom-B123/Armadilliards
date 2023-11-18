@@ -54,6 +54,7 @@ function Grid:search()
         end
         --Terminate search at the finest detail.
         if level >= self.levels then
+            table.insert(out,{x,y})
             return
         end
         --grid x and y
@@ -67,6 +68,7 @@ function Grid:search()
         end
     end
     recSearch(1,1,1)
+    return out
 end
 
 function Grid:populate(x,y)
@@ -86,5 +88,7 @@ end
 local grid = Grid:new(2048,32)
 
 grid:populate(1,1)
-
-grid:search()
+grid:populate(800,832)
+for i, pos in ipairs(grid:search()) do
+    print("x: "..pos[1].." y: "..pos[2])
+end
