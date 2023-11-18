@@ -86,9 +86,13 @@ function Grid:populate(x,y)
 end
 
 local grid = Grid:new(2048,32)
-
-grid:populate(1,1)
-grid:populate(800,832)
-for i, pos in ipairs(grid:search()) do
+print("start")
+for i = 1,10000 do
+    grid:populate(math.random(1,2040),math.random(1,2040))
+end
+print("populated")
+local found = grid:search()
+for i, pos in ipairs(found) do
     print("x: "..pos[1].." y: "..pos[2])
 end
+print("total: "..#found)
