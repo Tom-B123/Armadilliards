@@ -50,7 +50,6 @@ function Grid:search()
     local function recSearch(x,y,level)
         --If the searched cell is empty, it has no children so can't contain a ball, so return
         if self:lookup(x,y,level) == 0 then
-            print("level: "..level.." x: "..x.." y: "..y.." is empty")
             return
         end
         --Terminate search at the finest detail.
