@@ -19,11 +19,14 @@ function Grid:new(size,resolution)
         for x = 1,2^(level-1) do
             object.grid[x + extraX] = {}
             for y = 1,2^(level-1) do
-                object.grid[x + extraX][y] = 0
+                if level == object.levels then 
+                    object.grid[x + extraX][y] = {}
+                else
+                    object.grid[x + extraX][y] = 0
+                end
             end
         end
     end
-
     return object
 end
 
@@ -55,6 +58,7 @@ function Grid:search()
         --Terminate search at the finest detail.
         if level >= self.levels then
             table.insert(out,{x,y})
+            print(self:lookup(x,y,level))
             return
         end
         --grid x and y
@@ -71,7 +75,7 @@ function Grid:search()
     return out
 end
 
-function Grid:populate(x,y)
+function Grid:populate(x,y,id)
     if x < 0 or x > self.size or y < 0 or y > self.size then
         return "invalid position"
     end
@@ -80,19 +84,25 @@ function Grid:populate(x,y)
         local div = self.size / cells
         local nx = math.floor(x / div) + 1
         local ny = math.floor(y / div) + 1
-        local val = self:lookup(nx,ny,level)
-        self:store(nx,ny,level,val + 1)
+        local val
+        if level < self.levels then
+            val = self:lookup(nx,ny,level) + 1
+        else
+            val = self:lookup(nx,ny,level)
+            table.insert(val,id)
+        end
+        self:store(nx,ny,level,val)
     end
 end
 
 local grid = Grid:new(2048,32)
 print("start")
 for i = 1,10000 do
-    grid:populate(math.random(1,2040),math.random(1,2040))
+    grid:populate(math.random(1,2040),math.random(1,2040),math.random(1,2040))
 end
 print("populated")
 local found = grid:search()
 for i, pos in ipairs(found) do
-    print("x: "..pos[1].." y: "..pos[2])
+    -- print("x: "..pos[1].." y: "..pos[2])
 end
 print("total: "..#found)
