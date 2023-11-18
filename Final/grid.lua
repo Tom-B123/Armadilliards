@@ -76,12 +76,16 @@ function Grid:populate(x,y)
     end
     for level = 1,self.levels do
         local cells = 2^(level-1)
-        print(cells)
+        local div = self.size / cells
+        local nx = math.floor(x / div) + 1
+        local ny = math.floor(y / div) + 1
+        local val = self:lookup(nx,ny,level)
+        self:store(nx,ny,level,val + 1)
     end
 end
 
-local grid = Grid:new(2048,512)
-grid:store(1,1,1,10)
-grid:store(1,1,2,10)
+local grid = Grid:new(2048,32)
+
+grid:populate(1,1)
 
 grid:search()
