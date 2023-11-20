@@ -615,6 +615,10 @@ function love.quit()
     -- return true
 end
 
+function love.load()
+    love.keyboard.setKeyRepeat(true)
+end
+
 --Process each frame
 function love.update()
 
