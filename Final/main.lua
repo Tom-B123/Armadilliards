@@ -123,7 +123,9 @@ local function processReceived()
         data = {player:receive()}
         while data do
             process(data)
-            data = {player:receive()}
+            data = player:receive()
+            if data then data = {data}
+            end
         end
     end
 end
@@ -144,8 +146,6 @@ stateSwitch:addCase("searching for lobby",function()
         processReceived()
         if tick % 60 == 0 then
             player:send("uplobs:")
-        else
-            player:send("no dat")
         end
     end
 end)
