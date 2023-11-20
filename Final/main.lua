@@ -307,7 +307,6 @@ drawStateSwitch:addCase("hosting main",function()
 end)
 
 drawStateSwitch:addCase("user settings",function()
-    drawButtons(1)
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",250,250,300,300)
     drawButtons(2)
@@ -320,7 +319,6 @@ drawStateSwitch:addCase("searching for lobby",function()
 end)
 
 drawStateSwitch:addCase("lobby settings",function()
-    drawButtons(1)
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",250,250,300,300)
     drawButtons(2)
@@ -466,9 +464,10 @@ end)
 --Handle keyboard inputs
 function love.keypressed(key)
     if key == "escape" then
-        lState[2] = nil
-        state[2] = "user settings"
-        order = 2
+        order = order + 1
+        lState[order] = nil
+        state[order] = "user settings"
+        
     end
 
     if state == "main menu" then
