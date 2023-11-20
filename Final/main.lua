@@ -11,8 +11,6 @@ local tick = 0
 
 local messageLog = {}
 
-local buttons = {}
-
 local function split (inputstr, sep)
     if sep == nil then
         sep = "%s"
@@ -45,27 +43,6 @@ local function clearMessages()
     messageLog = {}
 end
 
-local function updateButtons()
-    for i,button in ipairs(buttons) do
-        button:update()
-    end
-end
-
-local function drawButtons()
-    for i,button in ipairs(buttons) do
-        button:draw()
-    end
-end
-
-local function newButton(text,colour,x1,y1,x2,y2,command,params)
-    local nButton = Button:new(text,colour,0,x1,y1,x2,y2,command,params)
-    table.insert(buttons,nButton)
-end
-
-local function clearButtons()
-    buttons = {}
-end
-
 local function drawLobbies(offset)
     for i, ID in ipairs(JoinableLobby.lobbies) do
         local lobby = JoinableLobby.lobbiesDict[ID]
@@ -79,6 +56,36 @@ local lState = {nil}
 --Order of states, used to stack menues ontop of eachother whilst the buttons and data of lower
 --order states is preserved.
 local order = 1
+--Stores all buttons within tables, corresponding to their order.
+local buttons = {}
+
+--hardcoded limit on orders
+for i = 1,3 do
+    buttons[i] = {}
+end
+
+--Only update active buttons
+local function updateButtons()
+    for i,button in ipairs(buttons[order]) do
+        button:update()
+    end
+end
+
+local function drawButtons(ord)
+    --draws buttons of a specific order
+    for j,button in ipairs(buttons[ord]) do
+        button:draw()
+    end
+end
+
+local function newButton(text,colour,x1,y1,x2,y2,command,params)
+    local nButton = Button:new(text,colour,0,x1,y1,x2,y2,command,params)
+    table.insert(buttons[order],nButton)
+end
+
+local function clearButtons()
+    buttons[order] = {}
+end
 
 local function getNewState()
     if state[order] ~= lState[order] then return state[order] end
@@ -87,6 +94,8 @@ end
 local function getState()
     return state[order]
 end
+
+
 
 --To run every frame a state is active.
 local stateSwitch = Switch:new()
@@ -144,7 +153,7 @@ end)
 newStateSwitch:addCase("main menu",function()
     clearButtons()
     print("menu")
-    newButton("click to start",{1,1,1},100,300,300,350,function()
+    newButton("click to start",{1,1,1},300,300,500,350,function()
         state[1] = "gamemode select"
     end)
     lState[1] = state[1]
@@ -153,14 +162,14 @@ end)
 newStateSwitch:addCase("gamemode select",function()
     clearButtons()
     print("gamemode select")
-    newButton("multiplayer",{1,1,1},100,300,300,350,function()
+    newButton("multiplayer",{1,1,1},300,100,500,150,function()
         state[1] = "connecting to server"
     end)
-    newButton("settings",{1,1,1},100,375,300,425,function()
-        state[2] = "settings"
+    newButton("settings",{1,1,1},300,300,500,350,function()
+        state[2] = "user settings"
         order = 2
     end)
-    newButton("back",{1,1,1},100,450,300,500,function()
+    newButton("back",{1,1,1},300,500,500,550,function()
         state[1] = "main menu"
     end)
     lState[1] = state[1]
@@ -203,41 +212,43 @@ end)
 newStateSwitch:addCase("connection error",function()
     clearButtons()
     print("connection error")
-    newButton("retry",{1,1,1},100,375,300,425,function()
+    newButton("retry",{1,1,1},300,375,500,425,function()
         state[1] = "connecting to server"
     end)
-    newButton("back",{1,1,1},100,450,300,500,function()
+    newButton("back",{1,1,1},300,450,500,500,function()
         state[1] = "gamemode select"
     end)
     lState[1] = state[1]
 end)
 
--- newStateSwitch:addCase("settings",function()
---     clearButtons()
---     print("settings")
---     newButton("configure settings",{1,1,1},100,325,300,375,function()
---         --Settings for the player to alter
---     end)
---     newButton("back",{1,1,1},100,400,300,450,function()
---         if tempState then state = tempState end
---     end)
---     newButton("quit",{1,1,1},100,475,300,525,function()
---         love.event.quit()
---     end)
---     lState = state
--- end)
+newStateSwitch:addCase("user settings",function()
+    clearButtons()
+    print("user settings")
+    newButton("configure settings",{1,1,1},300,300,500,350,function()
+        --Settings for the player to alter
+    end)
+    newButton("back",{1,1,1},300,375,500,425,function()
+        state[2] = nil
+        lState[2] = nil
+        order = 1
+    end)
+    newButton("quit",{1,1,1},300,450,500,500,function()
+        love.event.quit()
+    end)
+    lState[2] = state[2]
+end)
 
 newStateSwitch:addCase("searching for lobby",function()
     clearButtons()
     print("searching for lobby")
-    newButton("player name",{1,1,1},100,25,300,75,function()
+    newButton("player name",{1,1,1},300,25,500,75,function()
         --Edit player name
     end)
-    newButton("Create new lobby",{1,1,1},100,400,300,450,function()
+    newButton("Create new lobby",{1,1,1},300,400,500,450,function()
         state[2] = "lobby settings"
         order = 2
     end)
-    newButton("back",{1,1,1},100,475,300,525,function()
+    newButton("back",{1,1,1},300,475,500,525,function()
         if player then
             --End connection with main server
             player:send("econ:"..player.ID)
@@ -249,14 +260,14 @@ end)
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
     print("lobby settings")
-    newButton("back",{1,1,1},100,25,300,75,function()
+    newButton("back",{1,1,1},300,25,500,75,function()
         state[1] = "searching for lobby"
         order = 1
     end)
-    newButton("Lobby settings",{1,1,1},100,150,300,200,function()
+    newButton("Lobby settings",{1,1,1},300,150,500,200,function()
         --Settings for the lobby, eg max player count
     end)
-    newButton("Create",{1,1,1},100,225,300,275,function()
+    newButton("Create",{1,1,1},300,225,500,275,function()
         if player then
             player:send("create:"..player.ID.."_new server_server IP_server port_8")
         end
@@ -265,46 +276,52 @@ newStateSwitch:addCase("lobby settings",function()
 end)
 
 drawStateSwitch:addCase("main menu",function()
-    love.graphics.print("This is the main menu",100,100)
-    drawButtons()
+    love.graphics.print("This is the main menu",300,100)
+    drawButtons(1)
 end)
 
 drawStateSwitch:addCase("gamemode select",function()
-    love.graphics.print("Leaderboard",100,100)
-    drawButtons()
+    love.graphics.print("Leaderboard",300,50)
+    drawButtons(1)
 end)
 
 drawStateSwitch:addCase("connecting to server",function()
-    drawButtons()
+    drawButtons(1)
 end)
 
 drawStateSwitch:addCase("connection error",function()
-    drawButtons()
-    love.graphics.print("connection error",100,100)
+    drawButtons(1)
+    love.graphics.print("connection error",300,100)
 end)
 
 drawStateSwitch:addCase("hosting main",function()
     drawMessages()
-    drawButtons()
+    drawButtons(1)
     love.graphics.setColor(1,1,1)
-    love.graphics.print("You are now the main host",100,500)
+    love.graphics.print("You are now the main host",300,500)
     if server then
-        love.graphics.print("player Count: "..server.playerCount,50,400)
+        love.graphics.print("player Count: "..server.playerCount,300,400)
     end
 end)
 
-drawStateSwitch:addCase("settings",function()
-    drawButtons()
+drawStateSwitch:addCase("user settings",function()
+    drawButtons(1)
+    love.graphics.setColor(0.5,0.5,0.5)
+    love.graphics.rectangle("fill",250,250,300,300)
+    drawButtons(2)
 end)
 
 drawStateSwitch:addCase("searching for lobby",function()
     -- drawLobbies(0)
     drawMessages()
-    drawButtons()
+    drawButtons(1)
 end)
 
 drawStateSwitch:addCase("lobby settings",function()
-    drawButtons()
+    drawButtons(1)
+    love.graphics.setColor(0.5,0.5,0.5)
+    love.graphics.rectangle("fill",100,100,400,400)
+    drawButtons(2)
 end)
 
 netSwitch:addCase("msg",function(args)
@@ -444,7 +461,7 @@ end)
 function love.keypressed(key)
     if key == "escape" then
         lState[2] = nil
-        state[2] = "settings"
+        state[2] = "user settings"
         order = 2
     end
 
