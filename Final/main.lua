@@ -464,10 +464,17 @@ end)
 --Handle keyboard inputs
 function love.keypressed(key)
     if key == "escape" then
-        order = order + 1
-        lState[order] = nil
-        state[order] = "user settings"
-        
+        --If in a menu, esc closes that menu
+        if state[order] == "lobby settings" or state[order] == "user settings" then
+            state[order] = nil
+            lState[order] = nil
+            order = order - 1
+        --If not in a menu, esc opens options
+        else
+            order = order + 1
+            lState[order] = nil
+            state[order] = "user settings"
+        end
     end
 
     if state == "main menu" then
