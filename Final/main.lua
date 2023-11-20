@@ -541,6 +541,20 @@ netSwitch:addCase("uplobs",function(args)
     end
 end)
 
+
+
+function love.textinput(t)
+    if editingText and player then
+        if t ~= nil then
+            --Adds text at the editing index and incriments the index
+            if editingText then
+                editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
+                editingIndex = editingIndex + 1
+            end
+        end
+    end
+end
+
 --Handle keyboard inputs
 function love.keypressed(key)
     if editingText and player then
@@ -572,17 +586,6 @@ function love.keypressed(key)
             if editingIndex > 1 then editingIndex = editingIndex - 1 end
         elseif key == "right" then
             if editingIndex < #editingText + 1 then editingIndex = editingIndex + 1 end
-        end
-        local vKey = validKey(key)
-        
-        if vKey ~= nil then
-            --Adds text at the editing index and incriments the index
-            if editingText then
-                
-                editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex,#editingText)
-                
-                editingIndex = editingIndex + 1
-            end
         end
     elseif key == "escape" then
         --If in a menu, esc closes that menu
