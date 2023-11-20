@@ -228,14 +228,15 @@ newStateSwitch:addCase("user settings",function()
         --Settings for the player to alter
     end)
     newButton("back",{1,1,1},300,375,500,425,function()
-        state[2] = nil
-        lState[2] = nil
-        order = 1
+        --arbitrary values so user settings can open above any menu
+        state[order] = nil
+        lState[order] = nil
+        order = order - 1
     end)
     newButton("quit",{1,1,1},300,450,500,500,function()
         love.event.quit()
     end)
-    lState[2] = state[2]
+    lState[order] = state[order]
 end)
 
 newStateSwitch:addCase("searching for lobby",function()
@@ -313,7 +314,6 @@ drawStateSwitch:addCase("user settings",function()
 end)
 
 drawStateSwitch:addCase("searching for lobby",function()
-    -- drawLobbies(0)
     drawMessages()
     drawButtons(1)
 end)
