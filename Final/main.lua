@@ -261,6 +261,8 @@ newStateSwitch:addCase("lobby settings",function()
     clearButtons()
     print("lobby settings")
     newButton("back",{1,1,1},300,300,500,350,function()
+        state[2] = nil
+        lState[2] = nil
         state[1] = "searching for lobby"
         order = 1
     end)
@@ -420,8 +422,12 @@ netSwitch:addCase("create",function(args)
         local hostID, lobbyID, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
 
-        if player.ID == hostID then state[1] = "searching for lobby" end
-        
+        if player.ID == hostID then 
+            state[1] = "searching for lobby"
+            state[2] = nil
+            lState[2] = nil
+            order = 1
+        end
     end
 end)
 
