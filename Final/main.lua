@@ -51,6 +51,8 @@ local function drawLobbies(offset)
     end
 end
 
+local editingText = nil
+
 local state = {"main menu"}
 local lState = {nil}
 --Order of states, used to stack menues ontop of eachother whilst the buttons and data of lower
@@ -261,20 +263,31 @@ end)
 newStateSwitch:addCase("searching for lobby",function()
     clearButtons()
     print("searching for lobby")
-    newButton("player name",{1,1,1},300,25,500,75,function()
-        --Edit player name
-    end)
-    newButton("Create new lobby",{1,1,1},300,400,500,450,function()
-        state[2] = "lobby settings"
-        order = 2
-    end)
-    newButton("back",{1,1,1},300,475,500,525,function()
-        if player then
-            --End connection with main server
+    if player then
+        newButton(player.name,{1,1,1},300,25,500,75,function()
+            state[2] = "editing player name"
+            lState[2] = nil
+            order = 2
+        end)
+        newButton("Create new lobby",{1,1,1},300,400,500,450,function()
+            lState[2] = nil
+            state[2] = "lobby settings"
+            order = 2
+        end)
+        newButton("back",{1,1,1},300,475,500,525,function()
+            
+                --End connection with main server
             player:send("econ:"..player.ID)
-        end
-    end)
+        end)
+    end
     lState[1] = state[1]
+end)
+
+newStateSwitch:addCase("editing player name",function()
+    if player then
+        editingText = player.Name
+    end
+    lState[2] = state[2]
 end)
 
 newStateSwitch:addCase("lobby settings",function()
