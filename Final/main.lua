@@ -565,7 +565,6 @@ function love.keypressed(key)
         if vKey ~= nil then
             if editingText then
                 if  #editingText == 0 then editingText = vKey
-                elseif editingIndex == 1 then editingText = vKey..editingText
                 else editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex,#editingText)
                 end
                 editingIndex = editingIndex + 1
