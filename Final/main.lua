@@ -91,8 +91,8 @@ local function getNewState()
     if state[order] ~= lState[order] then return state[order] end
 end
 
-local function getState()
-    return state[order]
+local function getState(ord)
+    return state[ord]
 end
 
 
@@ -260,14 +260,14 @@ end)
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
     print("lobby settings")
-    newButton("back",{1,1,1},300,25,500,75,function()
+    newButton("back",{1,1,1},300,300,500,350,function()
         state[1] = "searching for lobby"
         order = 1
     end)
-    newButton("Lobby settings",{1,1,1},300,150,500,200,function()
+    newButton("Lobby settings",{1,1,1},300,375,500,425,function()
         --Settings for the lobby, eg max player count
     end)
-    newButton("Create",{1,1,1},300,225,500,275,function()
+    newButton("Create",{1,1,1},300,450,500,500,function()
         if player then
             player:send("create:"..player.ID.."_new server_server IP_server port_8")
         end
@@ -320,7 +320,7 @@ end)
 drawStateSwitch:addCase("lobby settings",function()
     drawButtons(1)
     love.graphics.setColor(0.5,0.5,0.5)
-    love.graphics.rectangle("fill",100,100,400,400)
+    love.graphics.rectangle("fill",250,250,300,300)
     drawButtons(2)
 end)
 
@@ -494,14 +494,18 @@ function love.update()
         nState = getNewState()
     end
 
-    stateSwitch:case(getState())
+    for i = 1,3 do
+        stateSwitch:case(getState(i))
+    end
 
     tick = tick + 1
 end
 
 --Draw each frame
 function love.draw()
-    drawStateSwitch:case(getState())
+    for i = 1,3 do
+        drawStateSwitch:case(getState(i))
+    end
     love.graphics.setColor(1,1,1)
     love.graphics.print(state[order])
 end
