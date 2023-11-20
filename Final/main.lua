@@ -557,10 +557,12 @@ function love.keypressed(key)
             lState[2] = nil
             order = 1
         elseif key == "delete" and editingText then
-            if editingIndex < #editingText then
+            --Deletes the text at the editing index
+            if editingIndex <= #editingText then
                 editingText = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
             end
         elseif key == "backspace" and editingText then
+            --Deletes the text before the editing index and decriments the index
             if editingIndex > 1 then
                 editingText = string.sub(editingText,1,editingIndex-2)..string.sub(editingText,editingIndex,#editingText)
                 editingIndex = editingIndex - 1
@@ -569,8 +571,9 @@ function love.keypressed(key)
         local vKey = validKey(key)
         
         if vKey ~= nil then
+            --Adds text at the editing index and incriments the index
             if editingText then
-                -- if  #editingText == 0 then editingText = vKey
+                
                 editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex,#editingText)
                 
                 editingIndex = editingIndex + 1
