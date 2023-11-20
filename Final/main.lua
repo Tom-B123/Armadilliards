@@ -567,6 +567,11 @@ function love.keypressed(key)
                 editingText = string.sub(editingText,1,editingIndex-2)..string.sub(editingText,editingIndex,#editingText)
                 editingIndex = editingIndex - 1
             end
+            --Move the index left or right until there is no space left
+        elseif key == "left" then
+            if editingIndex > 1 then editingIndex = editingIndex - 1 end
+        elseif key == "right" then
+            if editingIndex < #editingText + 1 then editingIndex = editingIndex + 1 end
         end
         local vKey = validKey(key)
         
