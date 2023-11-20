@@ -107,17 +107,24 @@ local drawStateSwitch = Switch:new()
 local netSwitch = Switch:new()
 
 local function processReceived()
+    local function process(data)
+        for i,message in ipairs(data) do
+            if message ~= "no dat" then print(message) end
+            local splitData = split(message,":")
+            local key,args = splitData[1],splitData[2]
+            netSwitch:case(key,args)
+        end
+    end
     local data
     if server then
         data = server:receive("all")
+        process(data)
     elseif player then
         data = {player:receive()}
-    end
-    for i,message in ipairs(data) do
-        if message ~= "no dat" then print(message) end
-        local splitData = split(message,":")
-        local key,args = splitData[1],splitData[2]
-        netSwitch:case(key,args)
+        while data do
+            process(data)
+            data = {player:receive()}
+        end
     end
 end
 
@@ -440,7 +447,7 @@ netSwitch:addCase("create",function(args)
 
         --Host a new joinable server
 
-        if player.ID == hostID then 
+        if player.ID == hostID then
             state[1] = "searching for lobby"
             state[2] = nil
             lState[2] = nil
