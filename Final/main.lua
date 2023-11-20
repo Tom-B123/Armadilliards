@@ -52,6 +52,7 @@ local function drawLobbies(offset)
 end
 
 local editingText = nil
+local editingIndex = nil
 
 local state = {"main menu"}
 local lState = {nil}
@@ -64,6 +65,17 @@ local buttons = {}
 --hardcoded limit on orders
 for i = 1,3 do
     buttons[i] = {}
+end
+
+local function validKey(key)
+    if key == "space" then return " " end
+    if #key > 1 then
+        return nil
+    end
+    local asc = string.byte(key)
+    if (48 <= asc and asc <= 57) or (97 <= asc and asc <= 122) then
+        return key
+    end
 end
 
 --Only update active buttons
@@ -522,8 +534,24 @@ end)
 
 --Handle keyboard inputs
 function love.keypressed(key)
-    if editingText then
-        print(key)
+    if editingText and player then
+        if key == "escape" then
+            state[2] = nil
+            lState[2] = nil
+            order = 1
+            editingText = nil
+        elseif key == "return" then
+            if editingText == "" then editingText = "new player" end
+            player.name = editingText
+            editingText = nil
+            state[2] = nil
+            lState[2] = nil
+            order = 1
+        end
+        local vKey = validKey(key)
+        if vKey ~= nil then
+            editingText = editingText..vKey
+        end
     elseif key == "escape" then
         --If in a menu, esc closes that menu
         if order > 1 then
