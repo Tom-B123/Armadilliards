@@ -74,9 +74,10 @@ local function drawLobbies(offset)
     end
 end
 
-local tempState = nil
 local state = {"main menu"}
 local lState = {nil}
+--Order of states, used to stack menues ontop of eachother whilst the buttons and data of lower
+--order states is preserved.
 local order = 1
 
 local function getNewState()
@@ -144,25 +145,25 @@ newStateSwitch:addCase("main menu",function()
     clearButtons()
     print("menu")
     newButton("click to start",{1,1,1},100,300,300,350,function()
-        state[order] = "gamemode select"
+        state[1] = "gamemode select"
     end)
-    lState[order] = state[order]
+    lState[1] = state[1]
 end)
 
 newStateSwitch:addCase("gamemode select",function()
     clearButtons()
     print("gamemode select")
     newButton("multiplayer",{1,1,1},100,300,300,350,function()
-        state[order] = "connecting to server"
+        state[1] = "connecting to server"
     end)
     newButton("settings",{1,1,1},100,375,300,425,function()
-        tempState = state[order]
-        state[order] = "settings"
+        state[2] = "settings"
+        order = 2
     end)
     newButton("back",{1,1,1},100,450,300,500,function()
-        state[order] = "main menu"
+        state[1] = "main menu"
     end)
-    lState[order] = state[order]
+    lState[1] = state[1]
 end)
 
 
@@ -171,12 +172,12 @@ newStateSwitch:addCase("connecting to server",function()
     print("connecting to server")
     local nPlayer = Player:tryConnect()
     if not nPlayer then
-        lState[order] = "connecting to server"
-        state[order] = "hosting main"
+        lState[1] = "connecting to server"
+        state[1] = "hosting main"
         server = Lobby:hostMain()
     else
-        lState[order] = "connecting to server"
-        state[order] = "searching for lobby"
+        lState[1] = "connecting to server"
+        state[1] = "searching for lobby"
 
         player = nPlayer
         player.ID = calculateID(8)
@@ -189,13 +190,13 @@ newStateSwitch:addCase("hosting main",function()
     if server then
         print("hosting main")
         newButton("close main server",{1,0,0},50,50,750,250,function()
-            state[order] = "gamemode select"
+            state[1] = "gamemode select"
             server:close()
         end)
-        lState[order] = "hosting main"
+        lState[1] = "hosting main"
     else
-        lState[order] = "connecting to server"
-        state[order] = "connection error"
+        lState[1] = "connecting to server"
+        state[1] = "connection error"
     end
 end)
 
@@ -203,12 +204,12 @@ newStateSwitch:addCase("connection error",function()
     clearButtons()
     print("connection error")
     newButton("retry",{1,1,1},100,375,300,425,function()
-        state[order] = "connecting to server"
+        state[1] = "connecting to server"
     end)
     newButton("back",{1,1,1},100,450,300,500,function()
-        state[order] = "gamemode select"
+        state[1] = "gamemode select"
     end)
-    lState[order] = state[order]
+    lState[1] = state[1]
 end)
 
 -- newStateSwitch:addCase("settings",function()
@@ -233,7 +234,8 @@ newStateSwitch:addCase("searching for lobby",function()
         --Edit player name
     end)
     newButton("Create new lobby",{1,1,1},100,400,300,450,function()
-        state[order] = "lobby settings"
+        state[2] = "lobby settings"
+        order = 2
     end)
     newButton("back",{1,1,1},100,475,300,525,function()
         if player then
@@ -241,14 +243,15 @@ newStateSwitch:addCase("searching for lobby",function()
             player:send("econ:"..player.ID)
         end
     end)
-    lState[order] = state[order]
+    lState[1] = state[1]
 end)
 
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
     print("lobby settings")
     newButton("back",{1,1,1},100,25,300,75,function()
-        state[order] = "searching for lobby"
+        state[1] = "searching for lobby"
+        order = 1
     end)
     newButton("Lobby settings",{1,1,1},100,150,300,200,function()
         --Settings for the lobby, eg max player count
@@ -258,7 +261,7 @@ newStateSwitch:addCase("lobby settings",function()
             player:send("create:"..player.ID.."_new server_server IP_server port_8")
         end
     end)
-    lState[order] = state[order]
+    lState[2] = state[2]
 end)
 
 drawStateSwitch:addCase("main menu",function()
@@ -356,7 +359,7 @@ netSwitch:addCase("econ",function(args)
         if ID == player.ID then
             print("confirmed end of connection")
             player:close()
-            state[order] = "gamemode select"
+            state[1] = "gamemode select"
         else
             newMessage("a player has left the main server")
         end
@@ -400,7 +403,7 @@ netSwitch:addCase("create",function(args)
         local hostID, lobbyID, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
 
-        if player.ID == hostID then state[order] = "searching for lobby" end
+        if player.ID == hostID then state[1] = "searching for lobby" end
         
     end
 end)
@@ -440,12 +443,13 @@ end)
 --Handle keyboard inputs
 function love.keypressed(key)
     if key == "escape" then
-        tempState = state
-        state[order] = "settings"
+        lState[2] = nil
+        state[2] = "settings"
+        order = 2
     end
 
     if state == "main menu" then
-        state[order] = "gamemode select"
+        state[1] = "gamemode select"
     end
 end
 
