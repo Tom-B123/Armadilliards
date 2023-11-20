@@ -168,7 +168,7 @@ end
 JoinableLobby = {lobbies = {},lobbiesDict = {}}
 JoinableLobby.__index = JoinableLobby
 
-function JoinableLobby:new(name, hostID, IP, port, ID, playerCount)
+function JoinableLobby:new(name, hostID, IP, port, ID, playerCount,maxPlayers)
     local object = {}
     setmetatable(object, JoinableLobby)
     object.name = name
@@ -176,8 +176,8 @@ function JoinableLobby:new(name, hostID, IP, port, ID, playerCount)
     object.IP = IP
     object.port = port
 
-    if playerCount then object.playerCount = playerCount
-    else object.playerCount = 0 end
+    object.playerCount = playerCount
+    object.maxPlayers = maxPlayers
 
     if ID then object.ID = ID
     else object.ID = calculateID(6) end

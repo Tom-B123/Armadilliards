@@ -430,13 +430,15 @@ netSwitch:addCase("create",function(args)
         local hostID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
         
-        local nLobby = JoinableLobby:new(lobbyName,hostID,IP,port)
+        local nLobby = JoinableLobby:new(lobbyName,hostID,IP,port,nil,0,maxPlayers)
         
         server:send("all","create:"..hostID.."_"..nLobby.ID.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
         local splitData = split(args,"_")
         local hostID, lobbyID, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
+
+        --Host a new joinable server
 
         if player.ID == hostID then 
             state[1] = "searching for lobby"
@@ -453,12 +455,12 @@ netSwitch:addCase("uplobs",function(args)
             local lobby = JoinableLobby.lobbiesDict[ID]
             local hostName = LobbyPlayer:getName(lobby.hostID)
             server:send("all","uplobs:"..lobby.name.."_"..hostName.."_"..lobby.hostID.."_"..
-            lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount)
+            lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount.."_"..lobby.maxPlayers)
         end
     elseif player then
         local splitData = split(args,"_")
-        local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount = 
-        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
+        local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount, maxPlayers = 
+        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7], splitData[8]
         
         --Sets the player name to display, as it may not be known
         if not LobbyPlayer:getName(hostID) then
@@ -468,9 +470,9 @@ netSwitch:addCase("uplobs",function(args)
 
         --Adds and updates the info to display for the lobby
         if not JoinableLobby.lobbiesDict[lobbyID] then
-            JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount)
-            local y = #JoinableLobby.lobbies * 25
-            newButton("Click to join lobby",{1,1,1},100,100 + y,300,120 + y,function()
+            JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount,8)
+            local y = #JoinableLobby.lobbies * 40
+            newButton("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
                 print(lobbyName..hostID..IP..port..lobbyID..playerCount)
             end)
         else
