@@ -52,7 +52,7 @@ local function drawLobbies(offset)
 end
 
 local editingText = nil
-local editingIndex = nil
+local editingIndex = 1
 
 local state = {"main menu"}
 local lState = {nil}
@@ -558,14 +558,17 @@ function love.keypressed(key)
             order = 1
         elseif key == "backspace" and editingText then
             editingText = string.sub(editingText,1,#editingText-1)
+            editingIndex = editingIndex - 1
         end
         local vKey = validKey(key)
         
         if vKey ~= nil then
             if editingText then
                 if  #editingText == 0 then editingText = vKey
-                else editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex+1,#editingText)
+                elseif editingIndex == 1 then editingText = vKey..editingText
+                else editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex,#editingText)
                 end
+                editingIndex = editingIndex + 1
             end
         end
     elseif key == "escape" then
