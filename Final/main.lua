@@ -315,6 +315,7 @@ newStateSwitch:addCase("editing player name",function()
         state[2] = nil
         lState[2] = nil
         order = 1
+        player:send("updt:"..player.ID.."_name_"..player.name)
     end)
     end
     lState[2] = state[2]
@@ -468,7 +469,7 @@ netSwitch:addCase("updt",function(args)
     local ID = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
-
+    print(field.." to "..value)
     if field == "name" then LobbyPlayer:setName(ID,value)
     elseif field == "ready" then LobbyPlayer:setReady(ID,value)
     elseif field == "team" then LobbyPlayer:setTeam(ID,value)
