@@ -225,7 +225,9 @@ newStateSwitch:addCase("user settings",function()
     clearButtons()
     print("user settings")
     newButton("configure settings",{1,1,1},300,300,500,350,function()
-        --Settings for the player to alter
+        order = order + 1
+        state[order] = "configure game settings"
+        lState[order] = nil
     end)
     newButton("back",{1,1,1},300,375,500,425,function()
         --arbitrary values so user settings can open above any menu
@@ -235,6 +237,16 @@ newStateSwitch:addCase("user settings",function()
     end)
     newButton("quit",{1,1,1},300,450,500,500,function()
         love.event.quit()
+    end)
+    lState[order] = state[order]
+end)
+
+newStateSwitch:addCase("configure game settings",function()
+    newButton("back",{1,1,1},300,375,500,425,function()
+        --arbitrary values so user settings can open above any menu
+        state[order] = nil
+        lState[order] = nil
+        order = order - 1
     end)
     lState[order] = state[order]
 end)
@@ -310,7 +322,13 @@ end)
 drawStateSwitch:addCase("user settings",function()
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",250,250,300,300)
-    drawButtons(2)
+    drawButtons(order)
+end)
+
+drawStateSwitch:addCase("configure game settings",function()
+    love.graphics.setColor(0.5,0.5,0.5)
+    love.graphics.rectangle("fill",250,250,300,300)
+    drawButtons(order)
 end)
 
 drawStateSwitch:addCase("searching for lobby",function()
@@ -465,7 +483,7 @@ end)
 function love.keypressed(key)
     if key == "escape" then
         --If in a menu, esc closes that menu
-        if state[order] == "lobby settings" or state[order] == "user settings" then
+        if order > 1 then
             state[order] = nil
             lState[order] = nil
             order = order - 1
