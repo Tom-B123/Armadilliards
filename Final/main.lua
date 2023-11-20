@@ -275,7 +275,6 @@ newStateSwitch:addCase("searching for lobby",function()
             order = 2
         end)
         newButton("back",{1,1,1},300,475,500,525,function()
-            
                 --End connection with main server
             player:send("econ:"..player.ID)
         end)
@@ -284,8 +283,24 @@ newStateSwitch:addCase("searching for lobby",function()
 end)
 
 newStateSwitch:addCase("editing player name",function()
+    clearButtons()
     if player then
-        editingText = player.Name
+        editingText = player.name
+    
+    newButton("cancel",{1,0,0},300,80,398,105,function()
+        state[2] = nil
+        lState[2] = nil
+        order = 1
+        editingText = nil
+    end)
+    newButton("confirm",{0,1,0},402,80,500,105,function()
+        if editingText == "" then editingText = "new player" end
+        player.name = editingText
+        editingText = nil
+        state[2] = nil
+        lState[2] = nil
+        order = 1
+    end)
     end
     lState[2] = state[2]
 end)
@@ -354,6 +369,10 @@ end)
 drawStateSwitch:addCase("searching for lobby",function()
     drawMessages()
     drawButtons(1)
+end)
+
+drawStateSwitch:addCase("editing player name",function()
+    drawButtons(2)
 end)
 
 drawStateSwitch:addCase("lobby settings",function()
@@ -503,7 +522,9 @@ end)
 
 --Handle keyboard inputs
 function love.keypressed(key)
-    if key == "escape" then
+    if editingText then
+        print(key)
+    elseif key == "escape" then
         --If in a menu, esc closes that menu
         if order > 1 then
             state[order] = nil
@@ -515,9 +536,7 @@ function love.keypressed(key)
             lState[order] = nil
             state[order] = "user settings"
         end
-    end
-
-    if state == "main menu" then
+    elseif state == "main menu" then
         state[1] = "gamemode select"
     end
 end
