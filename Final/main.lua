@@ -394,6 +394,9 @@ end)
 
 drawStateSwitch:addCase("editing player name",function()
     drawButtons(2)
+    --draw a cursor at the text, seems impossible atm as text isn't monospace
+    -- love.graphics.setColor(0.4,0.4,0.4,0.4)
+    -- love.graphics.rectangle("fill",300,25,5,20)
 end)
 
 drawStateSwitch:addCase("lobby settings",function()
@@ -547,10 +550,8 @@ function love.textinput(t)
     if editingText and player then
         if t ~= nil then
             --Adds text at the editing index and incriments the index
-            if editingText then
-                editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
-                editingIndex = editingIndex + 1
-            end
+            editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
+            editingIndex = editingIndex + 1
         end
     end
 end
