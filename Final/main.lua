@@ -556,17 +556,16 @@ function love.keypressed(key)
             state[2] = nil
             lState[2] = nil
             order = 1
-        elseif key == "backspace" and editingText then
-            editingText = string.sub(editingText,1,#editingText-1)
-            editingIndex = editingIndex - 1
+        elseif key == "delete" and editingText then
+            editingText = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
         end
         local vKey = validKey(key)
         
         if vKey ~= nil then
             if editingText then
-                if  #editingText == 0 then editingText = vKey
-                else editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex,#editingText)
-                end
+                -- if  #editingText == 0 then editingText = vKey
+                editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex,#editingText)
+                
                 editingIndex = editingIndex + 1
             end
         end
