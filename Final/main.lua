@@ -101,6 +101,8 @@ local function clearButtons()
     buttons[order] = {}
 end
 
+local playerNameButton
+
 local function getNewState()
     if state[order] ~= lState[order] then return state[order] end
 end
@@ -276,7 +278,8 @@ newStateSwitch:addCase("searching for lobby",function()
     clearButtons()
     print("searching for lobby")
     if player then
-        newButton(player.name,{1,1,1},300,25,500,75,function()
+        --no text, the player name is drawn separatly above the button
+        newButton("",{1,1,1},300,25,500,75,function()
             state[2] = "editing player name"
             lState[2] = nil
             order = 2
@@ -381,6 +384,13 @@ end)
 drawStateSwitch:addCase("searching for lobby",function()
     drawMessages()
     drawButtons(1)
+    --Drawing the player name onto the edit player name button
+    if player then
+        local playerNameText
+        if editingText then playerNameText = editingText
+        else playerNameText = player.name end
+        love.graphics.print(playerNameText,300,25)
+    end
 end)
 
 drawStateSwitch:addCase("editing player name",function()
@@ -547,10 +557,14 @@ function love.keypressed(key)
             state[2] = nil
             lState[2] = nil
             order = 1
+        elseif key == "backspace" and editingText then
+            editingText = string.sub(editingText,1,#editingText-1)
         end
         local vKey = validKey(key)
+        
         if vKey ~= nil then
             editingText = editingText..vKey
+            print(editingText)
         end
     elseif key == "escape" then
         --If in a menu, esc closes that menu

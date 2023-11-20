@@ -19,6 +19,15 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     return object
 end
 
+function Button:move(x,y)
+    self.x = self.x + x
+    self.y = self.y + y
+end
+
+function Button:setText(text)
+    self.text = text
+end
+
 --Execute the command stored by the button
 function Button:execute()
     return self.command(self.params)
@@ -40,7 +49,6 @@ end
 
 --Update function, called every frame.
 function Button:update()
-
     if self:isHovered() and self:getClick() then
         self:execute()
     end
