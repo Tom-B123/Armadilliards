@@ -111,8 +111,6 @@ local function getState(ord)
     return state[ord]
 end
 
-
-
 --To run every frame a state is active.
 local stateSwitch = Switch:new()
 --To run the first frame a state is active
@@ -564,8 +562,11 @@ function love.keypressed(key)
         local vKey = validKey(key)
         
         if vKey ~= nil then
-            editingText = editingText..vKey
-            print(editingText)
+            if editingText then
+                if  #editingText == 0 then editingText = vKey
+                else editingText = string.sub(editingText,1,editingIndex-1)..vKey..string.sub(editingText,editingIndex+1,#editingText)
+                end
+            end
         end
     elseif key == "escape" then
         --If in a menu, esc closes that menu
