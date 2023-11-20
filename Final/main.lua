@@ -572,13 +572,20 @@ function love.keypressed(key)
             lState[2] = nil
             order = 1
         elseif key == "delete" and editingText then
+            --Delete everything after the index when ctrl + delete
+            if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
+                editingText = string.sub(editingText,1,editingIndex)
             --Deletes the text at the editing index
-            if editingIndex <= #editingText then
+            elseif editingIndex <= #editingText then
                 editingText = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
             end
         elseif key == "backspace" and editingText then
+            --Delete everything before the index when ctrl + backspace
+            if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
+                editingText = string.sub(editingText,editingIndex,#editingText)
+                editingIndex = 1
             --Deletes the text before the editing index and decriments the index
-            if editingIndex > 1 then
+            elseif editingIndex > 1 then
                 editingText = string.sub(editingText,1,editingIndex-2)..string.sub(editingText,editingIndex,#editingText)
                 editingIndex = editingIndex - 1
             end
