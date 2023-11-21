@@ -137,7 +137,6 @@ end
 
 local function processReceived()
     local function process(data)
-        print(#data)
         for i,message in ipairs(data) do
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
