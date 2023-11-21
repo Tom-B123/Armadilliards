@@ -225,8 +225,10 @@ newStateSwitch:addCase("connecting to server",function()
 
         player = nPlayer
         player.ID = calculateID(8)
-        player:send("ncon:"..player.ID.."_"..player.name)
-        print("sending nCon")
+        for i = 1,10 do
+            player:send("ncon:"..player.ID.."_"..player.name)
+            print("sending nCon")
+        end
     end
 end)
 
