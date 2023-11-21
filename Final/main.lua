@@ -138,6 +138,7 @@ end
 local function processReceived()
     local function process(data)
         for i,message in ipairs(data) do
+            if message ~= "no dat" then print(message) end
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
             netSwitch:case(key,args)
@@ -225,6 +226,7 @@ newStateSwitch:addCase("connecting to server",function()
         player = nPlayer
         player.ID = calculateID(8)
         player:send("ncon:"..player.ID.."_"..player.name)
+        print("sending nCon")
     end
 end)
 

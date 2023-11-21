@@ -57,7 +57,7 @@ function Server:receive(clients)
             out[i] = data
             --uses a substring for less performance impact of splitting every single incoming message
             if string.sub(data,1,4) == "ncon" then
-                print("server found new connection")
+                print("server found new connection from client: "..i)
                 local splitData = split(data,":")
                 local ID = splitData[2]
                 table.insert(newPlayerIDs, {client,ID})
