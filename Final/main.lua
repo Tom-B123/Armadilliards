@@ -225,10 +225,8 @@ newStateSwitch:addCase("connecting to server",function()
 
         player = nPlayer
         player.ID = calculateID(8)
-        for i = 1,10 do
-            player:send("ncon:"..player.ID.."_"..player.name)
-            print("sending nCon")
-        end
+        player:send("ncon:"..player.ID.."_"..player.name)
+        print("sending nCon")
     end
 end)
 
@@ -422,6 +420,7 @@ netSwitch:addCase("msg",function(args)
 end)
 
 netSwitch:addCase("ncon",function(args)
+    print("ncon message")
     if server then
         local splitData = split(args,"_")
 
