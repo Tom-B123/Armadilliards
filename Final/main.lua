@@ -137,7 +137,6 @@ local netSwitch = Switch:new()
 local function processReceived()
     local function process(data)
         for i,message in ipairs(data) do
-            if message ~= "no dat" then print(message) end
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
             netSwitch:case(key,args)
@@ -396,7 +395,7 @@ drawStateSwitch:addCase("searching for lobby",function()
         local playerNameText
         if editingText then playerNameText = editingText
         else playerNameText = player.name end
-        love.graphics.print(playerNameText,300,25)
+        if playerNameText then love.graphics.print(playerNameText,300,25) end
     end
 end)
 
@@ -465,7 +464,7 @@ netSwitch:addCase("econ",function(args)
         local ID = args
         if ID == player.ID then
             print("confirmed end of connection")
-            player:close()
+            player = nil
             state[1] = "gamemode select"
         else
             newMessage("a player has left the main server")
@@ -553,8 +552,6 @@ netSwitch:addCase("uplobs",function(args)
     end
 end)
 
-
-
 function love.textinput(t)
     if editingText and player then
         if t ~= nil then
@@ -615,7 +612,6 @@ function love.keypressed(key)
         state[1] = "gamemode select"
     end
 end
-
 
 function love.quit()
     --return true to prevent quitting?
