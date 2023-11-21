@@ -56,18 +56,18 @@ function Server:receive(clients)
         if data then
             out[i] = data
             --uses a substring for less performance impact of splitting every single incoming message
-            if string.sub(data,1,4) == "ncon" then
-                print("server found new connection from client: "..i)
-                local splitData = split(data,":")
-                local ID = splitData[2]
-                table.insert(newPlayerIDs, {client,ID})
-            end
+            -- if string.sub(data,1,4) == "ncon" then
+            --     print("server found new connection from client: "..i)
+            --     local splitData = split(data,":")
+            --     local ID = splitData[2]
+            --     table.insert(newPlayerIDs, {client,ID})
+            -- end
         elseif err == "closed" then
             client:close()
             table.remove(clients, i)
         end
     end
-    return out, newPlayerIDs
+    return out
 end
 
 function Server:close()
@@ -148,12 +148,13 @@ function Lobby:send(clients,message)
 end
 
 function Lobby:receive(clients)
-    local data, newClients = self.server:receive(clients)
-    for i,clientPair in ipairs(newClients) do
-        local client,ID = clientPair[1],clientPair[2]
-        self.playersDict[ID] = client
-    end
+    local data = self.server:receive(clients)
     return data
+    -- for i,clientPair in ipairs(newClients) do
+    --     local client,ID = clientPair[1],clientPair[2]
+    --     self.playersDict[ID] = client
+    -- end
+    
 end
 
 function Lobby:update()

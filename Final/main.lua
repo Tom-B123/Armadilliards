@@ -151,11 +151,6 @@ local function processReceived()
     local data
     if server then
         data = server:receive("all")
-        if data then 
-            for i, message in ipairs(data) do
-                print(message)
-            end
-        end
         process(data)
     elseif player then
         data = {player:receive()}
@@ -470,7 +465,7 @@ netSwitch:addCase("econ",function(args)
         local ID = args
         server:send("all","econ:"..ID)
         --end the connection with client
-        LobbyPlayer:removeID(ID)
+        --LobbyPlayer:removeID(ID)
     elseif player then
         local ID = args
         if ID == player.ID then
