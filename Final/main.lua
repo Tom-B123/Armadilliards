@@ -4,6 +4,7 @@ require("button")
 require("net")
 
 local player = nil
+local toClosePlayer = false
 local server = nil
 
 local canQuit = false
@@ -13,6 +14,31 @@ local messageLog = {}
 
 local monoSpace = love.graphics.newFont("cour.ttf",15)
 love.graphics.setFont(monoSpace)
+
+local editingText = nil
+local editingIndex = 1
+
+local state = {"main menu"}
+local lState = {nil}
+--Order of states, used to stack menues ontop of eachother whilst the buttons and data of lower
+--order states is preserved.
+local order = 1
+--Stores all buttons within tables, corresponding to their order.
+local buttons = {}
+
+--hardcoded limit on orders
+for i = 1,3 do
+    buttons[i] = {}
+end
+
+--To run every frame a state is active.
+local stateSwitch = Switch:new()
+--To run the first frame a state is active
+local newStateSwitch = Switch:new()
+--To draw every frame a state is active.
+local drawStateSwitch = Switch:new()
+--Convert message to function
+local netSwitch = Switch:new()
 
 local function split (inputstr, sep)
     if sep == nil then
@@ -52,22 +78,6 @@ local function drawLobbies(offset)
         local hostName = LobbyPlayer:getName(lobby.hostID)
         love.graphics.print(lobby.name.." "..lobby.ID.." "..hostName,100,i*20 + 100 + offset)
     end
-end
-
-local editingText = nil
-local editingIndex = 1
-
-local state = {"main menu"}
-local lState = {nil}
---Order of states, used to stack menues ontop of eachother whilst the buttons and data of lower
---order states is preserved.
-local order = 1
---Stores all buttons within tables, corresponding to their order.
-local buttons = {}
-
---hardcoded limit on orders
-for i = 1,3 do
-    buttons[i] = {}
 end
 
 local function validKey(key)
@@ -124,15 +134,6 @@ local function changePlayerName()
     order = 1
     player:send("updt:"..player.ID.."_name_"..player.name)
 end
-
---To run every frame a state is active.
-local stateSwitch = Switch:new()
---To run the first frame a state is active
-local newStateSwitch = Switch:new()
---To draw every frame a state is active.
-local drawStateSwitch = Switch:new()
---Convert message to function
-local netSwitch = Switch:new()
 
 local function processReceived()
     local function process(data)
@@ -464,7 +465,7 @@ netSwitch:addCase("econ",function(args)
         local ID = args
         if ID == player.ID then
             print("confirmed end of connection")
-            player = nil
+            toClosePlayer = true
             state[1] = "gamemode select"
         else
             newMessage("a player has left the main server")
@@ -629,6 +630,8 @@ end
 --Process each frame
 function love.update()
 
+    if not player then print("no player") end
+
     local IDs = LobbyPlayer:getIDs()
 
     updateButtons()
@@ -642,6 +645,11 @@ function love.update()
 
     for i = 1,3 do
         stateSwitch:case(getState(i))
+    end
+
+    if toClosePlayer then 
+        player = nil
+        toClosePlayer = false
     end
 
     tick = tick + 1
