@@ -138,16 +138,24 @@ end
 local function processReceived()
     local function process(data)
         for i,message in ipairs(data) do
-            if message ~= "no dat" then print(message) end
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
-            print("newSwitch:Case("..key..","..args")")
-            netSwitch:case(key,args)
+            local sArgs = args
+            if sArgs == nil then sArgs = " " end
+            if key ~= "no dat" then 
+                print("newSwitch:Case("..key..","..sArgs..")")
+                netSwitch:case(key,args)
+            end
         end
     end
     local data
     if server then
         data = server:receive("all")
+        if data then 
+            for i, message in ipairs(data) do
+                print(message)
+            end
+        end
         process(data)
     elseif player then
         data = {player:receive()}
