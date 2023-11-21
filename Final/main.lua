@@ -11,6 +11,9 @@ local tick = 0
 
 local messageLog = {}
 
+local monoSpace = love.graphics.newFont("cour.ttf",15)
+love.graphics.setFont(monoSpace)
+
 local function split (inputstr, sep)
     if sep == nil then
         sep = "%s"
@@ -109,6 +112,17 @@ end
 
 local function getState(ord)
     return state[ord]
+end
+
+local function changePlayerName()
+    if editingText == "" then editingText = "new player" end
+    if not player then return end
+    player.name = editingText
+    editingText = nil
+    state[2] = nil
+    lState[2] = nil
+    order = 1
+    player:send("updt:"..player.ID.."_name_"..player.name)
 end
 
 --To run every frame a state is active.
@@ -299,22 +313,16 @@ newStateSwitch:addCase("editing player name",function()
     clearButtons()
     if player then
         editingText = player.name
-    
-    newButton("cancel",{1,0,0},300,80,398,105,function()
-        state[2] = nil
-        lState[2] = nil
-        order = 1
-        editingText = nil
-    end)
-    newButton("confirm",{0,1,0},402,80,500,105,function()
-        if editingText == "" then editingText = "new player" end
-        player.name = editingText
-        editingText = nil
-        state[2] = nil
-        lState[2] = nil
-        order = 1
-        player:send("updt:"..player.ID.."_name_"..player.name)
-    end)
+        editingIndex = #editingText + 1
+        newButton("cancel",{1,0,0},300,80,398,105,function()
+            state[2] = nil
+            lState[2] = nil
+            order = 1
+            editingText = nil
+        end)
+        newButton("confirm",{0,1,0},402,80,500,105,function()
+            changePlayerName()
+        end)
     end
     lState[2] = state[2]
 end)
@@ -394,9 +402,10 @@ end)
 
 drawStateSwitch:addCase("editing player name",function()
     drawButtons(2)
-    --draw a cursor at the text, seems impossible atm as text isn't monospace
-    -- love.graphics.setColor(0.4,0.4,0.4,0.4)
-    -- love.graphics.rectangle("fill",300,25,5,20)
+    if tick % 30 > 30 / 2 then
+        love.graphics.setColor(0.4,0.4,0.4,0.7)
+        love.graphics.rectangle("fill",300 - 2.5 + (editingIndex-1)*9,25,5,17.5)
+    end
 end)
 
 drawStateSwitch:addCase("lobby settings",function()
@@ -565,16 +574,11 @@ function love.keypressed(key)
             order = 1
             editingText = nil
         elseif key == "return" then
-            if editingText == "" then editingText = "new player" end
-            player.name = editingText
-            editingText = nil
-            state[2] = nil
-            lState[2] = nil
-            order = 1
+            changePlayerName()
         elseif key == "delete" and editingText then
             --Delete everything after the index when ctrl + delete
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
-                editingText = string.sub(editingText,1,editingIndex)
+                editingText = string.sub(editingText,1,editingIndex-1)
             --Deletes the text at the editing index
             elseif editingIndex <= #editingText then
                 editingText = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
