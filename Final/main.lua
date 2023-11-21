@@ -175,7 +175,6 @@ stateSwitch:addCase("searching for lobby",function()
         processReceived()
         if tick % 120 == 0 then
             player:send("uplobs:")
-            print("player sending uplobs message")
         end
     end
 end)
@@ -183,7 +182,6 @@ end)
 stateSwitch:addCase("lobby settings",function()
     if player then
         processReceived()
-        player:send("no dat")
     end
 end)
 
@@ -530,15 +528,11 @@ netSwitch:addCase("uplobs",function(args)
             local hostName = LobbyPlayer:getName(lobby.hostID)
             server:send("all","uplobs:"..lobby.name.."_"..hostName.."_"..lobby.hostID.."_"..
             lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount.."_"..lobby.maxPlayers)
-
-            print("server received uplobs message")
         end
     elseif player then
         local splitData = split(args,"_")
         local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7], splitData[8]
-        
-        print("player received uplobs message")
 
         --Sets the player name to display, as it may not be known
         if not LobbyPlayer:getName(hostID) then
