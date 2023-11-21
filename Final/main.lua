@@ -141,6 +141,7 @@ local function processReceived()
             if message ~= "no dat" then print(message) end
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
+            print("newSwitch:Case("..key..","..args")")
             netSwitch:case(key,args)
         end
     end
@@ -420,7 +421,6 @@ netSwitch:addCase("msg",function(args)
 end)
 
 netSwitch:addCase("ncon",function(args)
-    print("ncon message")
     if server then
         local splitData = split(args,"_")
 
