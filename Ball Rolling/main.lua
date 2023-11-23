@@ -209,20 +209,56 @@ for i = 1,m do
     end
 end
 
--- ball = Ball:new(92,92)
--- ball.radius = 12/4
--- ball.hide = true
--- table.insert(balls,ball)
+for i = 1,2 do
+    for j = 1,i do
+        local offset = 0
+        if i % 2 == 1 then offset = 14 end
+        ball = Ball:new(150 + 28 * j + offset,150 + 28 * i)
+        ball.hide = true
+        table.insert(balls,ball)
+    end
+end
 
+local radius = 12
+local smallD = 2*radius/3
+for i = 1,3 do
+    local ballN = 2
+    local offset = smallD/2
+    if i == 2 then
+        offset = 0
+        ballN = 3
+    end
+    for j = 1,ballN do
+        ball = Ball:new(250 + (smallD) * j + offset,250 + (smallD) * i)
+        ball.hide = false
+        ball.radius = smallD/2
+        table.insert(balls,ball)
+    end
+end
 
-table.insert(ropes,{balls[2],balls[3],28,0})
-table.insert(ropes,{balls[3],balls[5],28,0})
-table.insert(ropes,{balls[5],balls[4],28,0})
-table.insert(ropes,{balls[4],balls[2],28,0})
--- table.insert(ropes,{balls[2],balls[6],17.5*2^0.5,0})
--- table.insert(ropes,{balls[3],balls[6],17.5*2^0.5,0})
--- table.insert(ropes,{balls[4],balls[6],17.5*2^0.5,0})
--- table.insert(ropes,{balls[5],balls[6],17.5*2^0.5,0})
+local elasticity = 0.1
+
+table.insert(ropes,{balls[2],balls[3],28,elasticity})
+table.insert(ropes,{balls[3],balls[5],28,elasticity})
+table.insert(ropes,{balls[5],balls[4],28,elasticity})
+table.insert(ropes,{balls[4],balls[2],28,elasticity})
+
+table.insert(ropes,{balls[6],balls[7],28,elasticity})
+table.insert(ropes,{balls[7],balls[8],28,elasticity})
+table.insert(ropes,{balls[8],balls[6],28,elasticity})
+
+table.insert(ropes,{balls[9],balls[10],smallD, elasticity})
+table.insert(ropes,{balls[9],balls[11],smallD, elasticity})
+table.insert(ropes,{balls[9],balls[12],smallD, elasticity})
+table.insert(ropes,{balls[10],balls[12],smallD,elasticity})
+table.insert(ropes,{balls[10],balls[13],smallD,elasticity})
+table.insert(ropes,{balls[11],balls[12],smallD,elasticity})
+table.insert(ropes,{balls[12],balls[13],smallD,elasticity})
+table.insert(ropes,{balls[14],balls[11],smallD,elasticity})
+table.insert(ropes,{balls[14],balls[12],smallD,elasticity})
+table.insert(ropes,{balls[14],balls[15],smallD,elasticity})
+table.insert(ropes,{balls[15],balls[12],smallD,elasticity})
+table.insert(ropes,{balls[15],balls[13],smallD,elasticity})
 
 local playerBall = balls[1]
 playerBall.model = "porcupine"
@@ -716,7 +752,38 @@ local function drawBox(centre,angle,radius)
         points[1][1] + offsetX,points[1][2] + offsetY,
         points[2][1] + offsetX,points[2][2] + offsetY,
         points[3][1] + offsetX,points[3][2] + offsetY,
-        points[4][1] + offsetX,points[4][2] + offsetY)
+        points[4][1] + offsetX,points[4][2] + offsetY
+    )
+end
+
+local function drawTriangle(centre,angle,radius)
+    local offsetX,offsetY = Camera:getOffset()
+    -- love.graphics.circle("line",centre[1] + offsetX,centre[2] + offsetY,radius)
+    local points = {}
+    for i = 0,3 do
+        local nAngle = angle + (i * 2 * math.pi / 3) + math.pi / 6
+        local point = {
+            centre[1] + radius * math.cos(nAngle),
+            centre[2] + radius * math.sin(nAngle)
+        }
+        table.insert(points,point)
+    end
+    love.graphics.polygon("line",
+        points[1][1] + offsetX,points[1][2] + offsetY,
+        points[2][1] + offsetX,points[2][2] + offsetY,
+        points[3][1] + offsetX,points[3][2] + offsetY
+    )
+end
+
+local function drawBall(centre,angle,radius)
+    local offsetX,offsetY = Camera:getOffset()
+    love.graphics.line(
+        centre[1] + radius * math.cos(angle) + offsetX,
+        centre[2] + radius * math.sin(angle) + offsetY,
+        centre[1] + radius * math.cos(angle + math.pi) + offsetX,
+        centre[2] + radius * math.sin(angle + math.pi) + offsetY
+    )
+    love.graphics.circle("line",centre[1] + offsetX,centre[2] + offsetY,radius)
 end
 
 local function updateRopes()
@@ -783,15 +850,35 @@ function love.draw()
 
     drawBullets(offsetX,offsetY)
 
-    local centre = {}
-    centre[1] = (balls[2].x + balls[3].x + balls[4].x + balls[5].x) / 4
-    centre[2] = (balls[2].y + balls[3].y + balls[4].y + balls[5].y) / 4
+    local boxCentre = {}
+    boxCentre[1] = (balls[2].x + balls[3].x + balls[4].x + balls[5].x) / 4
+    boxCentre[2] = (balls[2].y + balls[3].y + balls[4].y + balls[5].y) / 4
 
-    local angle = yawAngle(balls[3].x - balls[2].x, balls[3].y-balls[2].y)
+    local boxAngle = yawAngle(balls[3].x - balls[2].x, balls[3].y-balls[2].y)
 
-    drawBox(centre,angle,32)
+    local tCentre = {}
+    tCentre[1] = (balls[6].x + balls[7].x + balls[8].x) / 3
+    tCentre[2] = (balls[6].y + balls[7].y + balls[8].y) / 3
 
-    love.graphics.print("angle: "..angle)
+    local tAngle = yawAngle(balls[8].x - balls[7].x, balls[8].y-balls[7].y)
+
+    local ballCentre = {0,0}
+
+    for i = 9,15 do
+        ballCentre[1] = ballCentre[1] + balls[i].x
+        ballCentre[2] = ballCentre[2] + balls[i].y
+    end
+
+    ballCentre[1] = ballCentre[1] / 7
+    ballCentre[2] = ballCentre[2] / 7
+
+    local ballAngle = yawAngle(balls[10].x-balls[9].x,balls[10].y-balls[9].y)
+
+    drawBox(boxCentre,boxAngle,32)
+
+    drawTriangle(tCentre,tAngle,40)
+
+    drawBall(ballCentre,ballAngle,radius)
 
     local lMouse = love.mouse.isDown(1)
     local mMouse = love.mouse.isDown(3)
