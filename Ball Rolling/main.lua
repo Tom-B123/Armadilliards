@@ -61,6 +61,7 @@ function Ball:new(x,y)
     object.lvx = 0
     object.lvy = 0
     object.radius = 14
+    object.hide = false
     --Model to draw
     object.model = "ball"
     --Innate team of the ball
@@ -75,6 +76,9 @@ function Ball:new(x,y)
 end
 
 function Ball:draw(offsetX,offsetY)
+    if self.hide then
+        return
+    end
     love.graphics.setColor(1,1,1)
     local images = {}
     if self.model == "ball" then
@@ -90,6 +94,7 @@ function Ball:draw(offsetX,offsetY)
     --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
     --Rotates the sprite around the z axis by the yaw value.
     local function tryDraw()
+        
         love.graphics.setColor(0,0,0,0.4)
 
         if self.team == "team 1" or self.tempTeam[1] == "team 1" then love.graphics.setColor(0,0,1,0.4) end
@@ -190,11 +195,35 @@ function Ball:update(dt)
     self:constraint()
 end
 
-local count = 64
-for i = 1,count do
-    local ball = Ball:new(50 + i%20 * 32,50 + math.floor(i/20) * 32)
-    table.insert(balls,ball)
+local ball = Ball:new(50,50)
+table.insert(balls,ball)
+
+local m = 2
+local n = 2
+
+for i = 1,m do
+    for j = 1,n do
+        ball = Ball:new(50 + 28 * i,50 + 28 * j)
+        ball.hide = true
+        table.insert(balls,ball)
+    end
 end
+
+ball = Ball:new(92,92)
+ball.radius = 12/4
+ball.hide = true
+table.insert(balls,ball)
+
+
+table.insert(ropes,{balls[2],balls[3],28})
+table.insert(ropes,{balls[3],balls[5],28})
+table.insert(ropes,{balls[5],balls[4],28})
+table.insert(ropes,{balls[4],balls[2],28})
+table.insert(ropes,{balls[2],balls[6],17.5*2^0.5})
+table.insert(ropes,{balls[3],balls[6],17.5*2^0.5})
+table.insert(ropes,{balls[4],balls[6],17.5*2^0.5})
+table.insert(ropes,{balls[5],balls[6],17.5*2^0.5})
+
 
 local playerBall = balls[1]
 playerBall.model = "porcupine"
@@ -443,14 +472,14 @@ local function processRopes()
             local distance = findDistance(toObj.x, toObj.y)
             local forceMult = 2
             if ball == playerBall then forceMult = 0.5 end
-            --Elastic rope radius
-            if distance > ropeLength - ball.radius then
-                --Rigid rope radius
-                if distance > (ropeLength * 1.5) - ball.radius then
-                    forceMult = forceMult * 4
-                end
-                ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
-                ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
+            if distance > ropeLength - ball.radius and distance then
+                local new = {}
+                new[1] = toObj.x / distance
+                new[2] = toObj.y / distance
+                ball.x = centre.x + new[1] * (ropeLength - ball.radius)
+                ball.y = centre.y + new[2] * (ropeLength - ball.radius)
+                -- ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
+                -- ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
             end
         end
     end
