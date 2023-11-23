@@ -224,7 +224,6 @@ table.insert(ropes,{balls[3],balls[6],17.5*2^0.5})
 table.insert(ropes,{balls[4],balls[6],17.5*2^0.5})
 table.insert(ropes,{balls[5],balls[6],17.5*2^0.5})
 
-
 local playerBall = balls[1]
 playerBall.model = "porcupine"
 playerBall.team = "team 1"
@@ -697,6 +696,25 @@ local function drawBalls(offsetX,offsetY)
     end
 end
 
+local function drawBox(centre,angle,radius)
+    local offsetX,offsetY = Camera:getOffset()
+    love.graphics.circle("line",centre[1] + offsetX,centre[2] + offsetY,radius)
+    local points = {}
+    for i = 0,3 do
+        local nAngle = angle + (i* math.pi / 2)
+        local point = {
+            centre[1] + radius * math.cos(nAngle),
+            centre[2] + radius * math.sin(nAngle)
+        }
+        table.insert(points,point)
+    end
+    love.graphics.polygon("line",
+        points[1][1] + offsetX,points[1][2] + offsetY,
+        points[2][1] + offsetX,points[2][2] + offsetY,
+        points[3][1] + offsetX,points[3][2] + offsetY,
+        points[4][1] + offsetX,points[4][2] + offsetY)
+end
+
 local function updateRopes()
     processRopes()
     for i,rope in ipairs(ropeObjects) do
@@ -708,13 +726,15 @@ end
 
 local function drawRopes(offsetX,offsetY)
     for i,rope in ipairs(ropes) do
-        love.graphics.setColor(1,1,0)
-        love.graphics.line(
-            rope[1].x + offsetX,
-            rope[1].y + offsetY,
-            rope[2].x + offsetX,
-            rope[2].y + offsetY
-        )
+        if not rope[1].hide then
+            love.graphics.setColor(1,1,0)
+            love.graphics.line(
+                rope[1].x + offsetX,
+                rope[1].y + offsetY,
+                rope[2].x + offsetX,
+                rope[2].y + offsetY
+            )
+        end
     end
     for i,rope in ipairs(ropeObjects) do
         rope:draw(offsetX,offsetY)
@@ -758,6 +778,16 @@ function love.draw()
     drawBalls(offsetX,offsetY)
 
     drawBullets(offsetX,offsetY)
+
+    local centre = {}
+    centre[1] = (balls[2].x + balls[3].x + balls[4].x + balls[5].x) / 4
+    centre[2] = (balls[2].y + balls[3].y + balls[4].y + balls[5].y) / 4
+
+    local angle = yawAngle(balls[3].x - balls[2].x, balls[3].y-balls[2].y)
+
+    drawBox(centre,angle,32)
+
+    love.graphics.print("angle: "..angle)
 
     local lMouse = love.mouse.isDown(1)
     local mMouse = love.mouse.isDown(3)
