@@ -209,20 +209,20 @@ for i = 1,m do
     end
 end
 
-ball = Ball:new(92,92)
-ball.radius = 12/4
-ball.hide = true
-table.insert(balls,ball)
+-- ball = Ball:new(92,92)
+-- ball.radius = 12/4
+-- ball.hide = true
+-- table.insert(balls,ball)
 
 
 table.insert(ropes,{balls[2],balls[3],28,0})
 table.insert(ropes,{balls[3],balls[5],28,0})
 table.insert(ropes,{balls[5],balls[4],28,0})
 table.insert(ropes,{balls[4],balls[2],28,0})
-table.insert(ropes,{balls[2],balls[6],17.5*2^0.5,0})
-table.insert(ropes,{balls[3],balls[6],17.5*2^0.5,0})
-table.insert(ropes,{balls[4],balls[6],17.5*2^0.5,0})
-table.insert(ropes,{balls[5],balls[6],17.5*2^0.5,0})
+-- table.insert(ropes,{balls[2],balls[6],17.5*2^0.5,0})
+-- table.insert(ropes,{balls[3],balls[6],17.5*2^0.5,0})
+-- table.insert(ropes,{balls[4],balls[6],17.5*2^0.5,0})
+-- table.insert(ropes,{balls[5],balls[6],17.5*2^0.5,0})
 
 local playerBall = balls[1]
 playerBall.model = "porcupine"
