@@ -648,6 +648,10 @@ end
 --Process each frame
 function love.update()
 
+    if state[order] == nil and order > 1 then
+        order = order - 1
+    end
+
     local IDs = LobbyPlayer:getIDs()
 
     updateButtons()
