@@ -215,14 +215,14 @@ ball.hide = true
 table.insert(balls,ball)
 
 
-table.insert(ropes,{balls[2],balls[3],28})
-table.insert(ropes,{balls[3],balls[5],28})
-table.insert(ropes,{balls[5],balls[4],28})
-table.insert(ropes,{balls[4],balls[2],28})
-table.insert(ropes,{balls[2],balls[6],17.5*2^0.5})
-table.insert(ropes,{balls[3],balls[6],17.5*2^0.5})
-table.insert(ropes,{balls[4],balls[6],17.5*2^0.5})
-table.insert(ropes,{balls[5],balls[6],17.5*2^0.5})
+table.insert(ropes,{balls[2],balls[3],28,0})
+table.insert(ropes,{balls[3],balls[5],28,0})
+table.insert(ropes,{balls[5],balls[4],28,0})
+table.insert(ropes,{balls[4],balls[2],28,0})
+table.insert(ropes,{balls[2],balls[6],17.5*2^0.5,0})
+table.insert(ropes,{balls[3],balls[6],17.5*2^0.5,0})
+table.insert(ropes,{balls[4],balls[6],17.5*2^0.5,0})
+table.insert(ropes,{balls[5],balls[6],17.5*2^0.5,0})
 
 local playerBall = balls[1]
 playerBall.model = "porcupine"
@@ -294,7 +294,7 @@ local function ropeLink(ball)
         end
     end
     local distanceToBall = math.max(findDistance(playerBall.x-ball.x, playerBall.y-ball.y),64)
-    table.insert(ropes,{playerBall,ball,distanceToBall})
+    table.insert(ropes,{playerBall,ball,distanceToBall,1})
 end
 
 function Rope:update()
@@ -471,14 +471,18 @@ local function processRopes()
             local distance = findDistance(toObj.x, toObj.y)
             local forceMult = 2
             if ball == playerBall then forceMult = 0.5 end
-            if distance > ropeLength - ball.radius and distance then
-                local new = {}
-                new[1] = toObj.x / distance
-                new[2] = toObj.y / distance
-                ball.x = centre.x + new[1] * (ropeLength - ball.radius)
-                ball.y = centre.y + new[2] * (ropeLength - ball.radius)
-                -- ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
-                -- ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
+            if distance > ropeLength - ball.radius then
+                if rope[4] == 0 then
+                    local new = {}
+                    new[1] = toObj.x / distance
+                    new[2] = toObj.y / distance
+                    ball.x = centre.x + new[1] * (ropeLength - ball.radius)
+                    ball.y = centre.y + new[2] * (ropeLength - ball.radius)
+                else
+                    forceMult = forceMult * rope[4]
+                    ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
+                    ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
+                end
             end
         end
     end
@@ -698,10 +702,10 @@ end
 
 local function drawBox(centre,angle,radius)
     local offsetX,offsetY = Camera:getOffset()
-    love.graphics.circle("line",centre[1] + offsetX,centre[2] + offsetY,radius)
+    -- love.graphics.circle("line",centre[1] + offsetX,centre[2] + offsetY,radius)
     local points = {}
     for i = 0,3 do
-        local nAngle = angle + (i* math.pi / 2)
+        local nAngle = angle + (i* math.pi / 2) + math.pi/4
         local point = {
             centre[1] + radius * math.cos(nAngle),
             centre[2] + radius * math.sin(nAngle)
