@@ -183,12 +183,6 @@ stateSwitch:addCase("searching for lobby",function()
     end
 end)
 
-stateSwitch:addCase("lobby settings",function()
-    if player then
-        processReceived()
-    end
-end)
-
 newStateSwitch:addCase("main menu",function()
     clearButtons()
     print("menu")
@@ -303,7 +297,7 @@ newStateSwitch:addCase("searching for lobby",function()
         end)
         newButton(1,"Create new lobby",{1,1,1},300,400,500,450,function()
             lState[2] = nil
-            state[2] = "lobby settings"
+            state[2] = "lobby creation"
             order = 2
         end)
         newButton(1,"back",{1,1,1},300,475,500,525,function()
@@ -332,9 +326,9 @@ newStateSwitch:addCase("editing player name",function()
     lState[2] = state[2]
 end)
 
-newStateSwitch:addCase("lobby settings",function()
+newStateSwitch:addCase("lobby creation",function()
     clearButtons()
-    print("lobby settings")
+    print("lobby creation")
     newButton(2,"back",{1,1,1},300,300,500,350,function()
         state[2] = nil
         lState[2] = nil
@@ -342,7 +336,9 @@ newStateSwitch:addCase("lobby settings",function()
         order = 1
     end)
     newButton(2,"Lobby settings",{1,1,1},300,375,500,425,function()
-        --Settings for the lobby, eg max player count
+        lState[3] = nil
+        state[3] = "lobby settings"
+        order = 3
     end)
     newButton(2,"Create",{1,1,1},300,450,500,500,function()
         if player then
@@ -350,6 +346,17 @@ newStateSwitch:addCase("lobby settings",function()
         end
     end)
     lState[2] = state[2]
+end)
+
+newStateSwitch:addCase("lobby settings",function()
+    clearButtons()
+    print("lobby settings")
+    newButton(3,"back",{1,1,1},300,300,500,350,function()
+        state[3] = nil
+        lState[3] = nil
+        order = 2
+    end)
+    lState[3] = state[3]
 end)
 
 drawStateSwitch:addCase("main menu",function()
@@ -413,10 +420,16 @@ drawStateSwitch:addCase("editing player name",function()
     end
 end)
 
-drawStateSwitch:addCase("lobby settings",function()
+drawStateSwitch:addCase("lobby creation",function()
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",250,250,300,300)
     drawButtons(2)
+end)
+
+drawStateSwitch:addCase("lobby settings",function()
+    love.graphics.setColor(0.5,0.5,0.5)
+    love.graphics.rectangle("fill",250,250,300,300)
+    drawButtons(3)
 end)
 
 netSwitch:addCase("msg",function(args)
