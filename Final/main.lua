@@ -4,9 +4,10 @@ require("button")
 require("net")
 
 local player = nil
-local lobbyToCreate = {name = "new lobby",IP = "dummy ip", port = "dummy port", maxPlayers = 8}
+local lobbyToCreate = {name = "new lobby",IP = Socket.dns.toip(Socket.dns.gethostname( )), port = 1000, maxPlayers = 8}
 
 local toClosePlayer = false
+local toConnectPlayer = nil
 local server = nil
 
 local canQuit = false
@@ -381,6 +382,11 @@ newStateSwitch:addCase("editing lobby name",function()
     lState[4] = state[4]
 end)
 
+newStateSwitch:addCase("in lobby",function()
+    clearButtons()
+    
+    lState[1] = state[1]
+end)
 drawStateSwitch:addCase("main menu",function()
     love.graphics.print("This is the main menu",300,100)
     drawButtons(1)
@@ -467,6 +473,11 @@ drawStateSwitch:addCase("editing lobby name",function()
     end
 end)
 
+drawStateSwitch:addCase("in lobby",function()
+    drawButtons(1)
+    love.graphics.print("in a lobby",0,20)
+end)
+
 netSwitch:addCase("msg",function(args)
     newMessage(args)
 end)
@@ -545,9 +556,13 @@ netSwitch:addCase("join",function(args)
         local playerID,lobbyID = splitData[1], splitData[2]
         print("player: "..playerID.." wants to join lobby: "..lobbyID)
         local lobby = JoinableLobby.lobbiesDict[lobbyID]
-        local port,ip
+        local IP,port = lobby.IP,lobby.port
+        server:send("all","join:"..playerID.."_"..IP.."_"..port)
     elseif player then
-        --Connect to the hosted lobby server
+        local splitData = split(args,"_")
+        local IP,port = splitData[1], splitData[2]
+        local nPlayer = Player:new(IP,port)
+        toConnectPlayer = nPlayer
     end
 end)
 
@@ -559,20 +574,19 @@ netSwitch:addCase("create",function(args)
         
         local nLobby = JoinableLobby:new(lobbyName,hostID,IP,port,nil,0,maxPlayers)
         
-        server:send("all","create:"..hostID.."_"..nLobby.ID.."_"..IP.."_"..port.."_"..maxPlayers)
+        server:send("all","create:"..hostID.."_"..nLobby.ID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
         local splitData = split(args,"_")
-        local hostID, lobbyID, IP, port, maxPlayers = 
-        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
-
-        local lobby = JoinableLobby.lobbiesDict[lobbyID]
+        local hostID, lobbyID, lobbyName, IP, port, maxPlayers = 
+        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
 
         if player.ID == hostID then
-            state[1] = "searching for lobby"
+            state[1] = "in lobby"
             state[2] = nil
             lState[2] = nil
             order = 1
-            server = Lobby:new(lobby.name,port,IP,player.name,maxPlayers)
+            server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
+            toClosePlayer = true
         end
     end
 end)
@@ -703,9 +717,13 @@ function love.update()
         stateSwitch:case(getState(i))
     end
 
-    if toClosePlayer then 
+    if toClosePlayer then
         player = nil
         toClosePlayer = false
+    end
+    if toConnectPlayer then
+        player = toConnectPlayer
+        toConnectPlayer = nil
     end
 
     tick = tick + 1

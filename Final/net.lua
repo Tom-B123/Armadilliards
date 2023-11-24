@@ -19,6 +19,7 @@ local function calculateID(length)
     return tostring(math.random(0,10^length - 1))
 end
 
+--500 = main port, 1000+ = lobby ports
 local mainIp = Socket.dns.toip(Socket.dns.gethostname( )) 
 local mainPort = 500
 
@@ -208,13 +209,14 @@ end
 Player = {}
 Player.__index = Player
 
-function Player:new()
+function Player:new(IP,port)
     local object = {}
     setmetatable(object,Player)
     object.name = "new player"
     object.ID = ""
     object.IP = Socket.dns.toip(Socket.dns.gethostname( ))
-    object.client = Client:new(mainPort,mainIp)
+    if IP and port then object.client = Client:new(IP,port)
+    else object.client = Client:new(mainPort,mainIp) end
     return object
 end
 
