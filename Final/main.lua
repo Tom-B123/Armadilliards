@@ -185,12 +185,13 @@ stateSwitch:addCase("hosting lobby",function()
             local name = LobbyPlayer:getName(ID)
             local ready = LobbyPlayer:getReady(ID)
             local team = LobbyPlayer:getTeam(ID)
-            server:send("all","msg:"..ID.."_"..name.."_"..ready.."_"..team)
+            server:send("all","msg:hello, "..name.." I am the host")
+            -- server:send("all","msg:"..ID.."_"..name.."_"..tostring(ready).."_"..team)
         end
     elseif tick % 2 == 0 then
         server:update()
     else
-        -- server:send("all","msg:hello player")
+        server:send("all","no dat")
     end
 end)
 
@@ -413,6 +414,7 @@ end)
 
 newStateSwitch:addCase("in lobby",function()
     if not player then return end
+    player.ID = calculateID(8)
     player:send("ncon:"..player.ID.."_"..player.name.."_"..tostring(player.ready).."_"..player.team)
     clearButtons()
     
@@ -534,6 +536,7 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setName(ID,name)
 
         if getState(1) == "hosting lobby" then
+            print(args)
             local ready = splitData[3]
             local team = splitData[4]
 
