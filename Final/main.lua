@@ -4,6 +4,8 @@ require("button")
 require("net")
 
 local player = nil
+local lobbyToCreate = {name = "new lobby",ip = "dummy ip", port = "dummy port", maxPlayers = 8}
+
 local toClosePlayer = false
 local server = nil
 
@@ -20,14 +22,14 @@ local editingIndex = 1
 
 local state = {"main menu"}
 local lState = {nil}
---Order of states, used to stack menues ontop of eachother whilst the buttons and data of lower
---order states is preserved.
+--Order of states, used to stack menues ontop of eachother
 local order = 1
+local maxOrder = 4
 --Stores all buttons within tables, corresponding to their order.
 local buttons = {}
 
 --hardcoded limit on orders
-for i = 1,3 do
+for i = 1,maxOrder do
     buttons[i] = {}
 end
 
@@ -114,14 +116,24 @@ local function getState(ord)
 end
 
 local function changePlayerName()
-    if editingText == "" then editingText = "new player" end
     if not player then return end
+    if editingText == "" then editingText = "new player" end
     player.name = editingText
     editingText = nil
     state[2] = nil
     lState[2] = nil
     order = 1
     player:send("updt:"..player.ID.."_name_"..player.name)
+end
+
+local function changeLobbyName()
+    if not player then return end
+    if editingText == "" then editingText = "new lobby" end
+    lobbyToCreate.name = editingText
+    editingText = nil
+    state[4] = nil
+    lState[4] = nil
+    order = 3
 end
 
 local function processReceived()
@@ -322,7 +334,13 @@ newStateSwitch:addCase("lobby creation",function()
     end)
     newButton(2,"Create",{1,1,1},300,450,500,500,function()
         
-    player:send("create:"..player.ID.."_new server_server IP_server port_8")
+    player:send("create:"..
+        player.ID.."_"..
+        lobbyToCreate.name.."_"..
+        lobbyToCreate.IP.."_"..
+        lobbyToCreate.port.."_"..
+        lobbyToCreate.maxPlayers
+    )
     end)
     lState[2] = state[2]
 end)
@@ -647,7 +665,7 @@ function love.update()
         nState = getNewState()
     end
 
-    for i = 1,3 do
+    for i = 1,maxOrder do
         stateSwitch:case(getState(i))
     end
 
@@ -661,7 +679,7 @@ end
 
 --Draw each frame
 function love.draw()
-    for i = 1,3 do
+    for i = 1,maxOrder do
         drawStateSwitch:case(getState(i))
     end
     love.graphics.setColor(1,1,1)
