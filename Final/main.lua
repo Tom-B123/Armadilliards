@@ -75,14 +75,6 @@ local function clearMessages()
     messageLog = {}
 end
 
-local function drawLobbies(offset)
-    for i, ID in ipairs(JoinableLobby.lobbies) do
-        local lobby = JoinableLobby.lobbiesDict[ID]
-        local hostName = LobbyPlayer:getName(lobby.hostID)
-        love.graphics.print(lobby.name.." "..lobby.ID.." "..hostName,100,i*20 + 100 + offset)
-    end
-end
-
 --Only update active buttons
 local function updateButtons()
     for i,button in ipairs(buttons[order]) do

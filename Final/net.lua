@@ -20,7 +20,7 @@ local function calculateID(length)
 end
 
 --500 = main port, 1000+ = lobby ports
-local mainIp = Socket.dns.toip(Socket.dns.gethostname( )) 
+local mainIP = Socket.dns.toip(Socket.dns.gethostname( ))
 local mainPort = 500
 
 --Server class, handles connections from clients and sending / receiving data
@@ -81,7 +81,7 @@ end
 Client = {}
 Client.__index = Client
 
-function Client:new(port, IP)
+function Client:new(IP,port)
     local object = {}
     setmetatable(object,Client)
     local client = assert(Socket.connect(IP, port))
@@ -144,7 +144,7 @@ function Lobby:endConnection(ID)
 end
 
 function Lobby:hostMain()
-    local nLobby = Lobby:new("__main lobby__", mainPort, mainIp,"main host",-1)
+    local nLobby = Lobby:new("__main lobby__", mainPort, mainIP,"main host",-1)
     return nLobby
 end
 
@@ -216,7 +216,7 @@ function Player:new(IP,port)
     object.ID = ""
     object.IP = Socket.dns.toip(Socket.dns.gethostname( ))
     if IP and port then object.client = Client:new(IP,port)
-    else object.client = Client:new(mainPort,mainIp) end
+    else object.client = Client:new(mainIP,mainPort) end
     return object
 end
 
@@ -235,7 +235,7 @@ end
 function Player:connectToMain()
     --Send messages before closing
     self:close()
-    self.client = Client:new(mainPort,mainIp)
+    self.client = Client:new(mainPort,mainIP)
 end
 
 function Player:join(lobbyID)
