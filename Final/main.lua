@@ -80,17 +80,6 @@ local function drawLobbies(offset)
     end
 end
 
-local function validKey(key)
-    if key == "space" then return " " end
-    if #key > 1 then
-        return nil
-    end
-    local asc = string.byte(key)
-    if (48 <= asc and asc <= 57) or (97 <= asc and asc <= 122) then
-        return key
-    end
-end
-
 --Only update active buttons
 local function updateButtons()
     for i,button in ipairs(buttons[order]) do
@@ -559,13 +548,12 @@ netSwitch:addCase("uplobs",function(args)
 end)
 
 function love.textinput(t)
-    if editingText and player then
-        if t ~= nil then
-            --Adds text at the editing index and incriments the index
-            editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
-            editingIndex = editingIndex + 1
-        end
-    end
+    if not editingText then return end
+    if not player then return end
+    if t == nil then return end
+    --Adds text at the editing index and incriments the index
+    editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
+    editingIndex = editingIndex + 1
 end
 
 --Handle keyboard inputs
@@ -578,7 +566,7 @@ function love.keypressed(key)
             editingText = nil
         elseif key == "return" then
             changePlayerName()
-        elseif key == "delete" and editingText then
+        elseif key == "delete" then
             --Delete everything after the index when ctrl + delete
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
                 editingText = string.sub(editingText,1,editingIndex-1)
@@ -586,7 +574,7 @@ function love.keypressed(key)
             elseif editingIndex <= #editingText then
                 editingText = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
             end
-        elseif key == "backspace" and editingText then
+        elseif key == "backspace" then
             --Delete everything before the index when ctrl + backspace
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
                 editingText = string.sub(editingText,editingIndex,#editingText)
@@ -598,9 +586,13 @@ function love.keypressed(key)
             end
             --Move the index left or right until there is no space left
         elseif key == "left" then
-            if editingIndex > 1 then editingIndex = editingIndex - 1 end
+            if editingIndex > 1 then 
+                editingIndex = editingIndex - 1
+            end
         elseif key == "right" then
-            if editingIndex < #editingText + 1 then editingIndex = editingIndex + 1 end
+            if editingIndex < #editingText + 1 then
+                editingIndex = editingIndex + 1
+            end
         end
     elseif key == "escape" then
         --If in a menu, esc closes that menu
