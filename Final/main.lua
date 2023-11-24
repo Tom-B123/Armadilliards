@@ -430,7 +430,7 @@ drawStateSwitch:addCase("searching for lobby",function()
     --Drawing the player name onto the edit player name button
     
     local playerNameText
-    if editingText then playerNameText = editingText
+    if editingText and getState(2) == "editing player name" then playerNameText = editingText
     else playerNameText = player.name end
     if playerNameText then love.graphics.print(playerNameText,300,25) end
 end)
