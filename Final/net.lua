@@ -50,15 +50,13 @@ end
 function Server:receive(clients)
     if clients == "all" then clients = self.clients end
     local out = {}
-    local newPlayerIDs = {}
+    -- local newPlayerIDs = {}
     for i,client in ipairs(clients) do
         local data,err = client:receive()
         if data then
             table.insert(out, data)
             --uses a substring for less performance impact of splitting every single incoming message
-            if string.sub(data,1,4) == "ncon" then
-                
-            end
+            -- if string.sub(data,1,4) == "ncon" then
             --     local splitData = split(data,":")
             --     local ID = splitData[2]
             --     table.insert(newPlayerIDs, {client,ID})
@@ -66,11 +64,6 @@ function Server:receive(clients)
         elseif err == "closed" then
             client:close()
             table.remove(clients, i)
-        end
-    end
-    if out then
-        for i,message in ipairs(out) do
-            if message then print(message) end
         end
     end
     return out

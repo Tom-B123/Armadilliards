@@ -143,7 +143,6 @@ local function processReceived()
             local sArgs = args
             if sArgs == nil then sArgs = " " end
             if key ~= "no dat" then 
-                print("newSwitch:Case("..key..","..sArgs..")")
                 netSwitch:case(key,args)
             end
         end
@@ -385,6 +384,9 @@ drawStateSwitch:addCase("hosting main",function()
     love.graphics.print("You are now the main host",300,500)
     if server then
         love.graphics.print("player Count: "..server.playerCount,300,400)
+        for i, lobby in ipairs(JoinableLobby.lobbies) do
+            love.graphics.print(lobby,0,200+i*20)
+        end
     end
 end)
 
@@ -409,6 +411,9 @@ drawStateSwitch:addCase("searching for lobby",function()
         if editingText then playerNameText = editingText
         else playerNameText = player.name end
         if playerNameText then love.graphics.print(playerNameText,300,25) end
+        for i, lobby in ipairs(JoinableLobby.lobbies) do
+            love.graphics.print(lobby,0,200+i*20)
+        end
     end
 end)
 
