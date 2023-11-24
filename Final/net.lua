@@ -230,9 +230,7 @@ function Player:connectToMain()
 end
 
 function Player:join(lobbyID)
-
     self:send("join:"..self.ID.."_"..lobbyID)
-
 end
 
 function Player:create(lobby)

@@ -510,7 +510,8 @@ end)
 netSwitch:addCase("join",function(args)
     if server then
         local splitData = split(args,"_")
-        local lobbyID, playerID = splitData[1], splitData[2]
+        local playerID,lobbyID = splitData[1], splitData[2]
+        print("player: "..playerID.." wants to join lobby: "..lobbyID)
         --get info from lobby ID and send data to the player
     elseif player then
         --Connect to the hosted lobby server
@@ -566,7 +567,7 @@ netSwitch:addCase("uplobs",function(args)
             JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount,8)
             local y = #JoinableLobby.lobbies * 40
             newButton(1,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
-                print(lobbyName..hostID..IP..port..lobbyID..playerCount)
+                player:join(lobbyID)
             end)
         else
             JoinableLobby.lobbiesDict[lobbyID].playerCount = playerCount
