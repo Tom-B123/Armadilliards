@@ -368,7 +368,7 @@ newStateSwitch:addCase("editing lobby name",function()
     if not player then return end
     clearButtons()
     
-    editingText = player.name
+    editingText = lobbyToCreate.name
     editingIndex = #editingText + 1
     newButton(4,"cancel",{1,0,0},300,355,398,380,function()
         state[4] = nil
