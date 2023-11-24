@@ -131,7 +131,6 @@ function Lobby:endConnection(ID)
         if client == clientToRemove then ind = i end
     end
     if ind then
-        print("removed client at "..ind)
         table.remove(self.clients,ind)
         self.playersDict[ID] = nil
     end

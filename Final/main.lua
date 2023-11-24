@@ -140,8 +140,6 @@ local function processReceived()
         for i,message in ipairs(data) do
             local splitData = split(message,":")
             local key,args = splitData[1],splitData[2]
-            local sArgs = args
-            if sArgs == nil then sArgs = " " end
             if key ~= "no dat" then 
                 netSwitch:case(key,args)
             end
@@ -186,7 +184,6 @@ end)
 
 newStateSwitch:addCase("main menu",function()
     clearButtons()
-    print("menu")
     newButton(1,"click to start",{1,1,1},300,300,500,350,function()
         state[1] = "gamemode select"
     end)
@@ -195,7 +192,6 @@ end)
 
 newStateSwitch:addCase("gamemode select",function()
     clearButtons()
-    print("gamemode select")
     newButton(1,"multiplayer",{1,1,1},300,100,500,150,function()
         state[1] = "connecting to server"
     end)
@@ -212,7 +208,6 @@ end)
 
 newStateSwitch:addCase("connecting to server",function()
     clearButtons()
-    print("connecting to server")
     local nPlayer = Player:tryConnect()
     if not nPlayer then
         lState[1] = "connecting to server"
@@ -225,14 +220,12 @@ newStateSwitch:addCase("connecting to server",function()
         player = nPlayer
         player.ID = calculateID(8)
         player:send("ncon:"..player.ID.."_"..player.name)
-        print("sending nCon")
     end
 end)
 
 newStateSwitch:addCase("hosting main",function()
     clearButtons()
     if server then
-        print("hosting main")
         newButton(1,"close main server",{1,0,0},50,50,750,250,function()
             state[1] = "gamemode select"
             server:close()
@@ -258,7 +251,6 @@ end)
 
 newStateSwitch:addCase("user settings",function()
     clearButtons()
-    print("user settings")
     newButton(2,"configure settings",{1,1,1},300,300,500,350,function()
         order = 3
         state[3] = "configure game settings"
@@ -289,7 +281,6 @@ end)
 newStateSwitch:addCase("searching for lobby",function()
     if not player then return end
     clearButtons()
-    print("searching for lobby")
     
     --no text, the player name is drawn separatly above the button
     newButton(1,"",{1,1,1},300,25,500,75,function()
@@ -330,7 +321,6 @@ end)
 newStateSwitch:addCase("lobby creation",function()
     if not player then return end
     clearButtons()
-    print("lobby creation")
     newButton(2,"back",{1,1,1},300,300,500,350,function()
         state[2] = nil
         lState[2] = nil
@@ -351,7 +341,6 @@ end)
 
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
-    print("lobby settings")
     newButton(3,"back",{1,1,1},300,300,500,350,function()
         state[3] = nil
         lState[3] = nil
@@ -460,7 +449,6 @@ netSwitch:addCase("ncon",function(args)
         if conf == "confirm" then
 
             if ID == player.ID then
-                print("confirmed connection")
                 LobbyPlayer:new(ID)
                 LobbyPlayer:setName(ID,name)
                 LobbyPlayer:setReady(ID,false)
@@ -483,7 +471,6 @@ netSwitch:addCase("econ",function(args)
     elseif player then
         local ID = args
         if ID == player.ID then
-            print("confirmed end of connection")
             toClosePlayer = false
             state[1] = "gamemode select"
             lState[1] = nil
