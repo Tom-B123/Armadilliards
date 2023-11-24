@@ -483,8 +483,9 @@ netSwitch:addCase("econ",function(args)
         local ID = args
         if ID == player.ID then
             print("confirmed end of connection")
-            toClosePlayer = true
+            toClosePlayer = false
             state[1] = "gamemode select"
+            lState[1] = nil
         else
             newMessage("a player has left the main server")
         end
