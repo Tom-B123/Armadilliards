@@ -553,6 +553,7 @@ netSwitch:addCase("join",function(args)
     elseif player then
         local splitData = split(args,"_")
         local IP,port = splitData[1], splitData[2]
+        print(player.name.." wants to connect to socket: "..IP.." , "..port)
         local nPlayer = Player:new(IP,port)
         toConnectPlayer = nPlayer
     end
