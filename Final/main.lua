@@ -164,22 +164,24 @@ end
 
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
-    if server and tick % 2 == 0 then
+    if not server then return end
+    if tick % 120 == 0 then
+        for i,ID in ipairs(JoinableLobby.lobbies) do
+            local lobby = JoinableLobby.lobbiesDict[ID]
+            local hostName = LobbyPlayer:getName(lobby.hostID)
+            server:send("all","uplobs:"..lobby.name.."_"..hostName.."_"..lobby.hostID.."_"..
+            lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount.."_"..lobby.maxPlayers)
+        end
+    elseif tick % 2 == 0 then
         server:update()
     end
-    if server then
-        server:send("all","no dat")
-        processReceived()
-    end
+    server:send("all","no dat")
+    processReceived()
 end)
 
 stateSwitch:addCase("searching for lobby",function()
-    if player then
-        processReceived()
-        if tick % 120 == 0 then
-            player:send("uplobs:")
-        end
-    end
+    if not player then return end
+    processReceived()
 end)
 
 newStateSwitch:addCase("main menu",function()
@@ -285,47 +287,48 @@ newStateSwitch:addCase("configure game settings",function()
 end)
 
 newStateSwitch:addCase("searching for lobby",function()
+    if not player then return end
     clearButtons()
     print("searching for lobby")
-    if player then
-        --no text, the player name is drawn separatly above the button
-        newButton(1,"",{1,1,1},300,25,500,75,function()
-            state[2] = "editing player name"
-            lState[2] = nil
-            order = 2
-        end)
-        newButton(1,"Create new lobby",{1,1,1},300,400,500,450,function()
-            lState[2] = nil
-            state[2] = "lobby creation"
-            order = 2
-        end)
-        newButton(1,"back",{1,1,1},300,475,500,525,function()
-                --End connection with main server
-            player:send("econ:"..player.ID)
-        end)
-    end
+    
+    --no text, the player name is drawn separatly above the button
+    newButton(1,"",{1,1,1},300,25,500,75,function()
+        state[2] = "editing player name"
+        lState[2] = nil
+        order = 2
+    end)
+    newButton(1,"Create new lobby",{1,1,1},300,400,500,450,function()
+        lState[2] = nil
+        state[2] = "lobby creation"
+        order = 2
+    end)
+    newButton(1,"back",{1,1,1},300,475,500,525,function()
+            --End connection with main server
+        player:send("econ:"..player.ID)
+    end)
     lState[1] = state[1]
 end)
 
 newStateSwitch:addCase("editing player name",function()
+    if not player then return end
     clearButtons()
-    if player then
-        editingText = player.name
-        editingIndex = #editingText + 1
-        newButton(2,"cancel",{1,0,0},300,80,398,105,function()
-            state[2] = nil
-            lState[2] = nil
-            order = 1
-            editingText = nil
-        end)
-        newButton(2,"confirm",{0,1,0},402,80,500,105,function()
-            changePlayerName()
-        end)
-    end
+    
+    editingText = player.name
+    editingIndex = #editingText + 1
+    newButton(2,"cancel",{1,0,0},300,80,398,105,function()
+        state[2] = nil
+        lState[2] = nil
+        order = 1
+        editingText = nil
+    end)
+    newButton(2,"confirm",{0,1,0},402,80,500,105,function()
+        changePlayerName()
+    end)
     lState[2] = state[2]
 end)
 
 newStateSwitch:addCase("lobby creation",function()
+    if not player then return end
     clearButtons()
     print("lobby creation")
     newButton(2,"back",{1,1,1},300,300,500,350,function()
@@ -340,9 +343,8 @@ newStateSwitch:addCase("lobby creation",function()
         order = 3
     end)
     newButton(2,"Create",{1,1,1},300,450,500,500,function()
-        if player then
-            player:send("create:"..player.ID.."_new server_server IP_server port_8")
-        end
+        
+    player:send("create:"..player.ID.."_new server_server IP_server port_8")
     end)
     lState[2] = state[2]
 end)
@@ -378,13 +380,13 @@ drawStateSwitch:addCase("connection error",function()
 end)
 
 drawStateSwitch:addCase("hosting main",function()
+    if not server then return end
     drawMessages()
     drawButtons(1)
     love.graphics.setColor(1,1,1)
     love.graphics.print("You are now the main host",300,500)
-    if server then
-        love.graphics.print("player Count: "..server.playerCount,300,400)
-    end
+    
+    love.graphics.print("player Count: "..server.playerCount,300,400)
 end)
 
 drawStateSwitch:addCase("user settings",function()
@@ -400,15 +402,15 @@ drawStateSwitch:addCase("configure game settings",function()
 end)
 
 drawStateSwitch:addCase("searching for lobby",function()
+    if not player then return end
     drawMessages()
     drawButtons(1)
     --Drawing the player name onto the edit player name button
-    if player then
-        local playerNameText
-        if editingText then playerNameText = editingText
-        else playerNameText = player.name end
-        if playerNameText then love.graphics.print(playerNameText,300,25) end
-    end
+    
+    local playerNameText
+    if editingText then playerNameText = editingText
+    else playerNameText = player.name end
+    if playerNameText then love.graphics.print(playerNameText,300,25) end
 end)
 
 drawStateSwitch:addCase("editing player name",function()
@@ -512,7 +514,8 @@ netSwitch:addCase("join",function(args)
         local splitData = split(args,"_")
         local playerID,lobbyID = splitData[1], splitData[2]
         print("player: "..playerID.." wants to join lobby: "..lobbyID)
-        --get info from lobby ID and send data to the player
+        local lobby = JoinableLobby.lobbiesDict[lobbyID]
+        local port,ip
     elseif player then
         --Connect to the hosted lobby server
     end
@@ -544,34 +547,27 @@ netSwitch:addCase("create",function(args)
 end)
 
 netSwitch:addCase("uplobs",function(args)
-    if server then
-        for i,ID in ipairs(JoinableLobby.lobbies) do
-            local lobby = JoinableLobby.lobbiesDict[ID]
-            local hostName = LobbyPlayer:getName(lobby.hostID)
-            server:send("all","uplobs:"..lobby.name.."_"..hostName.."_"..lobby.hostID.."_"..
-            lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount.."_"..lobby.maxPlayers)
-        end
-    elseif player then
-        local splitData = split(args,"_")
-        local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount, maxPlayers = 
-        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7], splitData[8]
+    if not player then return end
 
-        --Sets the player name to display, as it may not be known
-        if not LobbyPlayer:getName(hostID) then
-            LobbyPlayer:new(hostID)
-            LobbyPlayer:setName(hostID,hostName)
-        end
+    local splitData = split(args,"_")
+    local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount, maxPlayers = 
+    splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7], splitData[8]
 
-        --Adds and updates the info to display for the lobby
-        if not JoinableLobby.lobbiesDict[lobbyID] then
-            JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount,8)
-            local y = #JoinableLobby.lobbies * 40
-            newButton(1,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
-                player:join(lobbyID)
-            end)
-        else
-            JoinableLobby.lobbiesDict[lobbyID].playerCount = playerCount
-        end
+    --Sets the player name to display, as it may not be known
+    if not LobbyPlayer:getName(hostID) then
+        LobbyPlayer:new(hostID)
+        LobbyPlayer:setName(hostID,hostName)
+    end
+
+    --Adds and updates the info to display for the lobby
+    if not JoinableLobby.lobbiesDict[lobbyID] then
+        JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount,8)
+        local y = #JoinableLobby.lobbies * 40
+        newButton(1,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
+            player:join(lobbyID)
+        end)
+    else
+        JoinableLobby.lobbiesDict[lobbyID].playerCount = playerCount
     end
 end)
 
