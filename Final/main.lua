@@ -176,6 +176,31 @@ stateSwitch:addCase("searching for lobby",function()
     processReceived()
 end)
 
+stateSwitch:addCase("hosting lobby",function()
+    if not server then return end
+    processReceived()
+    if tick % 120 == 0 then
+        for i,ID in ipairs(LobbyPlayer:getIDs()) do
+            local name = LobbyPlayer:getName(ID)
+            local ready = LobbyPlayer:getReady(ID)
+            local team = LobbyPlayer:getTeam(ID)
+            server:send("all","updt:"..ID.."_"..name.."_"..ready.."_"..team)
+        end
+    elseif tick % 2 == 0 then
+        server:update()
+    else
+        server:send("all","msg:hello player")
+    end
+end)
+
+stateSwitch:addCase("in lobby",function()
+    if not player then return end
+    processReceived()
+    if tick % 5 == 0 then
+        player:send("msg:hello host")
+    end
+end)
+
 newStateSwitch:addCase("main menu",function()
     clearButtons()
     newButton(1,"click to start",{1,1,1},300,300,500,350,function()
@@ -374,11 +399,26 @@ newStateSwitch:addCase("editing lobby name",function()
     lState[4] = state[4]
 end)
 
+newStateSwitch:addCase("hosting lobby",function()
+    clearButtons()
+    
+    newButton(1,"start",{1,1,1},600,500,750,550,function()
+        
+    end)
+
+    lState[1] = state[1]
+end)
+
 newStateSwitch:addCase("in lobby",function()
     clearButtons()
     
+    newButton(1,"ready",{1,1,1},600,500,750,550,function()
+
+    end)
+
     lState[1] = state[1]
 end)
+
 drawStateSwitch:addCase("main menu",function()
     love.graphics.print("This is the main menu",300,100)
     drawButtons(1)
@@ -463,6 +503,11 @@ drawStateSwitch:addCase("editing lobby name",function()
         love.graphics.setColor(0.4,0.4,0.4,0.7)
         love.graphics.rectangle("fill",300 - 2.5 + (editingIndex-1)*9,300,5,17.5)
     end
+end)
+
+drawStateSwitch:addCase("hosting lobby",function()
+    drawButtons(1)
+    love.graphics.print("hosting lobby",0,20)
 end)
 
 drawStateSwitch:addCase("in lobby",function()
@@ -578,7 +623,7 @@ netSwitch:addCase("create",function(args)
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
 
         if player.ID == hostID then
-            state[1] = "in lobby"
+            state[1] = "hosting lobby"
             state[2] = nil
             lState[2] = nil
             order = 1
