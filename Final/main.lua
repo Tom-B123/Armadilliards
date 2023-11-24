@@ -257,8 +257,7 @@ newStateSwitch:addCase("user settings",function()
         state[3] = "configure game settings"
         lState[3] = nil
     end)
-    newButton(order,"back",{1,1,1},300,375,500,425,function()
-        --arbitrary values so user settings can open above any menu
+    newButton(2,"back",{1,1,1},300,375,500,425,function()
         state[2] = nil
         lState[2] = nil
         order = 1
@@ -270,13 +269,13 @@ newStateSwitch:addCase("user settings",function()
 end)
 
 newStateSwitch:addCase("configure game settings",function()
-    newButton(order,"back",{1,1,1},300,375,500,425,function()
+    newButton(3,"back",{1,1,1},300,375,500,425,function()
         --arbitrary values so user settings can open above any menu
-        state[order] = nil
-        lState[order] = nil
-        order = order - 1
+        state[3] = nil
+        lState[3] = nil
+        order = 2
     end)
-    lState[order] = state[order]
+    lState[3] = state[3]
 end)
 
 newStateSwitch:addCase("searching for lobby",function()
@@ -605,7 +604,7 @@ end)
 function love.textinput(t)
     if not editingText then return end
     if not player then return end
-    if t == nil then return end
+    if t == nil or t == ":" or t == "_" then return end
     --Adds text at the editing index and incriments the index
     editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
     editingIndex = editingIndex + 1
