@@ -54,8 +54,7 @@ function Server:receive(clients)
     for i,client in ipairs(clients) do
         local data,err = client:receive()
         if data then
-            print(data)
-            out[i] = data
+            table.insert(out, data)
             --uses a substring for less performance impact of splitting every single incoming message
             if string.sub(data,1,4) == "ncon" then
                 
@@ -67,6 +66,11 @@ function Server:receive(clients)
         elseif err == "closed" then
             client:close()
             table.remove(clients, i)
+        end
+    end
+    if out then
+        for i,message in ipairs(out) do
+            if message then print(message) end
         end
     end
     return out
