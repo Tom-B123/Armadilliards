@@ -616,6 +616,8 @@ netSwitch:addCase("join",function(args)
             state[1] = "in lobby"
             order = 1
             local nPlayer = Player:new(IP,port)
+            nPlayer.name = player.name
+            nPlayer.ID = player.ID
             toConnectPlayer = nPlayer
         end
     end
@@ -776,6 +778,7 @@ function love.update()
         player = nil
         toClosePlayer = false
     end
+
     if toConnectPlayer then
         player = toConnectPlayer
         toConnectPlayer = nil
