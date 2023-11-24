@@ -283,7 +283,6 @@ newStateSwitch:addCase("searching for lobby",function()
         order = 2
     end)
     newButton(1,"back",{1,1,1},300,475,500,525,function()
-            --End connection with main server
         player:send("econ:"..player.ID)
     end)
     lState[1] = state[1]
@@ -330,7 +329,14 @@ end)
 
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
-    newButton(3,"back",{1,1,1},300,300,500,350,function()
+    --no text, lobby name drawn above text
+    newButton(3,"",{1,1,1},300,300,500,350,function()
+        --edit lobby name
+    end)
+    newButton(3,"max players",{1,1,1},300,375,500,425,function()
+        --change number of max players (2,4,8?)
+    end)
+    newButton(3,"back",{1,1,1},300,450,500,500,function()
         state[3] = nil
         lState[3] = nil
         order = 2
@@ -436,7 +442,6 @@ netSwitch:addCase("ncon",function(args)
         local ID, name, conf = splitData[1],splitData[2],splitData[3]
 
         if conf == "confirm" then
-
             if ID == player.ID then
                 LobbyPlayer:new(ID)
                 LobbyPlayer:setName(ID,name)
