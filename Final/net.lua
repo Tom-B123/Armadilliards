@@ -1,8 +1,6 @@
 Socket = require("socket")
 
-Server = {}
-Server.__index = Server
-
+--splits a string by the seperator into a table of substrings
 local function split (inputstr, sep)
     if sep == nil then
         sep = "%s"
@@ -14,6 +12,7 @@ local function split (inputstr, sep)
     return t
 end
 
+--gets an ID of a length, using the os.time as a seed
 local function calculateID(length)
     local seed = Socket.gettime() * 10000
     math.randomseed(seed)
@@ -22,6 +21,10 @@ end
 
 local mainIp = Socket.dns.toip(Socket.dns.gethostname( )) 
 local mainPort = 500
+
+--Server class, handles connections from clients and sending / receiving data
+Server = {}
+Server.__index = Server
 
 function Server:new(port)
     local object = {}
@@ -73,6 +76,7 @@ function Server:close()
     self.server:close()
 end
 
+--Client class, handles connecting to servers and sending / receiving data
 Client = {}
 Client.__index = Client
 
@@ -104,10 +108,11 @@ function Client:close()
     self.client:close()
 end
 
+--Lobby class, adds to the server class with more functionality
 Lobby = {}
 Lobby.__index = Lobby
 
-function Lobby:new(name,port,IP,hostName)
+function Lobby:new(name,port,IP,hostName,maxPlayers)
     local object = {}
     setmetatable(object,Lobby)
     object.name = name
@@ -116,6 +121,7 @@ function Lobby:new(name,port,IP,hostName)
     object.hostName = hostName
 
     object.playerCount = 0
+    object.maxPlayers = maxPlayers
     object.clients = {}
     object.playersDict = {}
 
@@ -137,7 +143,7 @@ function Lobby:endConnection(ID)
 end
 
 function Lobby:hostMain()
-    local nLobby = Lobby:new("__main lobby__", mainPort, mainIp,"main host")
+    local nLobby = Lobby:new("__main lobby__", mainPort, mainIp,"main host",-1)
     return nLobby
 end
 
@@ -164,6 +170,7 @@ function Lobby:close()
     self.server:close()
 end
 
+--JoinableLobby table, used to get data about a lobby object from its ID
 JoinableLobby = {lobbies = {},lobbiesDict = {}}
 JoinableLobby.__index = JoinableLobby
 
@@ -197,6 +204,7 @@ function Lobby:create(client,name,port,IP,hostName)
     --send back to client
 end
 
+--Player class, adds to the server class with more functionality
 Player = {}
 Player.__index = Player
 
@@ -251,6 +259,7 @@ function Player:tryConnect()
     end
 end
 
+--LobbyPlayer table, uses the player ID to get other player data
 LobbyPlayer = {
     IDTable = {},
     NameDict = {},
@@ -299,4 +308,3 @@ end
 function LobbyPlayer:setReady(ID,ready)
     self.ReadyDict[ID] = ready
 end
-

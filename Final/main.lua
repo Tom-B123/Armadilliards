@@ -565,13 +565,14 @@ netSwitch:addCase("create",function(args)
         local hostID, lobbyID, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
 
-        --Host a new joinable server
+        local lobby = JoinableLobby.lobbiesDict[lobbyID]
 
         if player.ID == hostID then
             state[1] = "searching for lobby"
             state[2] = nil
             lState[2] = nil
             order = 1
+            server = Lobby:new(lobby.name,port,IP,player.name,maxPlayers)
         end
     end
 end)
