@@ -615,12 +615,14 @@ end
 function love.keypressed(key)
     if editingText and player then
         if key == "escape" then
-            state[2] = nil
-            lState[2] = nil
-            order = 1
+            state[order] = nil
+            lState[order] = nil
+            order = order - 1
             editingText = nil
         elseif key == "return" then
-            changePlayerName()
+            if getState(2) == "editing player name" then changePlayerName()
+            elseif getState(4) == "editing lobby name" then changeLobbyName()
+            end
         elseif key == "delete" then
             --Delete everything after the index when ctrl + delete
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
