@@ -185,8 +185,9 @@ stateSwitch:addCase("hosting lobby",function()
             local name = LobbyPlayer:getName(ID)
             local ready = LobbyPlayer:getReady(ID)
             local team = LobbyPlayer:getTeam(ID)
-            server:send("all","msg:hello, "..name.." I am the host")
-            -- server:send("all","msg:"..ID.."_"..name.."_"..tostring(ready).."_"..team)
+            server:send("all","updt:"..ID.."_name_"..name)
+            server:send("all","updt:"..ID.."_ready_"..tostring(ready))
+            server:send("all","updt:"..ID.."_team_".."_"..team)
         end
     elseif tick % 2 == 0 then
         server:update()
@@ -198,9 +199,6 @@ end)
 stateSwitch:addCase("in lobby",function()
     if not player then return end
     processReceived()
-    if tick % 5 == 0 then
-        player:send("msg:hello host")
-    end
 end)
 
 newStateSwitch:addCase("main menu",function()
@@ -414,12 +412,12 @@ end)
 
 newStateSwitch:addCase("in lobby",function()
     if not player then return end
+    
     player.ID = calculateID(8)
     player:send("ncon:"..player.ID.."_"..player.name.."_"..tostring(player.ready).."_"..player.team)
     clearButtons()
-    
+    LobbyPlayer.IDTable = {}
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
-
     end)
 
     lState[1] = state[1]
@@ -512,13 +510,17 @@ end)
 drawStateSwitch:addCase("hosting lobby",function()
     drawMessages()
     drawButtons(1)
-    love.graphics.print("hosting lobby",0,20)
+    for i, ID in ipairs(LobbyPlayer:getIDs()) do
+        love.graphics.print(ID,0,20*i)
+    end
 end)
 
 drawStateSwitch:addCase("in lobby",function()
     drawMessages()
     drawButtons(1)
-    love.graphics.print("in a lobby",0,20)
+    for i, ID in ipairs(LobbyPlayer:getIDs()) do
+        love.graphics.print(ID,0,20*i)
+    end
 end)
 
 netSwitch:addCase("msg",function(args)
