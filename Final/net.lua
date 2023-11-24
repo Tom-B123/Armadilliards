@@ -54,10 +54,11 @@ function Server:receive(clients)
     for i,client in ipairs(clients) do
         local data,err = client:receive()
         if data then
+            print(data)
             out[i] = data
             --uses a substring for less performance impact of splitting every single incoming message
             if string.sub(data,1,4) == "ncon" then
-                print(data)
+                
             end
             --     local splitData = split(data,":")
             --     local ID = splitData[2]

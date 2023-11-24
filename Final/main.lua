@@ -409,6 +409,7 @@ drawStateSwitch:addCase("searching for lobby",function()
         if editingText then playerNameText = editingText
         else playerNameText = player.name end
         if playerNameText then love.graphics.print(playerNameText,300,25) end
+        love.graphics.print(player.ID,0,20)
     end
 end)
 
