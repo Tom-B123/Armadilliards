@@ -4,7 +4,7 @@ require("button")
 require("net")
 
 local player = nil
-local lobbyToCreate = {name = "new lobby",ip = "dummy ip", port = "dummy port", maxPlayers = 8}
+local lobbyToCreate = {name = "new lobby",IP = "dummy ip", port = "dummy port", maxPlayers = 8}
 
 local toClosePlayer = false
 local server = nil
@@ -455,7 +455,7 @@ drawStateSwitch:addCase("lobby settings",function()
     drawButtons(3)
 
     local LobbyNameText
-    if editingText then LobbyNameText = editingText
+    if editingText and getState(4) == "editing lobby name" then LobbyNameText = editingText
     else LobbyNameText = lobbyToCreate.name end
     if LobbyNameText then love.graphics.print(LobbyNameText,300,300) end
 end)
