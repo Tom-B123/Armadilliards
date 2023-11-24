@@ -349,7 +349,9 @@ newStateSwitch:addCase("lobby settings",function()
     clearButtons()
     --no text, lobby name drawn above text
     newButton(3,"",{1,1,1},300,300,500,350,function()
-        --edit lobby name
+        lState[4] = nil
+        state[4] = "editing lobby name"
+        order = 4
     end)
     newButton(3,"max players",{1,1,1},300,375,500,425,function()
         --change number of max players (2,4,8?)
@@ -360,6 +362,24 @@ newStateSwitch:addCase("lobby settings",function()
         order = 2
     end)
     lState[3] = state[3]
+end)
+
+newStateSwitch:addCase("editing lobby name",function()
+    if not player then return end
+    clearButtons()
+    
+    editingText = player.name
+    editingIndex = #editingText + 1
+    newButton(4,"cancel",{1,0,0},300,355,398,380,function()
+        state[4] = nil
+        lState[4] = nil
+        order = 3
+        editingText = nil
+    end)
+    newButton(4,"confirm",{0,1,0},402,355,500,380,function()
+        changeLobbyName()
+    end)
+    lState[4] = state[4]
 end)
 
 drawStateSwitch:addCase("main menu",function()
@@ -433,6 +453,19 @@ drawStateSwitch:addCase("lobby settings",function()
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",250,250,300,300)
     drawButtons(3)
+
+    local LobbyNameText
+    if editingText then LobbyNameText = editingText
+    else LobbyNameText = lobbyToCreate.name end
+    if LobbyNameText then love.graphics.print(LobbyNameText,300,300) end
+end)
+
+drawStateSwitch:addCase("editing lobby name",function()
+    drawButtons(4)
+    if tick % 30 > 30 / 2 then
+        love.graphics.setColor(0.4,0.4,0.4,0.7)
+        love.graphics.rectangle("fill",300 - 2.5 + (editingIndex-1)*9,300,5,17.5)
+    end
 end)
 
 netSwitch:addCase("msg",function(args)
@@ -466,7 +499,6 @@ netSwitch:addCase("ncon",function(args)
                 LobbyPlayer:setReady(ID,false)
                 --automatically assigned team set here
                 LobbyPlayer:setTeam(ID,"team 1")
-
             else
                 newMessage("a new player has connected to the main server")
             end
