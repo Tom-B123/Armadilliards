@@ -61,6 +61,7 @@ local function calculateID(length)
 end
 
 local function newMessage(message)
+    print("message: "..message)
     table.insert(messageLog,message)
 end
 
@@ -184,12 +185,12 @@ stateSwitch:addCase("hosting lobby",function()
             local name = LobbyPlayer:getName(ID)
             local ready = LobbyPlayer:getReady(ID)
             local team = LobbyPlayer:getTeam(ID)
-            server:send("all","updt:"..ID.."_"..name.."_"..ready.."_"..team)
+            server:send("all","msg:"..ID.."_"..name.."_"..ready.."_"..team)
         end
     elseif tick % 2 == 0 then
         server:update()
     else
-        server:send("all","msg:hello player")
+        -- server:send("all","msg:hello player")
     end
 end)
 
@@ -400,6 +401,7 @@ newStateSwitch:addCase("editing lobby name",function()
 end)
 
 newStateSwitch:addCase("hosting lobby",function()
+    LobbyPlayer.IDTable = {}
     clearButtons()
     
     newButton(1,"start",{1,1,1},600,500,750,550,function()
@@ -410,6 +412,8 @@ newStateSwitch:addCase("hosting lobby",function()
 end)
 
 newStateSwitch:addCase("in lobby",function()
+    if not player then return end
+    player:send("ncon:"..player.ID.."_"..player.name.."_"..tostring(player.ready).."_"..player.team)
     clearButtons()
     
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
@@ -440,7 +444,6 @@ end)
 
 drawStateSwitch:addCase("hosting main",function()
     if not server then return end
-    drawMessages()
     drawButtons(1)
     love.graphics.setColor(1,1,1)
     love.graphics.print("You are now the main host",300,500)
@@ -462,7 +465,6 @@ end)
 
 drawStateSwitch:addCase("searching for lobby",function()
     if not player then return end
-    drawMessages()
     drawButtons(1)
     --Drawing the player name onto the edit player name button
     
@@ -506,11 +508,13 @@ drawStateSwitch:addCase("editing lobby name",function()
 end)
 
 drawStateSwitch:addCase("hosting lobby",function()
+    drawMessages()
     drawButtons(1)
     love.graphics.print("hosting lobby",0,20)
 end)
 
 drawStateSwitch:addCase("in lobby",function()
+    drawMessages()
     drawButtons(1)
     love.graphics.print("in a lobby",0,20)
 end)
@@ -528,10 +532,16 @@ netSwitch:addCase("ncon",function(args)
 
         LobbyPlayer:new(ID)
         LobbyPlayer:setName(ID,name)
-        LobbyPlayer:setReady(ID,false)
-        --automatically assigned team set here
-        LobbyPlayer:setTeam(ID,"team 1")
 
+        if getState(1) == "hosting lobby" then
+            local ready = splitData[3]
+            local team = splitData[4]
+
+            LobbyPlayer:setReady(ID,false)
+            --automatically assigned team set here
+            LobbyPlayer:setTeam(ID,"team 1")
+        end
+        
         server:send("all","ncon:"..ID.."_"..name.."_confirm")
 
     elseif player then

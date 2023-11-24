@@ -215,6 +215,8 @@ function Player:new(IP,port)
     object.name = "new player"
     object.ID = ""
     object.IP = Socket.dns.toip(Socket.dns.gethostname( ))
+    object.ready = false
+    object.team = "team 1"
     if IP and port then object.client = Client:new(IP,port)
     else object.client = Client:new(mainIP,mainPort) end
     return object
