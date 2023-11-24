@@ -643,8 +643,12 @@ netSwitch:addCase("create",function(args)
             state[2] = nil
             lState[2] = nil
             order = 1
+            --Host has both a server and player object
             server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
-            toClosePlayer = true
+            local nPlayer = Player:new(IP,port)
+            nPlayer.name = player.name
+            nPlayer.ID = player.ID
+            toConnectPlayer = nPlayer
         end
     end
 end)
