@@ -595,7 +595,6 @@ netSwitch:addCase("updt",function(args)
     local ID = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
-    print(field.." to "..value)
     if field == "name" then LobbyPlayer:setName(ID,value)
     elseif field == "ready" then LobbyPlayer:setReady(ID,value)
     elseif field == "team" then LobbyPlayer:setTeam(ID,value)
@@ -606,7 +605,7 @@ netSwitch:addCase("join",function(args)
     if server then
         local splitData = split(args,"_")
         local playerID,lobbyID = splitData[1], splitData[2]
-        print("player: "..playerID.." wants to join lobby: "..lobbyID)
+        print("player: "..playerID.." ("..LobbyPlayer:getName(playerID)..") ".." wants to join lobby: "..lobbyID)
         local lobby = JoinableLobby.lobbiesDict[lobbyID]
         local IP,port = lobby.IP,lobby.port
         server:send("all","join:"..playerID.."_"..IP.."_"..port)
