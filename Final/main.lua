@@ -487,6 +487,7 @@ netSwitch:addCase("econ",function(args)
             lState[1] = nil
             JoinableLobby.lobbies = {}
             JoinableLobby.lobbiesDict = {}
+            clearMessages()
         else
             newMessage("a player has left the main server")
         end
