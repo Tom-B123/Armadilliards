@@ -9,7 +9,7 @@ local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 
 local bounds = {x = 4096,y = 4096}
 
-
+local isDebug = false
 
 local mouseState = {false,false,false}
 
@@ -76,7 +76,7 @@ function Ball:new(x,y)
 end
 
 function Ball:draw(offsetX,offsetY)
-    if self.hide then
+    if self.hide and not isDebug then
         return
     end
     love.graphics.setColor(1,1,1)
@@ -97,21 +97,30 @@ function Ball:draw(offsetX,offsetY)
         
         love.graphics.setColor(0,0,0,0.4)
 
-        if self.team == "team 1" or self.tempTeam[1] == "team 1" then love.graphics.setColor(0,0,1,0.4) end
+        if isDebug then
+            love.graphics.circle(
+                "line",
+                self.x + offsetX,
+                self.y + offsetY,
+                self.radius
+            )
+        else
+            if self.team == "team 1" or self.tempTeam[1] == "team 1" then love.graphics.setColor(0,0,1,0.4) end
 
-        love.graphics.circle(
-            "fill",
-            self.x + offsetX,
-            self.y + offsetY,
-            self.radius + 4
-        ) 
-        love.graphics.setColor(1,1,1)
-        love.graphics.draw(
-            images[imageIndex],
-            self.x + offsetX,
-            self.y + offsetY,
-            self.yaw,1,1,16,16
-        )
+            love.graphics.circle(
+                "fill",
+                self.x + offsetX,
+                self.y + offsetY,
+                self.radius + 4
+            ) 
+            love.graphics.setColor(1,1,1)
+            love.graphics.draw(
+                images[imageIndex],
+                self.x + offsetX,
+                self.y + offsetY,
+                self.yaw,1,1,16,16
+            )
+        end
     end
     pcall(tryDraw)
 end
@@ -230,13 +239,13 @@ for i = 1,3 do
     end
     for j = 1,ballN do
         ball = Ball:new(250 + (smallD) * j + offset,250 + (smallD) * i)
-        ball.hide = false
+        ball.hide = true
         ball.radius = smallD/2
         table.insert(balls,ball)
     end
 end
 
-local elasticity = 0.1
+local elasticity = 0
 
 table.insert(ropes,{balls[2],balls[3],28,elasticity})
 table.insert(ropes,{balls[3],balls[5],28,elasticity})
@@ -748,7 +757,7 @@ local function drawBox(centre,angle,radius)
         }
         table.insert(points,point)
     end
-    love.graphics.polygon("line",
+    love.graphics.polygon("fill",
         points[1][1] + offsetX,points[1][2] + offsetY,
         points[2][1] + offsetX,points[2][2] + offsetY,
         points[3][1] + offsetX,points[3][2] + offsetY,
@@ -768,7 +777,7 @@ local function drawTriangle(centre,angle,radius)
         }
         table.insert(points,point)
     end
-    love.graphics.polygon("line",
+    love.graphics.polygon("fill",
         points[1][1] + offsetX,points[1][2] + offsetY,
         points[2][1] + offsetX,points[2][2] + offsetY,
         points[3][1] + offsetX,points[3][2] + offsetY
@@ -783,7 +792,7 @@ local function drawBall(centre,angle,radius)
         centre[1] + radius * math.cos(angle + math.pi) + offsetX,
         centre[2] + radius * math.sin(angle + math.pi) + offsetY
     )
-    love.graphics.circle("line",centre[1] + offsetX,centre[2] + offsetY,radius)
+    love.graphics.circle("fill",centre[1] + offsetX,centre[2] + offsetY,radius)
 end
 
 local function updateRopes()
