@@ -552,10 +552,14 @@ netSwitch:addCase("join",function(args)
         server:send("all","join:"..playerID.."_"..IP.."_"..port)
     elseif player then
         local splitData = split(args,"_")
-        local IP,port = splitData[1], splitData[2]
-        print(player.name.." wants to connect to socket: "..IP.." , "..port)
-        local nPlayer = Player:new(IP,port)
-        toConnectPlayer = nPlayer
+        local ID,IP,port = splitData[1], splitData[2],splitData[3]
+        if ID == player.ID then
+            lState[1] = nil
+            state[1] = "in lobby"
+            order = 1
+            local nPlayer = Player:new(IP,port)
+            toConnectPlayer = nPlayer
+        end
     end
 end)
 
