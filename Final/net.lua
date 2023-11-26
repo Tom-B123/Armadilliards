@@ -171,34 +171,6 @@ function Lobby:close()
     self.server:close()
 end
 
---JoinableLobby table, used to get data about a lobby object from its ID
-JoinableLobby = {lobbies = {},lobbiesDict = {}}
-JoinableLobby.__index = JoinableLobby
-
-function JoinableLobby:new(name, hostID, IP, port, ID, playerCount,maxPlayers)
-    local object = {}
-    setmetatable(object, JoinableLobby)
-    object.name = name
-    object.hostID = hostID
-    object.IP = IP
-    object.port = port
-
-    object.playerCount = playerCount
-    object.maxPlayers = maxPlayers
-
-    if ID then object.ID = ID
-    else object.ID = calculateID(6) end
-    
-    --Add the ID to the IDs table, and the lobby's info to the dictionary
-    table.insert(self.lobbies,object.ID)
-    self.lobbiesDict[object.ID] = object
-    return object
-end
-
-function JoinableLobby:setPlayerCount(id,playerCount)
-    local lobby = self.lobbiesDict[id]
-    lobby.playerCount = playerCount
-end
 
 function Lobby:create(client,name,port,IP,hostName)
     --create a new inactive lobby object
@@ -266,9 +238,9 @@ end
 --LobbyPlayer table, uses the player ID to get other player data
 LobbyPlayer = {
     IDTable = {},
-    NameDict = {},
-    ReadyDict = {},
-    TeamDict = {}
+    nameDict = {},
+    readyDict = {},
+    teamDict = {}
 }
 
 function LobbyPlayer:new(ID)
@@ -285,30 +257,110 @@ end
 
 function LobbyPlayer:getName(ID)
     --returns the player name, or nil
-    local name = self.NameDict[ID]
+    local name = self.nameDict[ID]
     return name
 end
 
 function LobbyPlayer:setName(ID,name)
-   self.NameDict[ID] = name
+   self.nameDict[ID] = name
 end
 
 function LobbyPlayer:getTeam(ID)
     --returns the player name, or nil
-    local team = self.TeamDict[ID]
+    local team = self.teamDict[ID]
     return team
 end
 
 function LobbyPlayer:setTeam(ID,team)
-    self.TeamDict[ID] = team
+    self.teamDict[ID] = team
 end
 
 function LobbyPlayer:getReady(ID)
     --returns the player name, or nil
-    local isReady = self.ReadyDict[ID]
+    local isReady = self.readyDict[ID]
     return isReady
 end
 
 function LobbyPlayer:setReady(ID,ready)
-    self.ReadyDict[ID] = ready
+    self.readyDict[ID] = ready
+end
+
+--Joinable lobby table, gets lobby data via the lobby ID
+JoinableLobby = {
+    IDTable = {},
+    nameDict = {},
+    playerCountDict = {},
+    maxPlayersDict = {},
+    IPDict = {},
+    portDict = {},
+    hostIDDict = {}
+}
+
+function JoinableLobby:new(ID)
+    if not ID then ID = calculateID(6) end
+    table.insert(self.IDTable,ID)
+    return ID
+end
+
+function JoinableLobby:clear()
+    self.IDTable = {}
+    self.nameDict = {}
+    self.playerCountDict = {}
+    self.maxPlayersDict = {}
+    self.IPDict = {}
+    self.portDict = {}
+    self.hostIDDict = {}
+end
+
+function JoinableLobby:getAll(ID)
+    return  self:getName(ID), self:getHostID(ID), self:getIP(ID),
+            self:getPort(ID), self:getPlayerCount(ID), self:getMaxPlayers(ID)
+end
+
+function JoinableLobby:getName(ID)
+    return self.nameDict[ID]
+end
+
+function JoinableLobby:setName(ID,name)
+    self.nameDict[ID] = name
+end
+
+function JoinableLobby:getHostID(ID)
+    return self.hostIDDict[ID]
+end
+
+function JoinableLobby:setHostID(ID,hostID)
+    self.hostIDDict[ID] = hostID
+end
+
+function JoinableLobby:getIP(ID)
+    return self.IPDict[ID]
+end
+
+function JoinableLobby:setIP(ID,IP)
+    self.IPDict[ID] = IP
+end
+
+function JoinableLobby:getPort(ID)
+    return self.portDict[ID]
+end
+
+function JoinableLobby:setPort(ID,port)
+    self.portDict[ID] = port
+end
+
+function JoinableLobby:getPlayerCount(ID)
+    return self.playerCountDict[ID]
+end
+
+function JoinableLobby:setPlayerCount(ID,playerCount)
+    self.playerCountDict[ID] = playerCount
+end
+
+function JoinableLobby:getMaxPlayers(ID)
+    return self.maxPlayersDict[ID]
+end
+
+function JoinableLobby:setMaxPlayers(ID,maxPlayers)
+    self.maxPlayersDict[ID] = maxPlayers
 end

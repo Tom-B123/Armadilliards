@@ -159,11 +159,11 @@ end
 stateSwitch:addCase("hosting main",function()
     if not server then return end
     if tick % 120 == 0 then
-        for i,ID in ipairs(JoinableLobby.lobbies) do
-            local lobby = JoinableLobby.lobbiesDict[ID]
-            local hostName = LobbyPlayer:getName(lobby.hostID)
-            server:send("all","uplobs:"..lobby.name.."_"..hostName.."_"..lobby.hostID.."_"..
-            lobby.IP.."_"..lobby.port.."_"..lobby.ID.."_"..lobby.playerCount.."_"..lobby.maxPlayers)
+        for i,ID in ipairs(JoinableLobby.IDTable) do
+            local name, hostID, IP, port, playerCount, maxPlayers = JoinableLobby:getAll(ID)
+            local hostName = LobbyPlayer:getName(hostID)
+            server:send("all","uplobs:"..name.."_"..hostName.."_"..hostID.."_"..
+            IP.."_"..port.."_"..ID.."_"..playerCount.."_"..maxPlayers)
         end
     elseif tick % 2 == 0 then
         server:update()
@@ -580,8 +580,9 @@ netSwitch:addCase("econ",function(args)
             toClosePlayer = false
             state[1] = "gamemode select"
             lState[1] = nil
-            JoinableLobby.lobbies = {}
-            JoinableLobby.lobbiesDict = {}
+
+            JoinableLobby:clear()
+
             clearMessages()
         else
             newMessage("a player has left the main server")
@@ -605,20 +606,26 @@ netSwitch:addCase("join",function(args)
     if server then
         local splitData = split(args,"_")
         local playerID,lobbyID = splitData[1], splitData[2]
+
         print("player: "..playerID.." ("..LobbyPlayer:getName(playerID)..") ".." wants to join lobby: "..lobbyID)
-        local lobby = JoinableLobby.lobbiesDict[lobbyID]
-        local IP,port = lobby.IP,lobby.port
+        
+        local IP = JoinableLobby:getIP(lobbyID)
+        local port = JoinableLobby:getPort(lobbyID)
+
         server:send("all","join:"..playerID.."_"..IP.."_"..port)
     elseif player then
         local splitData = split(args,"_")
         local ID,IP,port = splitData[1], splitData[2],splitData[3]
+
         if ID == player.ID then
             lState[1] = nil
             state[1] = "in lobby"
             order = 1
+
             local nPlayer = Player:new(IP,port)
             nPlayer.name = player.name
             nPlayer.ID = player.ID
+
             toConnectPlayer = nPlayer
         end
     end
@@ -630,9 +637,15 @@ netSwitch:addCase("create",function(args)
         local hostID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
         
-        local nLobby = JoinableLobby:new(lobbyName,hostID,IP,port,nil,0,maxPlayers)
+        local ID = JoinableLobby:new()
+        JoinableLobby:setName(ID,lobbyName)
+        JoinableLobby:setHostID(ID,hostID)
+        JoinableLobby:setIP(ID,IP)
+        JoinableLobby:setPort(ID,port)
+        JoinableLobby:setPlayerCount(ID,0)
+        JoinableLobby:setMaxPlayers(ID,maxPlayers)
         
-        server:send("all","create:"..hostID.."_"..nLobby.ID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
+        server:send("all","create:"..hostID.."_"..ID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
         local splitData = split(args,"_")
         local hostID, lobbyID, lobbyName, IP, port, maxPlayers = 
@@ -645,9 +658,11 @@ netSwitch:addCase("create",function(args)
             order = 1
             --Host has both a server and player object
             server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
+
             local nPlayer = Player:new(IP,port)
             nPlayer.name = player.name
             nPlayer.ID = player.ID
+
             toConnectPlayer = nPlayer
         end
     end
@@ -666,15 +681,23 @@ netSwitch:addCase("uplobs",function(args)
         LobbyPlayer:setName(hostID,hostName)
     end
 
-    --Adds and updates the info to display for the lobby
-    if not JoinableLobby.lobbiesDict[lobbyID] then
-        JoinableLobby:new(lobbyName,hostID,IP,port,lobbyID,playerCount,8)
-        local y = #JoinableLobby.lobbies * 40
+    --Uses getName arbitrarily, dictionary lookup will give nil only if the ID isn't stored
+    if not JoinableLobby:getName(lobbyID) then
+
+        JoinableLobby:new(lobbyID)
+        JoinableLobby:setName(lobbyID,lobbyName)
+        JoinableLobby:setHostID(lobbyID,hostID)
+        JoinableLobby:setIP(lobbyID,IP)
+        JoinableLobby:setPort(lobbyID,port)
+        JoinableLobby:setPlayerCount(lobbyID,playerCount)
+        JoinableLobby:setMaxPlayers(lobbyID,8)
+
+        local y = #JoinableLobby.IDTable * 40
         newButton(1,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
             player:join(lobbyID)
         end)
     else
-        JoinableLobby.lobbiesDict[lobbyID].playerCount = playerCount
+        JoinableLobby:setPlayerCount(lobbyID, playerCount)
     end
 end)
 
@@ -682,6 +705,7 @@ function love.textinput(t)
     if not editingText then return end
     if not player then return end
     if t == nil or t == ":" or t == "_" then return end
+
     --Adds text at the editing index and incriments the index
     editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
     editingIndex = editingIndex + 1
@@ -695,10 +719,12 @@ function love.keypressed(key)
             lState[order] = nil
             order = order - 1
             editingText = nil
+        
         elseif key == "return" then
             if getState(2) == "editing player name" then changePlayerName()
             elseif getState(4) == "editing lobby name" then changeLobbyName()
             end
+        
         elseif key == "delete" then
             --Delete everything after the index when ctrl + delete
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
@@ -707,6 +733,7 @@ function love.keypressed(key)
             elseif editingIndex <= #editingText then
                 editingText = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
             end
+        
         elseif key == "backspace" then
             --Delete everything before the index when ctrl + backspace
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
@@ -717,16 +744,20 @@ function love.keypressed(key)
                 editingText = string.sub(editingText,1,editingIndex-2)..string.sub(editingText,editingIndex,#editingText)
                 editingIndex = editingIndex - 1
             end
+        
             --Move the index left or right until there is no space left
         elseif key == "left" then
             if editingIndex > 1 then 
                 editingIndex = editingIndex - 1
             end
+        
         elseif key == "right" then
             if editingIndex < #editingText + 1 then
                 editingIndex = editingIndex + 1
             end
+        
         end
+    
     elseif key == "escape" then
         --If in a menu, esc closes that menu
         if order > 1 then
@@ -739,6 +770,7 @@ function love.keypressed(key)
             lState[2] = nil
             state[2] = "user settings"
         end
+    
     elseif state == "main menu" then
         state[1] = "gamemode select"
     end
