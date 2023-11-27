@@ -22,3 +22,26 @@ function Util:calculateID(length)
     end
     return out
 end
+
+function Util:convertToAsc(num)
+    if num < 0 then return -1 end
+    local out = ""
+    repeat
+        local char = string.char(num % 256)
+        out = char..out
+        num = math.floor(num / 256)
+    until  num == 0
+    return out
+end
+
+function Util:convertToNum(asc)
+    if #asc > 7 then return -1 end
+    local sum = 0
+    local mult = 1
+    for i = #asc,1,-1 do
+        local char = asc:sub(i,i)
+        sum = sum + (string.byte(char) * mult)
+        mult = mult * 256
+    end
+    return sum
+end
