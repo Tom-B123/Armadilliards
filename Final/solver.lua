@@ -11,7 +11,7 @@ function Ball:new(x,y)
     object.vx = 0
     object.vy = 0
     object.ax = 0
-    object.xy = 0
+    object.ay = 0
     object.lx = x
     object.ly = y
     object.lvx = 0
