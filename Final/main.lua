@@ -721,6 +721,15 @@ netSwitch:addCase("create",function(args)
         local hostID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
         
+        --If ports are already in use on that IP, use the next port
+        local existingPorts = JoinableLobby:getPortsByIP(IP)
+        if existingPorts then
+            port = tonumber(existingPorts[#existingPorts]) + 1
+            
+        end
+
+        print(IP.." hosting a lobby on port: "..port)
+
         local ID = JoinableLobby:new()
         JoinableLobby:setName(ID,lobbyName)
         JoinableLobby:setHostID(ID,hostID)

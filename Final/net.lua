@@ -281,6 +281,7 @@ JoinableLobby = {
     maxPlayersDict = {},
     IPDict = {},
     portDict = {},
+    IPPortsDict = {},
     hostIDDict = {}
 }
 
@@ -297,6 +298,7 @@ function JoinableLobby:clear()
     self.maxPlayersDict = {}
     self.IPDict = {}
     self.portDict = {}
+    self.IPPortsDict = {}
     self.hostIDDict = {}
 end
 
@@ -327,14 +329,23 @@ end
 
 function JoinableLobby:setIP(ID,IP)
     self.IPDict[ID] = IP
+    self.IPPortsDict[IP] = {}
 end
 
 function JoinableLobby:getPort(ID)
     return self.portDict[ID]
 end
 
+function JoinableLobby:getPortsByIP(IP)
+    return self.IPPortsDict[IP]
+end
+
 function JoinableLobby:setPort(ID,port)
     self.portDict[ID] = port
+    local IP = self:getIP(ID)
+    if IP then
+        table.insert(self.IPPortsDict[IP],port)
+    end
 end
 
 function JoinableLobby:getPlayerCount(ID)
