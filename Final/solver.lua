@@ -6,6 +6,7 @@ function Ball:new(x,y)
     local object = {}
     setmetatable(object,Ball)
     object.ID = Util:calculateID(6)
+    object.playerID = nil
     object.x = x
     object.y = y
     object.vx = 0
@@ -58,11 +59,18 @@ function Ball:draw()
     love.graphics.circle("fill",self.x,self.y,self.radius)
 end
 
-World = {balls = {}}
+World = {balls = {},playableBalls = {}}
 
-function World:newBall(x,y)
+function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
     table.insert(self.balls,nBall)
+    if playable then table.insert(self.playableBalls,nBall) end
+end
+
+function World:assign(playerID)
+    self.playableBalls[#self.playableBalls].playerID = playerID
+    table.remove(self.playableBalls,#self.playableBalls)
+    print(#self.playableBalls)
 end
 
 function World:update(dt)
