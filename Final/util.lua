@@ -13,8 +13,9 @@ function Util:split (inputstr, sep)
 end
 
 --Returns a psudo-random string of numbers, with set length
-function Util:calculateID(length)
+function Util:calculateID(length,salt)
     local seed = Socket.gettime() * 10000
+    if salt then seed = seed + salt end
     math.randomseed(seed)
     local out = tostring(math.random(0,10^length - 1))
     while #out < length do

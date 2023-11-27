@@ -5,7 +5,7 @@ Ball.__index = Ball
 function Ball:new(x,y)
     local object = {}
     setmetatable(object,Ball)
-    object.ID = Util:calculateID(6)
+    object.ID = ""
     object.playerID = nil
     object.x = x
     object.y = y
@@ -65,6 +65,12 @@ function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
     table.insert(self.balls,nBall)
     if playable then table.insert(self.playableBalls,nBall) end
+end
+
+function World:generateIDs()
+    for i,ball in ipairs(self.balls) do
+        ball.ID = Util:calculateID(6,i)
+    end
 end
 
 function World:assign(playerIDs)
