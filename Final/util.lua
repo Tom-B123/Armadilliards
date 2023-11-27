@@ -16,5 +16,9 @@ end
 function Util:calculateID(length)
     local seed = Socket.gettime() * 10000
     math.randomseed(seed)
-    return tostring(math.random(0,10^length - 1))
+    local out = tostring(math.random(0,10^length - 1))
+    while #out < length do
+        out = "0"..out
+    end
+    return out
 end
