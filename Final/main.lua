@@ -530,7 +530,12 @@ drawStateSwitch:addCase("hosting lobby",function()
     drawMessages()
     drawButtons(1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
-        love.graphics.print(ID,0,20*i)
+        local name, ready, team = 
+        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getTeam(ID)
+
+        love.graphics.print(name,0,20*i)
+        love.graphics.print(tostring(ready),200,20*i)
+        love.graphics.print(team,400,20*i)
     end
 end)
 
