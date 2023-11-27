@@ -1,6 +1,6 @@
 require("util")
 
-Ball = {}
+local Ball = {}
 Ball.__index = Ball
 function Ball:new(x,y)
     local object = {}
@@ -10,11 +10,15 @@ function Ball:new(x,y)
     object.y = y
     object.vx = 0
     object.vy = 0
+    object.ax = 0
+    object.xy = 0
     object.lx = x
     object.ly = y
     object.lvx = 0
     object.lvy = 0
     object.radius = 16
+    object.colour = {1,1,1}
+    return object
 end
 
 function Ball:verlet(dt)
@@ -51,6 +55,11 @@ end
 
 World = {balls = {}}
 
+function World:newBall(x,y)
+    local nBall = Ball:new(x,y)
+    table.insert(self.balls,nBall)
+end
+
 function World:update()
     for i, ball in ipairs(self.balls) do
         ball:verlet()
@@ -59,6 +68,7 @@ end
 
 function World:draw()
     for i, ball in ipairs(self.balls) do
+        love.graphics.setColor(self.colour)
         ball:draw()
     end
 end

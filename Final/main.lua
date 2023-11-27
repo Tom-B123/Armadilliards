@@ -215,6 +215,12 @@ stateSwitch:addCase("in lobby",function()
     processReceived()
 end)
 
+stateSwitch:addCase("in game",function(dt)
+    if not player then return end
+    processReceived()
+    World:update(dt)
+end)
+
 --============================================================================================--
 --============================================================================================--
 
@@ -429,7 +435,10 @@ newStateSwitch:addCase("hosting lobby",function()
 
     newButton(1,"start",{1,1,1},600,500,750,550,function()
         if playersAllReady() then
-            sendMessage("game starting...")
+            server:send("all","start:")
+            state[1] = "in game"
+            lState[1] = nil
+            order = 1
         else
             sendMessage("ready up")
         end
@@ -441,7 +450,7 @@ end)
 newStateSwitch:addCase("connecting to lobby",function()
     if not player then return end
     
-    player:send("ncon:"..player.ID.."_"..player.name.."_"..tostring(player.ready).."_"..player.team)
+    player:send("ncon:"..player.ID.."_"..player.name)
     lState[1] = state[1]
 end)
 
@@ -470,6 +479,16 @@ newStateSwitch:addCase("editing message",function()
     end)
 
     lState[2] = state[2]
+end)
+
+newStateSwitch:addCase("in game",function()
+    if not player then return end
+    
+    World:newBall(50,50)
+    World:newBall(150,50)
+    World:newBall(250,50)
+
+    lState[1] = state[1]
 end)
 
 --============================================================================================--
@@ -600,6 +619,10 @@ drawStateSwitch:addCase("editing message",function()
         love.graphics.setColor(0.4,0.4,0.4,0.7)
         love.graphics.rectangle("fill",300 - 2.5 + (editingIndex-1)*9,300,5,17.5)
     end
+end)
+
+drawStateSwitch:addCase("in game",function()
+    World:draw()
 end)
 
 --============================================================================================--
@@ -796,6 +819,12 @@ netSwitch:addCase("uplobs",function(args)
     end
 end)
 
+netSwitch:addCase("start",function()
+    state[1] = "in game"
+    lState[1] = nil
+    order = 1
+end)
+
 function love.textinput(t)
     if not editingText then return end
     if not player then return end
@@ -889,7 +918,7 @@ function love.load()
 end
 
 --Process each frame
-function love.update()
+function love.update(dt)
 
     if state[order] == nil then
         order = 1
@@ -905,7 +934,7 @@ function love.update()
     end
 
     for i = 1,maxOrder do
-        stateSwitch:case(getState(i))
+        stateSwitch:case(getState(i),dt)
     end
 
     if toClosePlayer then

@@ -5,7 +5,7 @@ local mainIP = Socket.dns.toip(Socket.dns.gethostname( ))
 local mainPort = 500
 
 --Server class, handles connections from clients and sending / receiving data
-Server = {}
+local Server = {}
 Server.__index = Server
 
 function Server:new(port)
@@ -59,7 +59,7 @@ function Server:close()
 end
 
 --Client class, handles connecting to servers and sending / receiving data
-Client = {}
+local Client = {}
 Client.__index = Client
 
 function Client:new(IP,port)
