@@ -68,8 +68,8 @@ function World:newBall(x,y,playable)
 end
 
 function World:assign(playerIDs)
-    for i,playerID in playerIDs do
-        local ball = self.playableBalls
+    for i,playerID in ipairs(playerIDs) do
+        local ball = self.playableBalls[i]
         if ball then ball.playerID = playerID end
         print("assigned "..playerID.." to ball "..ball.ID)
     end
