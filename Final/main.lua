@@ -495,6 +495,8 @@ newStateSwitch:addCase("hosting game",function()
     World:newBall(150,50,true)
     World:newBall(250,50,false)
 
+    World:generateIDs()
+
     World:assign(LobbyPlayer:getIDs())
 
     lState[1] = state[1]
@@ -506,6 +508,8 @@ newStateSwitch:addCase("in game",function()
     World:newBall(50,50,true)
     World:newBall(150,50,true)
     World:newBall(250,50,false)
+
+    World:generateIDs()
 
     lState[1] = state[1]
 end)
