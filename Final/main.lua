@@ -812,8 +812,14 @@ function love.keypressed(key)
             state[2] = "user settings"
         end
     elseif key == "t" then
-        if state[1] == "in lobby" and player then player:send("msg:"..player.ID.."_hello, I\'m sending a message") end
-        if state[1] == "hosting lobby" and player and server then server:send("all","msg:"..player.ID.."_hello, I\'m sending a message") end
+        if state[1] == "in lobby" and player then 
+            player:send("msg:"..player.ID.."_hello, I\'m sending a message") 
+        end
+
+        if state[1] == "hosting lobby" and player and server then
+            server:send("all","msg:"..player.ID.."_hello, I\'m sending a message")
+            newMessage(player.ID,"_hello, I\'m sending a message")
+        end
     elseif state == "main menu" then
         state[1] = "gamemode select"
     end
