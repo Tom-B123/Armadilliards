@@ -60,9 +60,9 @@ function World:newBall(x,y)
     table.insert(self.balls,nBall)
 end
 
-function World:update()
+function World:update(dt)
     for i, ball in ipairs(self.balls) do
-        ball:verlet()
+        ball:verlet(dt)
     end
 end
 
