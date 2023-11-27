@@ -119,13 +119,14 @@ local function changePlayerName()
     player:send("updt:"..player.ID.."_name_"..player.name)
 end
 
-local function sendMessage()
+local function sendMessage(message)
+    if not message then message = editingText end
     if player and not server then
-        player:send("msg:"..player.ID.."_"..editingText)
+        player:send("msg:"..player.ID.."_"..message)
     end
     if player and server then
-        server:send("all","msg:"..player.ID.."_"..editingText)
-        newMessage(player.ID,editingText)
+        server:send("all","msg:"..player.ID.."_"..message)
+        newMessage(player.ID,message)
     end
     editingText = nil
     state[2] = nil
@@ -166,6 +167,13 @@ local function processReceived()
             end
         end
     end
+end
+
+local function playersAllReady()
+    for i,ID in ipairs(LobbyPlayer:getIDs()) do
+        if not LobbyPlayer:getReady(ID) then return false end
+    end
+    return true
 end
 
 --============================================================================================--
@@ -434,10 +442,12 @@ newStateSwitch:addCase("hosting lobby",function()
     LobbyPlayer:setReady(player.ID,true)
     LobbyPlayer:setTeam(player.ID,"team 1")
 
-    
-    
     newButton(1,"start",{1,1,1},600,500,750,550,function()
-        
+        if playersAllReady() then
+            sendMessage("game starting...")
+        else
+            sendMessage("ready up")
+        end
     end)
 
     lState[1] = state[1]
