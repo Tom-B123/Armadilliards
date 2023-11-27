@@ -67,10 +67,13 @@ function World:newBall(x,y,playable)
     if playable then table.insert(self.playableBalls,nBall) end
 end
 
-function World:assign(playerID)
-    self.playableBalls[#self.playableBalls].playerID = playerID
-    table.remove(self.playableBalls,#self.playableBalls)
-    print(#self.playableBalls)
+function World:assign(playerIDs)
+    for i,playerID in playerIDs do
+        local ball = self.playableBalls
+        if ball then ball.playerID = playerID end
+        print("assigned "..playerID.." to ball "..ball.ID)
+    end
+    
 end
 
 function World:update(dt)

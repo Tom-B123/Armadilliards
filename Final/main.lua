@@ -221,6 +221,13 @@ stateSwitch:addCase("in game",function(dt)
     World:update(dt)
 end)
 
+stateSwitch:addCase("hosting game",function(dt)
+    if not server then return end
+    server:send("all","no dat")
+    processReceived()
+    World:update(dt)
+end)
+
 --============================================================================================--
 --============================================================================================--
 
@@ -436,7 +443,7 @@ newStateSwitch:addCase("hosting lobby",function()
     newButton(1,"start",{1,1,1},600,500,750,550,function()
         if playersAllReady() then
             server:send("all","start:")
-            state[1] = "in game"
+            state[1] = "hosting game"
             lState[1] = nil
             order = 1
         else
@@ -481,12 +488,24 @@ newStateSwitch:addCase("editing message",function()
     lState[2] = state[2]
 end)
 
+newStateSwitch:addCase("hosting game",function()
+    if not server then return end
+
+    World:newBall(50,50,true)
+    World:newBall(150,50,true)
+    World:newBall(250,50,false)
+
+    World:assign(LobbyPlayer:getIDs())
+
+    lState[1] = state[1]
+end)
+
 newStateSwitch:addCase("in game",function()
     if not player then return end
     
-    World:newBall(50,50)
-    World:newBall(150,50)
-    World:newBall(250,50)
+    World:newBall(50,50,true)
+    World:newBall(150,50,true)
+    World:newBall(250,50,false)
 
     lState[1] = state[1]
 end)
