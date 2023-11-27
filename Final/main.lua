@@ -433,10 +433,11 @@ newStateSwitch:addCase("in lobby",function()
     if not player then return end
     
     clearButtons()
-
-    
     
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
+        local ready = LobbyPlayer:getReady(player.ID)
+        LobbyPlayer:setReady(player.ID,not ready)
+        player:send("updt:"..player.ID.."_ready_"..tostring(not ready))
     end)
 
     lState[1] = state[1]
@@ -550,9 +551,11 @@ drawStateSwitch:addCase("in lobby",function()
         local name, ready, team = 
         LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getTeam(ID)
 
-        love.graphics.print(name,0,20*i)
-        love.graphics.print(tostring(ready),200,20*i)
-        love.graphics.print(team,400,20*i)
+        if name and ready ~= nil and team then
+            love.graphics.print(name,0,20*i)
+            love.graphics.print(tostring(ready),200,20*i)
+            love.graphics.print(team,400,20*i)
+        end
     end
 end)
 
