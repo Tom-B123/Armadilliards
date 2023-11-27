@@ -99,8 +99,6 @@ local function clearButtons()
     buttons[order] = {}
 end
 
-local playerNameButton
-
 local function getNewState()
     if state[order] ~= lState[order] then return state[order] end
 end
@@ -194,6 +192,11 @@ stateSwitch:addCase("hosting lobby",function()
     else
         server:send("all","no dat")
     end
+end)
+
+stateSwitch:addCase("connecting to lobby",function()
+    if not player then return end
+    processReceived()
 end)
 
 stateSwitch:addCase("in lobby",function()
@@ -400,8 +403,17 @@ newStateSwitch:addCase("editing lobby name",function()
 end)
 
 newStateSwitch:addCase("hosting lobby",function()
-    LobbyPlayer.IDTable = {}
+    if not (player and server) then return end
+
     clearButtons()
+
+    LobbyPlayer:clear()
+    LobbyPlayer:new(player.ID)
+    LobbyPlayer:setName(player.ID,player.name)
+    LobbyPlayer:setReady(player.ID,true)
+    LobbyPlayer:setTeam(player.ID,"team 1")
+
+    
     
     newButton(1,"start",{1,1,1},600,500,750,550,function()
         
@@ -410,13 +422,20 @@ newStateSwitch:addCase("hosting lobby",function()
     lState[1] = state[1]
 end)
 
+newStateSwitch:addCase("connecting to lobby",function()
+    if not player then return end
+    
+    player:send("ncon:"..player.ID.."_"..player.name.."_"..tostring(player.ready).."_"..player.team)
+    lState[1] = state[1]
+end)
+
 newStateSwitch:addCase("in lobby",function()
     if not player then return end
     
-    player.ID = calculateID(8)
-    player:send("ncon:"..player.ID.."_"..player.name.."_"..tostring(player.ready).."_"..player.team)
     clearButtons()
-    LobbyPlayer.IDTable = {}
+
+    
+    
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
     end)
 
@@ -515,11 +534,20 @@ drawStateSwitch:addCase("hosting lobby",function()
     end
 end)
 
+drawStateSwitch:addCase("connecting to lobby",function()
+    love.graphics.print("connecting to lobby...",100,100)
+end)
+
 drawStateSwitch:addCase("in lobby",function()
     drawMessages()
     drawButtons(1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
-        love.graphics.print(ID,0,20*i)
+        local name, ready, team = 
+        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getTeam(ID)
+
+        love.graphics.print(name,0,20*i)
+        love.graphics.print(tostring(ready),200,20*i)
+        love.graphics.print(team,400,20*i)
     end
 end)
 
@@ -536,31 +564,29 @@ netSwitch:addCase("ncon",function(args)
 
         LobbyPlayer:new(ID)
         LobbyPlayer:setName(ID,name)
-
-        if getState(1) == "hosting lobby" then
-            print(args)
-            local ready = splitData[3]
-            local team = splitData[4]
-
-            LobbyPlayer:setReady(ID,false)
-            --automatically assigned team set here
-            LobbyPlayer:setTeam(ID,"team 1")
-        end
+        LobbyPlayer:setReady(ID,false)
+        LobbyPlayer:setTeam(ID,"team 1")
         
         server:send("all","ncon:"..ID.."_"..name.."_confirm")
+    end
 
-    elseif player then
+    if player then
         local splitData = split(args,"_")
 
         local ID, name, conf = splitData[1],splitData[2],splitData[3]
 
         if conf == "confirm" then
             if ID == player.ID then
-                LobbyPlayer:new(ID)
-                LobbyPlayer:setName(ID,name)
-                LobbyPlayer:setReady(ID,false)
-                --automatically assigned team set here
-                LobbyPlayer:setTeam(ID,"team 1")
+                --On confirmation, make a LobbyPlayer object with player's details
+                LobbyPlayer:clear()
+                LobbyPlayer:new(player.ID)
+                LobbyPlayer:setName(player.ID,player.name)
+                LobbyPlayer:setReady(player.ID,false)
+                LobbyPlayer:setTeam(player.ID,"team 1")
+                if getState(1) == "connecting to lobby" then
+                    lState[1] = nil
+                    state[1] = "in lobby"
+                end
             else
                 newMessage("a new player has connected to the main server")
             end
@@ -596,6 +622,9 @@ netSwitch:addCase("updt",function(args)
     local ID = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
+
+    if not LobbyPlayer:getName(ID) then LobbyPlayer:new(ID) end
+
     if field == "name" then LobbyPlayer:setName(ID,value)
     elseif field == "ready" then LobbyPlayer:setReady(ID,value)
     elseif field == "team" then LobbyPlayer:setTeam(ID,value)
@@ -619,7 +648,7 @@ netSwitch:addCase("join",function(args)
 
         if ID == player.ID then
             lState[1] = nil
-            state[1] = "in lobby"
+            state[1] = "connecting to lobby"
             order = 1
 
             local nPlayer = Player:new(IP,port)
@@ -656,6 +685,7 @@ netSwitch:addCase("create",function(args)
             state[2] = nil
             lState[2] = nil
             order = 1
+
             --Host has both a server and player object
             server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
 
@@ -795,8 +825,6 @@ function love.update()
     if state[order] == nil then
         order = 1
     end
-
-    local IDs = LobbyPlayer:getIDs()
 
     updateButtons()
 

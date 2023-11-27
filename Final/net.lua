@@ -247,6 +247,13 @@ function LobbyPlayer:new(ID)
     table.insert(self.IDTable,ID)
 end
 
+function LobbyPlayer:clear()
+    self.IDTable = {}
+    self.nameDict = {}
+    self.readyDict = {}
+    self.teamDict = {}
+end
+
 function LobbyPlayer:getIDs()
     return self.IDTable
 end
