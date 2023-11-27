@@ -3,6 +3,7 @@ require("switch")
 require("button")
 require("net")
 require("util")
+require("solver")
 
 local player = nil
 local lobbyToCreate = {name = "new lobby",IP = Socket.dns.toip(Socket.dns.gethostname( )), port = 1000, maxPlayers = 8}

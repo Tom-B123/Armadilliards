@@ -14,8 +14,51 @@ function Ball:new(x,y)
     object.ly = y
     object.lvx = 0
     object.lvy = 0
+    object.radius = 16
 end
 
-Solver = {}
-function Solver:verlet(ball)
+function Ball:verlet(dt)
+    local nextVX = (self.ax * dt * dt) + self.x - self.lx
+    local nextVY = (self.ay * dt * dt) + self.y - self.ly
+
+    self.vx = (self.vx + self.lvx) / 2
+    self.vy = (self.vy + self.lvy) / 2
+
+    local nextX = (self.x + self.vx)
+    local nextY = (self.y + self.vy)
+
+    self.lx = self.x
+    self.ly = self.y
+
+    self:move(self.vx,self.vy)
+
+    self.lvx = self.vx * 0.99
+    self.lvy = self.vy * 0.99
+
+    self.vx = nextVX
+    self.vy = nextVY
+
+    self.ax = 0
+    self.ay = 0
+
+    if math.abs(self.vx) < 0.02 then self.vx = 0 end
+    if math.abs(self.vy) < 0.02 then self.vy = 0 end
+end
+
+function Ball:draw()
+    love.graphics.circle("fill",self.x,self.y,self.radius)
+end
+
+World = {balls = {}}
+
+function World:update()
+    for i, ball in ipairs(self.balls) do
+        ball:verlet()
+    end
+end
+
+function World:draw()
+    for i, ball in ipairs(self.balls) do
+        ball:draw()
+    end
 end
