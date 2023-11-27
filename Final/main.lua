@@ -60,9 +60,10 @@ local function calculateID(length)
     return tostring(math.random(0,10^length - 1))
 end
 
-local function newMessage(message)
-    print("message: "..message)
-    table.insert(messageLog,message)
+local function newMessage(sender,message)
+    --Append the name of the sender onto the message
+    local name = LobbyPlayer:getName(sender)
+    if name then table.insert(messageLog,name..": "..message) end
 end
 
 local function drawMessages()
@@ -560,7 +561,13 @@ drawStateSwitch:addCase("in lobby",function()
 end)
 
 netSwitch:addCase("msg",function(args)
-    newMessage(args)
+    local splitData = split(args,"_")
+    local sender = splitData[1]
+    local message = splitData[2]
+
+    if server then server:send("all","msg:"..sender.."_"..message) end
+
+    newMessage(sender,message)
 end)
 
 netSwitch:addCase("ncon",function(args)
@@ -595,8 +602,6 @@ netSwitch:addCase("ncon",function(args)
                     lState[1] = nil
                     state[1] = "in lobby"
                 end
-            else
-                newMessage("a new player has connected to the main server")
             end
         end
     end
@@ -618,8 +623,6 @@ netSwitch:addCase("econ",function(args)
             JoinableLobby:clear()
 
             clearMessages()
-        else
-            newMessage("a player has left the main server")
         end
     end
 end)
@@ -808,7 +811,9 @@ function love.keypressed(key)
             lState[2] = nil
             state[2] = "user settings"
         end
-    
+    elseif key == "t" then
+        if state[1] == "in lobby" and player then player:send("msg:"..player.ID.."_hello, I\'m sending a message") end
+        if state[1] == "hosting lobby" and player and server then server:send("all","msg:"..player.ID.."_hello, I\'m sending a message") end
     elseif state == "main menu" then
         state[1] = "gamemode select"
     end
