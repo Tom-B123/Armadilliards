@@ -21,6 +21,11 @@ function Ball:new(x,y)
     return object
 end
 
+function Ball:move(x,y)
+    self.x = self.x + x
+    self.y = self.y + y
+end
+
 function Ball:verlet(dt)
     local nextVX = (self.ax * dt * dt) + self.x - self.lx
     local nextVY = (self.ay * dt * dt) + self.y - self.ly
@@ -68,7 +73,7 @@ end
 
 function World:draw()
     for i, ball in ipairs(self.balls) do
-        love.graphics.setColor(self.colour)
+        love.graphics.setColor(ball.colour)
         ball:draw()
     end
 end
