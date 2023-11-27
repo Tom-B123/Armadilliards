@@ -68,7 +68,7 @@ end
 local function drawMessages()
     for i,message in ipairs(messageLog) do
         local topPos = 550 - #messageLog * 20
-        love.graphics.print(message,600,topPos + i*20)
+        love.graphics.print(message,100,topPos + i*20)
     end
 end
 
