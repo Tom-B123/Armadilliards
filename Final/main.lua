@@ -119,6 +119,20 @@ local function changePlayerName()
     player:send("updt:"..player.ID.."_name_"..player.name)
 end
 
+local function sendMessage()
+    if player and not server then
+        player:send("msg:"..player.ID.."_"..editingText)
+    end
+    if player and server then
+        server:send("all","msg:"..player.ID.."_"..editingText)
+        newMessage(player.ID,editingText)
+    end
+    editingText = nil
+    state[2] = nil
+    lState[2] = nil
+    order = 1
+end
+
 local function changeLobbyName()
     if not player then return end
     if editingText == "" then editingText = "new lobby" end
@@ -153,6 +167,9 @@ local function processReceived()
         end
     end
 end
+
+--============================================================================================--
+--============================================================================================--
 
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
@@ -204,6 +221,9 @@ stateSwitch:addCase("in lobby",function()
     if not player then return end
     processReceived()
 end)
+
+--============================================================================================--
+--============================================================================================--
 
 newStateSwitch:addCase("main menu",function()
     clearButtons()
@@ -444,6 +464,22 @@ newStateSwitch:addCase("in lobby",function()
     lState[1] = state[1]
 end)
 
+newStateSwitch:addCase("editing message",function()
+    clearButtons()
+
+    editingText = ""
+    editingIndex = 1
+
+    newButton(2,"send",{1,1,1},450,400,500,450,function()
+        sendMessage()
+    end)
+
+    lState[2] = state[2]
+end)
+
+--============================================================================================--
+--============================================================================================--
+
 drawStateSwitch:addCase("main menu",function()
     love.graphics.print("This is the main menu",300,100)
     drawButtons(1)
@@ -559,6 +595,18 @@ drawStateSwitch:addCase("in lobby",function()
         end
     end
 end)
+
+drawStateSwitch:addCase("editing message",function()
+    drawButtons(2)
+    if editingText then love.graphics.print(editingText,50,400) end
+    if tick % 30 > 30 / 2 then
+        love.graphics.setColor(0.4,0.4,0.4,0.7)
+        love.graphics.rectangle("fill",300 - 2.5 + (editingIndex-1)*9,300,5,17.5)
+    end
+end)
+
+--============================================================================================--
+--============================================================================================--
 
 netSwitch:addCase("msg",function(args)
     local splitData = split(args,"_")
@@ -763,6 +811,7 @@ function love.keypressed(key)
         
         elseif key == "return" then
             if getState(2) == "editing player name" then changePlayerName()
+            elseif getState(2) == "editing message" then sendMessage()
             elseif getState(4) == "editing lobby name" then changeLobbyName()
             end
         
@@ -811,15 +860,10 @@ function love.keypressed(key)
             lState[2] = nil
             state[2] = "user settings"
         end
-    elseif key == "t" then
-        if state[1] == "in lobby" and player then 
-            player:send("msg:"..player.ID.."_hello, I\'m sending a message") 
-        end
-
-        if state[1] == "hosting lobby" and player and server then
-            server:send("all","msg:"..player.ID.."_hello, I\'m sending a message")
-            newMessage(player.ID,"hello, I\'m sending a message")
-        end
+    elseif key == "t" and (state[1] == "in lobby" or state[1] == "hosting lobby") then
+        lState[2] = nil
+        state[2] = "editing message"
+        order = 2
     elseif state == "main menu" then
         state[1] = "gamemode select"
     end
