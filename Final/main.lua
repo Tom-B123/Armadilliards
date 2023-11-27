@@ -2,6 +2,7 @@ require("lists")
 require("switch")
 require("button")
 require("net")
+require("util")
 
 local player = nil
 local lobbyToCreate = {name = "new lobby",IP = Socket.dns.toip(Socket.dns.gethostname( )), port = 1000, maxPlayers = 8}
@@ -42,23 +43,6 @@ local newStateSwitch = Switch:new()
 local drawStateSwitch = Switch:new()
 --Convert message to function
 local netSwitch = Switch:new()
-
-local function split (inputstr, sep)
-    if sep == nil then
-        sep = "%s"
-    end
-    local t={}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        table.insert(t, str)
-    end
-    return t
-end
-
-local function calculateID(length)
-    local seed = Socket.gettime() * 10000
-    math.randomseed(seed)
-    return tostring(math.random(0,10^length - 1))
-end
 
 local function newMessage(sender,message)
     --Append the name of the sender onto the message
@@ -147,7 +131,7 @@ end
 local function processReceived()
     local function process(data)
         for i,message in ipairs(data) do
-            local splitData = split(message,":")
+            local splitData = Util:split(message,":")
             local key,args = splitData[1],splitData[2]
             if key ~= "no dat" then 
                 netSwitch:case(key,args)
@@ -269,7 +253,7 @@ newStateSwitch:addCase("connecting to server",function()
         state[1] = "searching for lobby"
 
         player = nPlayer
-        player.ID = calculateID(8)
+        player.ID = Util:calculateID(8)
         player:send("ncon:"..player.ID.."_"..player.name)
     end
 end)
@@ -619,7 +603,7 @@ end)
 --============================================================================================--
 
 netSwitch:addCase("msg",function(args)
-    local splitData = split(args,"_")
+    local splitData = Util:split(args,"_")
     local sender = splitData[1]
     local message = splitData[2]
 
@@ -630,7 +614,7 @@ end)
 
 netSwitch:addCase("ncon",function(args)
     if server then
-        local splitData = split(args,"_")
+        local splitData = Util:split(args,"_")
 
         local ID = splitData[1]
         local name = splitData[2]
@@ -644,7 +628,7 @@ netSwitch:addCase("ncon",function(args)
     end
 
     if player then
-        local splitData = split(args,"_")
+        local splitData = Util:split(args,"_")
 
         local ID, name, conf = splitData[1],splitData[2],splitData[3]
 
@@ -686,7 +670,7 @@ netSwitch:addCase("econ",function(args)
 end)
 
 netSwitch:addCase("updt",function(args)
-    local splitData = split(args,"_")
+    local splitData = Util:split(args,"_")
     --sender ID
     local ID = splitData[1]
     local field = splitData[2]
@@ -702,7 +686,7 @@ end)
 
 netSwitch:addCase("join",function(args)
     if server then
-        local splitData = split(args,"_")
+        local splitData = Util:split(args,"_")
         local playerID,lobbyID = splitData[1], splitData[2]
 
         print("player: "..playerID.." ("..LobbyPlayer:getName(playerID)..") ".." wants to join lobby: "..lobbyID)
@@ -712,7 +696,7 @@ netSwitch:addCase("join",function(args)
 
         server:send("all","join:"..playerID.."_"..IP.."_"..port)
     elseif player then
-        local splitData = split(args,"_")
+        local splitData = Util:split(args,"_")
         local ID,IP,port = splitData[1], splitData[2],splitData[3]
 
         if ID == player.ID then
@@ -731,7 +715,7 @@ end)
 
 netSwitch:addCase("create",function(args)
     if server then
-        local splitData = split(args,"_")
+        local splitData = Util:split(args,"_")
         local hostID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
         
@@ -745,7 +729,7 @@ netSwitch:addCase("create",function(args)
         
         server:send("all","create:"..hostID.."_"..ID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
-        local splitData = split(args,"_")
+        local splitData = Util:split(args,"_")
         local hostID, lobbyID, lobbyName, IP, port, maxPlayers = 
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
 
@@ -770,7 +754,7 @@ end)
 netSwitch:addCase("uplobs",function(args)
     if not player then return end
 
-    local splitData = split(args,"_")
+    local splitData = Util:split(args,"_")
     local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount, maxPlayers = 
     splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7], splitData[8]
 

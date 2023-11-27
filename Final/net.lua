@@ -1,24 +1,5 @@
 Socket = require("socket")
 
---splits a string by the seperator into a table of substrings
-local function split (inputstr, sep)
-    if sep == nil then
-        sep = "%s"
-    end
-    local t={}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        table.insert(t, str)
-    end
-    return t
-end
-
---gets an ID of a length, using the os.time as a seed
-local function calculateID(length)
-    local seed = Socket.gettime() * 10000
-    math.randomseed(seed)
-    return tostring(math.random(0,10^length - 1))
-end
-
 --500 = main port, 1000+ = lobby ports
 local mainIP = Socket.dns.toip(Socket.dns.gethostname( ))
 local mainPort = 500
@@ -304,7 +285,7 @@ JoinableLobby = {
 }
 
 function JoinableLobby:new(ID)
-    if not ID then ID = calculateID(6) end
+    if not ID then ID = Util:calculateID(6) end
     table.insert(self.IDTable,ID)
     return ID
 end
