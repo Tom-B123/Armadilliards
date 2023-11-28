@@ -218,6 +218,7 @@ end)
 stateSwitch:addCase("in game",function(dt)
     if not player then return end
     processReceived()
+    print(Util:processGameInputs())
     World:update(dt)
 end)
 
@@ -926,8 +927,6 @@ function love.keypressed(key)
         lState[2] = nil
         state[2] = "editing message"
         order = 2
-    elseif state[1] == "in game" then
-        
     elseif state == "main menu" then
         state[1] = "gamemode select"
     end

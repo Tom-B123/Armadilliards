@@ -48,14 +48,12 @@ function Util:convertToNum(asc)
     return sum
 end
 
-local vectorTable = {}
-vectorTable["w"] = {0,-1}
-vectorTable["a"] = {-1,0}
-vectorTable["s"] = {0,1}
-vectorTable["d"] = {1,0}
-
-function Util:convertToVector(key)
-    local vect =  vectorTable[key]
-    if not vect then return nil end
-    return vect[1],vect[2]
+function Util:processGameInputs()
+    local x = 0
+    local y = 0
+    if love.keyboard.isDown("w") then y = y - 1 end
+    if love.keyboard.isDown("a") then x = x - 1 end
+    if love.keyboard.isDown("s") then y = y + 1 end
+    if love.keyboard.isDown("d") then x = x + 1 end
+    return x,y
 end
