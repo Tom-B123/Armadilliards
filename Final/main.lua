@@ -218,8 +218,11 @@ end)
 stateSwitch:addCase("in game",function(dt)
     if not player then return end
     processReceived()
-    print(Util:processGameInputs())
     World:update(dt)
+    local balls = World.balls
+    local nx,ny = Util:processGameInputs()
+    balls[1].vx = balls[1].vx + nx
+    balls[1].vy = balls[1].vy + ny
 end)
 
 stateSwitch:addCase("hosting game",function(dt)
@@ -227,6 +230,10 @@ stateSwitch:addCase("hosting game",function(dt)
     server:send("all","no dat")
     processReceived()
     World:update(dt)
+    local balls = World.balls
+    local nx,ny = Util:processGameInputs()
+    balls[1].vx = balls[1].vx + nx
+    balls[1].vy = balls[1].vy + ny
 end)
 
 --============================================================================================--
