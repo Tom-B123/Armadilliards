@@ -231,7 +231,7 @@ stateSwitch:addCase("hosting game",function(dt)
     local nx,ny = Util:processGameInputs()
     balls[1].vx = balls[1].vx + nx
     balls[1].vy = balls[1].vy + ny
-    if tick % 10 == 0 then
+    if tick % 1 == 0 then
         server:send("all","upgm:"..World:getUpgm())
     end
 end)
