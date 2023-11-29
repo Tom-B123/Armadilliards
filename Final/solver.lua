@@ -2,11 +2,13 @@ require("util")
 
 local Ball = {}
 Ball.__index = Ball
+
+--Create a new ball object
 function Ball:new(x,y)
     local object = {}
     setmetatable(object,Ball)
     object.ID = ""
-    object.playerID = ""
+    object.playerID = nil
     object.x = x
     object.y = y
     object.vx = 0
@@ -22,11 +24,13 @@ function Ball:new(x,y)
     return object
 end
 
+--Move a ball
 function Ball:move(x,y)
     self.x = self.x + x
     self.y = self.y + y
 end
 
+--Physics solving for ball objects
 function Ball:verlet(dt)
     local nextVX = (self.ax * dt * dt) + self.x - self.lx
     local nextVY = (self.ay * dt * dt) + self.y - self.ly
@@ -55,12 +59,15 @@ function Ball:verlet(dt)
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
 end
 
+--Drawing ball objects
 function Ball:draw()
     love.graphics.circle("fill",self.x,self.y,self.radius)
 end
 
+--World table, stores and processes all balls
 World = {balls = {},playableBalls = {},ballIDDict = {}}
 
+--Assigns an ID to a ball, or calculates a new ID using the given salt
 function World:assignID(ball,ID,salt)
     if salt == nil then salt = 0 end
     if ID == nil then ID = Util:calculateID(6,salt) end
@@ -69,10 +76,12 @@ function World:assignID(ball,ID,salt)
     return ID
 end
 
+--Returns a ball by passing in the ball ID
 function World:getByID(ID)
     return self.ballIDDict[ID]
 end
 
+--Creates a new ball in the world
 function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
     table.insert(self.balls,nBall)
@@ -80,26 +89,29 @@ function World:newBall(x,y,playable)
     return nBall
 end
 
+--Assigns IDs to every ball, passing in a salt value to avoid duplicate IDs
 function World:generateIDs()
     for i,ball in ipairs(self.balls) do
         self:assignID(ball,nil,i)
     end
 end
 
+--Assigns a playerID to the ball
 function World:assign(playerIDs)
     for i,playerID in ipairs(playerIDs) do
         local ball = self.playableBalls[i]
         if ball then ball.playerID = playerID end
     end
-    
 end
 
+--Updates the position of every ball
 function World:update(dt)
     for i, ball in ipairs(self.balls) do
         ball:verlet(dt)
     end
 end
 
+--Draw every ball
 function World:draw()
     for i, ball in ipairs(self.balls) do
         love.graphics.setColor(ball.colour)
@@ -107,20 +119,21 @@ function World:draw()
     end
 end
 
+--Create a string for assigning players to a ballID for taking player inputs
 function World:getAsgn()
     local out = ""
     for i, ball in ipairs(self.balls) do
-        print(ball.playerID)
-        if ball.playerID then 
+        if ball.playerID then
             out = out..ball.ID.."_"..ball.playerID
         else
-            return out
+            out = out..ball.ID.."_".."no ID"
         end
         if i < #self.balls then out = out.."_" end
     end
     return out
 end
 
+--Create a string for updating player's positions
 function World:getUpgm()
     local out = ""
     for i, ball in ipairs(self.balls) do
