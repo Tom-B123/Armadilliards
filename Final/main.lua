@@ -218,7 +218,14 @@ end)
 stateSwitch:addCase("in game",function(dt)
     if not player then return end
     processReceived()
+
     World:update(dt)
+
+    local x,y = Util:processGameInputs()
+
+    if x ~= 0 or y ~= 0 then
+        player:send("plin:"..player.ID.."_"..x.."_"..y)
+    end
 end)
 
 stateSwitch:addCase("hosting game",function(dt)
@@ -860,16 +867,18 @@ netSwitch:addCase("start",function(args)
     order = 1
 end)
 
--- netSwitch:addCase("asgn",function(args)
---     if not player then return end
+netSwitch:addCase("asgn",function(args)
+    if not player then return end
 
---     local splitData = Util:split(args)
---     local playerID,ballID = splitData[1], splitData[2]
+    local splitData = Util:split(args)
 
---     if player.ID == playerID then
---         player.ballID = ballID
---     end
--- end)
+    for i = 1,#splitData / 2 do
+        local playerID,ballID = splitData[i*2-1],splitData[i*2]
+        if player.ID == playerID then
+            player.ballID = ballID
+        end
+    end
+end)
 
 netSwitch:addCase("plin",function(args)
     if not server then return end
@@ -879,11 +888,12 @@ netSwitch:addCase("plin",function(args)
     local splitData = Util:split(args)
     local ID,x,y = splitData[1], splitData[2], splitData[3]
 
-    local balls = World.balls
     local nx,ny = x,y
-    --get ballByID here
-    balls[1].vx = balls[1].vx + nx * speed
-    balls[1].vy = balls[1].vy + ny * speed
+
+    local ballID = LobbyPlayer:getBallID(ID)
+    local ball = World:getByID(ballID)
+    ball.vx = ball.vx + nx * speed
+    ball.vy = ball.vy + ny * speed
 end)
 
 --update gamestate

@@ -231,6 +231,7 @@ end
 
 function LobbyPlayer:clear()
     self.IDTable = {}
+    self.ballIDDict = {}
     self.nameDict = {}
     self.readyDict = {}
     self.teamDict = {}
@@ -242,6 +243,15 @@ end
 
 function LobbyPlayer:removeID(ID)
     --remove all values attributed to that ID
+end
+
+function LobbyPlayer:getBallID(ID)
+    local ballID = self.ballIDDict[ID]
+    return ballID
+end
+
+function LobbyPlayer:setBallID(ID,ballID)
+   self.ballIDDict[ID] = ballID
 end
 
 function LobbyPlayer:getName(ID)

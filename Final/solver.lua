@@ -100,7 +100,10 @@ end
 function World:assign(playerIDs)
     for i,playerID in ipairs(playerIDs) do
         local ball = self.playableBalls[i]
-        if ball then ball.playerID = playerID end
+        if ball then
+            ball.playerID = playerID
+            LobbyPlayer:setBallID(playerID,ball.ID)
+        end
     end
 end
 
