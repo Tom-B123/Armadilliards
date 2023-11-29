@@ -103,6 +103,7 @@ function World:assign(playerIDs)
         if ball then
             ball.playerID = playerID
             LobbyPlayer:setBallID(playerID,ball.ID)
+            print(playerID.." "..LobbyPlayer:getBallID(playerID))
         end
     end
 end

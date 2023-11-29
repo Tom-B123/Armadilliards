@@ -891,9 +891,13 @@ netSwitch:addCase("plin",function(args)
     local nx,ny = x,y
 
     local ballID = LobbyPlayer:getBallID(ID)
+
     local ball = World:getByID(ballID)
-    ball.vx = ball.vx + nx * speed
-    ball.vy = ball.vy + ny * speed
+
+    if ball then
+        ball.vx = ball.vx + nx * speed
+        ball.vy = ball.vy + ny * speed
+    end
 end)
 
 --update gamestate
