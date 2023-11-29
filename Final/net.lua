@@ -167,6 +167,7 @@ function Player:new(IP,port)
     setmetatable(object,Player)
     object.name = "new player"
     object.ID = ""
+    object.ballID = ""
     object.IP = Socket.dns.toip(Socket.dns.gethostname( ))
     object.ready = false
     object.team = "team 1"

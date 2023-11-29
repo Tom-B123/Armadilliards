@@ -59,7 +59,14 @@ function Ball:draw()
     love.graphics.circle("fill",self.x,self.y,self.radius)
 end
 
-World = {balls = {},playableBalls = {}}
+World = {balls = {},playableBalls = {},ballIDDict = {}}
+
+function World:assignID(ball,ID,salt)
+    if salt == nil then salt = 0 end
+    if ID == nil then ID = Util:calculateID(6,salt) end
+    ball.ID = ID
+    self.ballIDDict[ID] = ball
+end
 
 function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
@@ -69,7 +76,7 @@ end
 
 function World:generateIDs()
     for i,ball in ipairs(self.balls) do
-        ball.ID = Util:calculateID(6,i)
+        self:assignID(ball,nil,i)
     end
 end
 
