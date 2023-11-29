@@ -6,7 +6,7 @@ function Ball:new(x,y)
     local object = {}
     setmetatable(object,Ball)
     object.ID = ""
-    object.playerID = nil
+    object.playerID = ""
     object.x = x
     object.y = y
     object.vx = 0
@@ -105,6 +105,20 @@ function World:draw()
         love.graphics.setColor(ball.colour)
         ball:draw()
     end
+end
+
+function World:getAsgn()
+    local out = ""
+    for i, ball in ipairs(self.balls) do
+        print(ball.playerID)
+        if ball.playerID then 
+            out = out..ball.ID.."_"..ball.playerID
+        else
+            return out
+        end
+        if i < #self.balls then out = out.."_" end
+    end
+    return out
 end
 
 function World:getUpgm()

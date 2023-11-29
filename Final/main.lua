@@ -510,6 +510,8 @@ newStateSwitch:addCase("hosting game",function()
 
     World:assign(LobbyPlayer:getIDs())
 
+    print("asgn:"..World:getAsgn())
+
     lState[1] = state[1]
 end)
 
