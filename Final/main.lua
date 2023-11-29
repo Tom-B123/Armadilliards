@@ -897,7 +897,7 @@ netSwitch:addCase("upgm",function(args)
         changes[math.floor(i/3)+1][(i%3) + 1] = msg
     end
     for i, change in ipairs(changes) do
-        local x,ID,y = change[1],change[2],change[3]
+        local y,ID,x = change[1],change[2],change[3]
         if x and y then
             print(ID,x,y)
             World.balls[i].x = x
