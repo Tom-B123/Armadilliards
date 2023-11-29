@@ -66,12 +66,18 @@ function World:assignID(ball,ID,salt)
     if ID == nil then ID = Util:calculateID(6,salt) end
     ball.ID = ID
     self.ballIDDict[ID] = ball
+    return ID
+end
+
+function World:getByID(ID)
+    return self.ballIDDict[ID]
 end
 
 function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
     table.insert(self.balls,nBall)
     if playable then table.insert(self.playableBalls,nBall) end
+    return nBall
 end
 
 function World:generateIDs()

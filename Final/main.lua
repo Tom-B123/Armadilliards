@@ -498,6 +498,7 @@ end)
 
 newStateSwitch:addCase("hosting game",function()
     if not server then return end
+    clearButtons()
 
     World:newBall(50,50,true)
     World:newBall(150,50,true)
@@ -512,12 +513,7 @@ end)
 
 newStateSwitch:addCase("in game",function()
     if not player then return end
-    
-    World:newBall(50,50,true)
-    World:newBall(150,50,true)
-    World:newBall(250,50,false)
-
-    World:generateIDs()
+    clearButtons()
 
     lState[1] = state[1]
 end)
@@ -860,16 +856,16 @@ netSwitch:addCase("start",function(args)
     order = 1
 end)
 
-netSwitch:addCase("asgn",function(args)
-    if not player then return end
+-- netSwitch:addCase("asgn",function(args)
+--     if not player then return end
 
-    local splitData = Util:split(args)
-    local playerID,ballID = splitData[1], splitData[2]
+--     local splitData = Util:split(args)
+--     local playerID,ballID = splitData[1], splitData[2]
 
-    if player.ID == playerID then
-        player.ballID = ballID
-    end
-end)
+--     if player.ID == playerID then
+--         player.ballID = ballID
+--     end
+-- end)
 
 netSwitch:addCase("plin",function(args)
     if not server then return end
@@ -886,26 +882,30 @@ netSwitch:addCase("plin",function(args)
     balls[1].vy = balls[1].vy + ny * speed
 end)
 
+--update gamestate
 netSwitch:addCase("upgm",function(args)
     if not player then return end
 
     local splitData = Util:split(args,"_")
     --Changes = {{ID1,x1,y1},{ID2,x2,y2},{ID3,x3,y3}}
     local changes = {}
+
     for i,msg in ipairs(splitData) do
         local ind = i - 1
         print(math.floor(ind/3)+1,(ind%3) + 1)
         if changes[math.floor(ind/3)+1] == nil then changes[math.floor(ind/3)+1] = {} end
         changes[math.floor(ind/3)+1][(ind%3) + 1] = msg
     end
+
     for i, change in ipairs(changes) do
         local ID,x,y = change[1],change[2],change[3]
         if x and y then
-            -- print(ID,x,y)
-            World.balls[i].x = x
-            World.balls[i].lx = x
-            World.balls[i].y = y
-            World.balls[i].ly = y
+            -- do World:getByID(ID) when IDs are consistent between players
+            local ball = World.balls[i]
+            ball.x = x
+            ball.lx = x
+            ball.y = y
+            ball.ly = y
         end
     end
 end)
