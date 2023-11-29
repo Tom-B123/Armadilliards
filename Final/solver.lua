@@ -101,3 +101,12 @@ function World:draw()
         ball:draw()
     end
 end
+
+function World:getUpgm()
+    local out = ""
+    for i, ball in ipairs(self.balls) do
+        out = out..ball.ID.."_"..ball.x.."_"..ball.y
+        if i < #self.balls then out = out.."_" end
+    end
+    return out
+end

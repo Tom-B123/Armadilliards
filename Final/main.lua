@@ -225,11 +225,14 @@ stateSwitch:addCase("hosting game",function(dt)
     if not server then return end
     server:send("all","no dat")
     processReceived()
+
     World:update(dt)
     local balls = World.balls
     local nx,ny = Util:processGameInputs()
     balls[1].vx = balls[1].vx + nx
     balls[1].vy = balls[1].vy + ny
+
+    server:send("all",World:getUpgm())
 end)
 
 --============================================================================================--
@@ -873,12 +876,29 @@ netSwitch:addCase("plin",function(args)
     local speed = 0.4
 
     local splitData = Util:split(args)
-    local ID,x,y = splitData[1], splitData[2],splitData[3]
+    local ID,x,y = splitData[1], splitData[2], splitData[3]
 
     local balls = World.balls
-    local nx,ny = Util:processGameInputs()
+    local nx,ny = x,y
+    --get ballByID here
     balls[1].vx = balls[1].vx + nx * speed
     balls[1].vy = balls[1].vy + ny * speed
+end)
+
+netSwitch:addCase("upgm",function(args)
+    if not player then return end
+
+    local splitData = Util:split(args)
+    --Changes = {{ID1,x1,y1},{ID2,x2,y2},{ID3,x3,y3}}
+    local changes = {}
+    for i,msg in ipairs(splitData) do
+        if changes[math.floor(i/3)+1] == nil then changes[math.floor(i/3)+1] = {} end
+        changes[math.floor(i/3)+1][i%3] = msg
+    end
+    for i, change in ipairs(changes) do
+        World.balls[i].x = change[2]
+        World.balls[i].y = change[3]
+    end
 end)
 
 function love.textinput(t)
