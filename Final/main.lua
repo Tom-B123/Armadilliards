@@ -502,7 +502,9 @@ newStateSwitch:addCase("hosting game",function()
 
     World:newBall(50,50,true)
     World:newBall(150,50,true)
-    World:newBall(250,50,false)
+    World:newBall(50,150,true)
+    World:newBall(150,150,true)
+    World:newBall(300,75,false)
 
     World:generateIDs()
 
@@ -908,7 +910,6 @@ netSwitch:addCase("upgm",function(args)
             else
                 local nball = World:newBall(x,y,true)
                 World:assignID(nball,ID,0)
-                print("made a new ball")
             end
             -- do World:getByID(ID) when IDs are consistent between players
         end

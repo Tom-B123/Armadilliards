@@ -21,7 +21,6 @@ function Util:calculateID(length,salt)
     while #out < length do
         out = "0"..out
     end
-    print(self:convertToAsc(tonumber(out)))
     return out
 end
 
