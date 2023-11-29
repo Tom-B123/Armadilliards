@@ -893,13 +893,14 @@ netSwitch:addCase("upgm",function(args)
     --Changes = {{ID1,x1,y1},{ID2,x2,y2},{ID3,x3,y3}}
     local changes = {}
     for i,msg in ipairs(splitData) do
+        print(msg)
         if changes[math.floor(i/3)+1] == nil then changes[math.floor(i/3)+1] = {} end
         changes[math.floor(i/3)+1][(i%3) + 1] = msg
     end
     for i, change in ipairs(changes) do
         local y,ID,x = change[1],change[2],change[3]
         if x and y then
-            print(ID,x,y)
+            -- print(ID,x,y)
             World.balls[i].x = x
             World.balls[i].lx = x
             World.balls[i].y = y
