@@ -116,10 +116,3 @@ function World:getUpgm()
     end
     return out
 end
-
-local ball = World:newBall(50,50,false)
-if ball then
-    local ID = World:assignID(ball)
-    local foundBall = World:getByID(ID)
-    print(foundBall.x)
-end

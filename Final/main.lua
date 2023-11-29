@@ -899,13 +899,19 @@ netSwitch:addCase("upgm",function(args)
 
     for i, change in ipairs(changes) do
         local ID,x,y = change[1],change[2],change[3]
-        if x and y then
+        if ID and x and y then
+            local ball = World:getByID(ID)
+            if ball then
+                ball.x = x
+                ball.lx = x
+                ball.y = y
+                ball.ly = y
+            else
+                local nball = World:newBall(x,y,true)
+                World:assignID(nball,ID,0)
+            end
             -- do World:getByID(ID) when IDs are consistent between players
-            local ball = World.balls[i]
-            ball.x = x
-            ball.lx = x
-            ball.y = y
-            ball.ly = y
+            
         end
     end
 end)
