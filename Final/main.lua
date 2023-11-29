@@ -892,7 +892,6 @@ netSwitch:addCase("upgm",function(args)
 
     for i,msg in ipairs(splitData) do
         local ind = i - 1
-        print(math.floor(ind/3)+1,(ind%3) + 1)
         if changes[math.floor(ind/3)+1] == nil then changes[math.floor(ind/3)+1] = {} end
         changes[math.floor(ind/3)+1][(ind%3) + 1] = msg
     end
@@ -909,9 +908,9 @@ netSwitch:addCase("upgm",function(args)
             else
                 local nball = World:newBall(x,y,true)
                 World:assignID(nball,ID,0)
+                print("made a new ball")
             end
             -- do World:getByID(ID) when IDs are consistent between players
-            
         end
     end
 end)
