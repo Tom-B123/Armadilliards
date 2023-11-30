@@ -480,8 +480,7 @@ newStateSwitch:addCase("hosting lobby",function()
     --Clears all existing balls
     World:clear()
 
-    --More robust system needed
-    if lState[1] ~= "end screen" then
+    if lState[1] ~= "in game" then
         LobbyPlayer:clear()
         LobbyPlayer:new(player.ID)
         LobbyPlayer:setName(player.ID,player.name)
