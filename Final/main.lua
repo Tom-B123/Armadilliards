@@ -1152,5 +1152,7 @@ function love.draw()
         drawStateSwitch:case(getState(i))
     end
     love.graphics.setColor(1,1,1)
-    love.graphics.print(state[order])
+    if LobbyPlayer:getIDs() then 
+        love.graphics.print("LobbyPlayers length: "..#LobbyPlayer:getIDs(),0,20)
+    end
 end
