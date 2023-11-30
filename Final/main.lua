@@ -233,10 +233,12 @@ stateSwitch:addCase("in game",function(dt)
     if not player then return end
     processReceived()
 
-    local x,y = Util:processGameInputs()
+    if not editingText then
+        local x,y = Util:processGameInputs()
 
-    if x ~= 0 or y ~= 0 then
-        player:send("plin:"..player.ID.."_"..x.."_"..y)
+        if x ~= 0 or y ~= 0 then
+            player:send("plin:"..player.ID.."_"..x.."_"..y)
+        end
     end
 end)
 
@@ -247,8 +249,10 @@ stateSwitch:addCase("hosting game",function(dt)
 
     World:update(dt)
     local balls = World.balls
-    local nx,ny = Util:processGameInputs()
-    applyMove(balls[1],nx,ny)
+    if not editingText then
+        local nx,ny = Util:processGameInputs()
+        applyMove(balls[1],nx,ny)
+    end
     if tick % 1 == 0 then
         server:send("all","upgm:"..World:getUpgm())
     end
@@ -1015,7 +1019,7 @@ function love.keypressed(key)
             lState[2] = nil
             state[2] = "user settings"
         end
-    elseif key == "t" and (state[1] == "in lobby" or state[1] == "hosting lobby") then
+    elseif key == "t" and (state[1] == "in lobby" or state[1] == "hosting lobby" or state[1] == "in game" or state[1] == "hosting game") then
         lState[2] = nil
         state[2] = "editing message"
         order = 2
