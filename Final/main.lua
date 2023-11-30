@@ -885,13 +885,13 @@ netSwitch:addCase("plin",function(args)
 
     local speed = 0.4
 
-    local splitData = Util:split(args)
+    local splitData = Util:split(args,"_")
     local ID,x,y = splitData[1], splitData[2], splitData[3]
 
     local nx,ny = x,y
 
     local ballID = LobbyPlayer:getBallID(ID)
-
+    print(ID,ballID)
     local ball = World:getByID(ballID)
 
     if ball then
