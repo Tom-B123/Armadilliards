@@ -476,11 +476,14 @@ newStateSwitch:addCase("hosting lobby",function()
 
     clearButtons()
 
-    LobbyPlayer:clear()
-    LobbyPlayer:new(player.ID)
-    LobbyPlayer:setName(player.ID,player.name)
-    LobbyPlayer:setReady(player.ID,true)
-    LobbyPlayer:setTeam(player.ID,"team 1")
+    --More robust system needed
+    if lState[1] ~= "end screen" then
+        LobbyPlayer:clear()
+        LobbyPlayer:new(player.ID)
+        LobbyPlayer:setName(player.ID,player.name)
+        LobbyPlayer:setReady(player.ID,true)
+        LobbyPlayer:setTeam(player.ID,"team 1")
+    end
 
     newButton(1,"start",{1,1,1},600,500,750,550,function()
         if playersAllReady() then
@@ -719,8 +722,9 @@ drawStateSwitch:addCase("hosting game",function()
 end)
 
 drawStateSwitch:addCase("end screen",function()
-    love.graphics.setColor(0,0,0)
+    love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",200,200,400,300)
+    love.graphics.setColor(1,1,1)
     drawMessages()
     drawButtons(2)
 end)
