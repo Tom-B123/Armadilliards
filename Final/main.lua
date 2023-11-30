@@ -1002,7 +1002,6 @@ end)
 
 netSwitch:addCase("endgm",function(args)
     local splitData = Util:split(args,"_")
-    print(args)
     local winningTeam = ""
     local maxScore = 0
     for i = 1,#splitData/2 do
@@ -1015,7 +1014,7 @@ netSwitch:addCase("endgm",function(args)
     state[2] = "end screen"
     lState[2] = nil
     order = 2
-    newMessage("The winner is: "..winningTeam.." with "..maxScore.." points")
+    newMessage("server","The winner is: "..winningTeam.." with "..maxScore.." points")
 end)
 
 function love.textinput(t)
