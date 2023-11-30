@@ -90,6 +90,12 @@ end
 --World table, stores and processes all balls
 World = {balls = {},playableBalls = {},ballIDDict = {}}
 
+
+function World:clear()
+    self.balls = {}
+    self.playableBalls = {}
+    self.ballIDDict = {}
+end
 --Assigns an ID to a ball, or calculates a new ID using the given salt
 function World:assignID(ball,ID,salt)
     if salt == nil then salt = 0 end
@@ -130,6 +136,16 @@ function World:assign(playerIDs)
     end
 end
 
+--Collisions with no optimisation
+function World:expensiveCollisions(balls)
+    for i, ball1 in ipairs(balls) do
+        for j, ball2 in ipairs(balls) do
+            if i ~= j then
+                
+            end
+        end
+    end
+end
 --Updates the position of every ball
 function World:update(dt)
     for i, ball in ipairs(self.balls) do

@@ -476,6 +476,9 @@ newStateSwitch:addCase("hosting lobby",function()
 
     clearButtons()
 
+    --Clears all existing balls
+    World:clear()
+
     --More robust system needed
     if lState[1] ~= "end screen" then
         LobbyPlayer:clear()
@@ -536,7 +539,7 @@ end)
 newStateSwitch:addCase("hosting game",function()
     if not server then return end
     clearButtons()
-
+    
     World:newBall(50,50,true)
     World:newBall(150,50,true)
     World:newBall(50,150,true)
