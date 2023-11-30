@@ -56,3 +56,7 @@ function Util:processGameInputs()
     if love.keyboard.isDown("d") then x = x + 1 end
     return x,y
 end
+
+function Util:findDistance(x,y)
+    return (x*x + y*y)^0.5
+end

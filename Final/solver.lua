@@ -138,10 +138,45 @@ end
 
 --Collisions with no optimisation
 function World:expensiveCollisions(balls)
+    local bounce = 1
     for i, ball1 in ipairs(balls) do
         for j, ball2 in ipairs(balls) do
             if i ~= j then
-                
+                local collisionAxis = {x=0,y=0}
+                collisionAxis.x = ball1.x - ball2.x
+                collisionAxis.y = ball1.y - ball2.y
+                local distance = Util:findDistance(collisionAxis.x,collisionAxis.y)
+                local diameter = ball1.radius + ball2.radius
+                --If they collide:
+                if distance < diameter then
+                    local speed1 = Util:findDistance(ball1.vx,ball1.vy)
+                    local speed2 = Util:findDistance(ball2.vx,ball2.vy)
+                    local team1 = ball1:getTeam()
+                    local team2 = ball2:getTeam()
+                    --Changing temporary teams
+                    if speed1 >= speed2 then
+                        if team1 and not team2 then
+                            ball2:setTeam(team1)
+                        end
+                    else
+                        if team2 and not team1 then
+                            ball1:setTeam(team2)
+                        end
+                    end
+
+                    local n = collisionAxis
+                    n.x = n.x / distance
+                    n.y = n.y / distance
+                    local delta = diameter - distance
+                    local offset1 = ball2.radius / ball1.radius
+                    local offset2 = ball1.radius / ball2.radius
+                    if offset1 > 2 then offset1 = 2 end
+                    if offset2 > 2 then offset2 = 2 end
+                    ball2.x = ball2.x - bounce * offset2 * delta * n.x
+                    ball2.y = ball2.y - bounce * offset2 * delta * n.y
+                    ball1.x = ball1.x + bounce * offset1 * delta * n.x
+                    ball1.y = ball1.y + bounce * offset1 * delta * n.y
+                end
             end
         end
     end
@@ -152,6 +187,7 @@ function World:update(dt)
         ball:edgeConstraint()
         ball:verlet(dt)
     end
+    self:expensiveCollisions(self.balls)
 end
 
 --Draw every ball
