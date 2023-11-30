@@ -515,6 +515,9 @@ newStateSwitch:addCase("in lobby",function()
     
     clearButtons()
     
+    --Clears all existing balls
+    World:clear()
+
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
         local ready = LobbyPlayer:getReady(player.ID)
         LobbyPlayer:setReady(player.ID,not ready)
