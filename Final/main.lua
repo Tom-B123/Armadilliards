@@ -25,13 +25,13 @@ local editingIndex = 1
 
 local state = {"main menu"}
 local lState = {nil}
---Order of states, used to stack menues ontop of eachother
+--Order of states, used to overlap menues ontop of eachother
 local order = 1
+--hardcoded limit on orders, only 4 menues can overlap at once
 local maxOrder = 4
 --Stores all buttons within tables, corresponding to their order.
 local buttons = {}
 
---hardcoded limit on orders
 for i = 1,maxOrder do
     buttons[i] = {}
 end
@@ -62,7 +62,7 @@ local function clearMessages()
     messageLog = {}
 end
 
---Only update active buttons
+--Detect if the player clicks any buttons of the current order
 local function updateButtons()
     for i,button in ipairs(buttons[order]) do
         button:update()
@@ -70,7 +70,6 @@ local function updateButtons()
 end
 
 local function drawButtons(ord)
-    --draws buttons of a specific order
     for j,button in ipairs(buttons[ord]) do
         button:draw()
     end
@@ -81,6 +80,7 @@ local function newButton(ord,text,colour,x1,y1,x2,y2,command,params)
     table.insert(buttons[ord],nButton)
 end
 
+--Clears existing buttons on the current order (for when state changes and buttons need to change)
 local function clearButtons()
     buttons[order] = {}
 end
@@ -93,6 +93,7 @@ local function getState(ord)
     return state[ord]
 end
 
+--Apply editing text to the player name
 local function changePlayerName()
     if not player then return end
     if editingText == "" then editingText = "new player" end
@@ -104,6 +105,7 @@ local function changePlayerName()
     player:send("updt:"..player.ID.."_name_"..player.name)
 end
 
+--Apply editing text to message, and send to other players
 local function sendMessage(message)
     if not message then message = editingText end
     if player and not server then
@@ -119,6 +121,7 @@ local function sendMessage(message)
     order = 1
 end
 
+--Apply editing text to the lobby name
 local function changeLobbyName()
     if not player then return end
     if editingText == "" then editingText = "new lobby" end
@@ -129,6 +132,7 @@ local function changeLobbyName()
     order = 3
 end
 
+--Pass received data into netSwitch
 local function processReceived()
     local function process(data)
         for i,message in ipairs(data) do
@@ -154,6 +158,7 @@ local function processReceived()
     end
 end
 
+--Checks if every player in the lobby is ready
 local function playersAllReady()
     for i,ID in ipairs(LobbyPlayer:getIDs()) do
         if not LobbyPlayer:getReady(ID) then return false end
@@ -161,6 +166,7 @@ local function playersAllReady()
     return true
 end
 
+--Applies vx and vy to the ball, at a set speed.
 local function applyMove(ball,vx,vy)
     local speed = 0.4
     if ball then
@@ -660,7 +666,7 @@ drawStateSwitch:addCase("editing message",function()
     if editingText then love.graphics.print(editingText,50,400) end
     if tick % 30 > 30 / 2 then
         love.graphics.setColor(0.4,0.4,0.4,0.7)
-        love.graphics.rectangle("fill",300 - 2.5 + (editingIndex-1)*9,300,5,17.5)
+        love.graphics.rectangle("fill",50 - 2.5 + (editingIndex-1)*9,400,5,17.5)
     end
 end)
 
@@ -675,6 +681,7 @@ end)
 --============================================================================================--
 --============================================================================================--
 
+--Send a message to players, relays this message to other players as the server
 netSwitch:addCase("msg",function(args)
     local splitData = Util:split(args,"_")
     local sender = splitData[1]
@@ -685,6 +692,7 @@ netSwitch:addCase("msg",function(args)
     newMessage(sender,message)
 end)
 
+--New connection, sends initial information about the player
 netSwitch:addCase("ncon",function(args)
     if server then
         local splitData = Util:split(args,"_")
@@ -722,6 +730,7 @@ netSwitch:addCase("ncon",function(args)
     end
 end)
 
+--End connection with main server
 netSwitch:addCase("econ",function(args)
     if server then
         local ID = args
@@ -742,6 +751,7 @@ netSwitch:addCase("econ",function(args)
     end
 end)
 
+--Update player info, for when player changes ready state or name
 netSwitch:addCase("updt",function(args)
     local splitData = Util:split(args,"_")
     --sender ID
@@ -757,6 +767,7 @@ netSwitch:addCase("updt",function(args)
     end
 end)
 
+--Request and confirm joining a new lobby
 netSwitch:addCase("join",function(args)
     if server then
         local splitData = Util:split(args,"_")
@@ -786,6 +797,7 @@ netSwitch:addCase("join",function(args)
     end
 end)
 
+--Create a new lobby and confirm creation
 netSwitch:addCase("create",function(args)
     if server then
         local splitData = Util:split(args,"_")
@@ -833,6 +845,7 @@ netSwitch:addCase("create",function(args)
     end
 end)
 
+--Update lobby list
 netSwitch:addCase("uplobs",function(args)
     if not player then return end
 
@@ -866,12 +879,14 @@ netSwitch:addCase("uplobs",function(args)
     end
 end)
 
+--Start a new game
 netSwitch:addCase("start",function(args)
     state[1] = "in game"
     lState[1] = nil
     order = 1
 end)
 
+--Asign ball ID to a player
 netSwitch:addCase("asgn",function(args)
     if not player then return end
 
@@ -885,6 +900,7 @@ netSwitch:addCase("asgn",function(args)
     end
 end)
 
+--Take player input from clients
 netSwitch:addCase("plin",function(args)
     if not server then return end
 
@@ -897,7 +913,7 @@ netSwitch:addCase("plin",function(args)
     applyMove(ball,x,y)
 end)
 
---update gamestate
+--Update gamestate
 netSwitch:addCase("upgm",function(args)
     if not player then return end
 
