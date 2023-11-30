@@ -544,6 +544,28 @@ newStateSwitch:addCase("in game",function()
     lState[1] = state[1]
 end)
 
+newStateSwitch:addCase("end screen",function()
+    clearButtons()
+
+    newButton(2,"Return to lobby",{1,1,1},300,200,500,250,function()
+        if server then
+            state[2] = nil
+            lState[2] = nil
+            lState[1] = nil
+            state[1] = "hosting lobby"
+            order = 1
+        else
+            state[2] = nil
+            lState[2] = nil
+            lState[1] = nil
+            state[1] = "in lobby"
+            order = 1
+        end
+    end)
+
+    lState[2] = state[2]
+end)
+
 --============================================================================================--
 --============================================================================================--
 
@@ -675,12 +697,22 @@ drawStateSwitch:addCase("editing message",function()
 end)
 
 drawStateSwitch:addCase("in game",function()
+    drawMessages()
     World:draw()
 end)
 
 drawStateSwitch:addCase("hosting game",function()
+    drawMessages()
     World:draw()
 end)
+
+drawStateSwitch:addCase("end screen",function()
+    love.graphics.setColor(1,1,1)
+    love.graphics.rectangle("fill",200,200,400,300)
+    drawMessages()
+    drawButtons(2)
+end)
+
 
 --============================================================================================--
 --============================================================================================--
@@ -949,6 +981,24 @@ netSwitch:addCase("upgm",function(args)
     end
 end)
 
+netSwitch:addCase("endgm",function(args)
+    local splitData = Util:split(args,"_")
+    print(args)
+    local winningTeam = ""
+    local maxScore = 0
+    for i = 1,#splitData/2 do
+        local team,score = splitData[2*1-1],splitData[2*i]
+        if score > maxScore then
+            maxScore = score
+            winningTeam = team
+        end
+    end
+    state[2] = "end screen"
+    lState[2] = nil
+    order = 2
+    newMessage("The winner is: "..winningTeam.." with "..maxScore.." points")
+end)
+
 function love.textinput(t)
     if not editingText then return end
     if not player then return end
@@ -961,6 +1011,15 @@ end
 
 --Handle keyboard inputs
 function love.keypressed(key)
+    if state == "hosting game" and server and key == "escape" then
+        local msg = "endgm:"
+        for i = 1,4 do
+            local score = Util:calculateID(4,i)
+            msg = msg.."team"..i.."_"..score
+            if i < 4 then msg = msg.."_" end
+        end
+        server:send("all",msg)
+    end
     if editingText and player then
         if key == "escape" then
             state[order] = nil
