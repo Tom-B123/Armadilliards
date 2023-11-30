@@ -570,17 +570,18 @@ newStateSwitch:addCase("end screen",function()
     clearButtons()
 
     newButton(2,"Return to lobby",{1,1,1},300,200,500,250,function()
+        --Last state set to in game to stop Ids being dropped
         if server then
-            state[2] = nil
+            state[2]  = nil
             lState[2] = nil
-            lState[1] = nil
-            state[1] = "hosting lobby"
+            lState[1] = "in game"
+            state[1]  = "hosting lobby"
             order = 1
         else
-            state[2] = nil
+            state[2]  = nil
             lState[2] = nil
-            lState[1] = nil
-            state[1] = "in lobby"
+            lState[1] = "in game"
+            state[1]  = "in lobby"
             order = 1
         end
     end)
