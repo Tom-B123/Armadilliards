@@ -256,6 +256,15 @@ stateSwitch:addCase("hosting game",function(dt)
     if tick % 1 == 0 then
         server:send("all","upgm:"..World:getUpgm())
     end
+    if love.keyboard.isDown("y") then
+        local msg = "endgm:"
+        for i = 1,4 do
+            local score = Util:calculateID(4,i)
+            msg = msg.."team"..i.."_"..score
+            if i < 4 then msg = msg.."_" end
+        end
+        server:send("all",msg)
+    end
 end)
 
 --============================================================================================--
@@ -987,8 +996,8 @@ netSwitch:addCase("endgm",function(args)
     local winningTeam = ""
     local maxScore = 0
     for i = 1,#splitData/2 do
-        local team,score = splitData[2*1-1],splitData[2*i]
-        if score > maxScore then
+        local team,score = splitData[2*1-1],tonumber(splitData[2*i])
+        if score and score > maxScore then
             maxScore = score
             winningTeam = team
         end
@@ -1011,16 +1020,6 @@ end
 
 --Handle keyboard inputs
 function love.keypressed(key)
-    if state == "hosting game" and server then
-        print("end the gameeeeeeeee")
-        local msg = "endgm:"
-        for i = 1,4 do
-            local score = Util:calculateID(4,i)
-            msg = msg.."team"..i.."_"..score
-            if i < 4 then msg = msg.."_" end
-        end
-        server:send("all",msg)
-    end
     if editingText and player then
         if key == "escape" then
             state[order] = nil
