@@ -682,7 +682,7 @@ drawStateSwitch:addCase("hosting lobby",function()
         local name, ready, team = 
         LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getTeam(ID)
 
-        if name and ready and team then
+        if name and ready ~= nil and team then
             love.graphics.print(name,0,20*i)
             love.graphics.print(tostring(ready),200,20*i)
             love.graphics.print(team,400,20*i)
