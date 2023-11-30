@@ -716,7 +716,7 @@ drawStateSwitch:addCase("hosting game",function()
 end)
 
 drawStateSwitch:addCase("end screen",function()
-    love.graphics.setColor(1,1,1)
+    love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill",200,200,400,300)
     drawMessages()
     drawButtons(2)
