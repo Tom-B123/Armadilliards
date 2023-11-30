@@ -151,18 +151,21 @@ function World:expensiveCollisions(balls)
                 if distance < diameter then
                     local speed1 = Util:findDistance(ball1.vx,ball1.vy)
                     local speed2 = Util:findDistance(ball2.vx,ball2.vy)
-                    local team1 = ball1:getTeam()
-                    local team2 = ball2:getTeam()
-                    --Changing temporary teams
-                    if speed1 >= speed2 then
-                        if team1 and not team2 then
-                            ball2:setTeam(team1)
-                        end
-                    else
-                        if team2 and not team1 then
-                            ball1:setTeam(team2)
-                        end
-                    end
+
+                    --Stuff with teams of neutral balls
+
+                    -- local team1 = ball1:getTeam()
+                    -- local team2 = ball2:getTeam()
+                    -- --Changing temporary teams
+                    -- if speed1 >= speed2 then
+                    --     if team1 and not team2 then
+                    --         ball2:setTeam(team1)
+                    --     end
+                    -- else
+                    --     if team2 and not team1 then
+                    --         ball1:setTeam(team2)
+                    --     end
+                    -- end
 
                     local n = collisionAxis
                     n.x = n.x / distance
