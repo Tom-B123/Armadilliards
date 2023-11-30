@@ -1011,7 +1011,8 @@ end
 
 --Handle keyboard inputs
 function love.keypressed(key)
-    if state == "hosting game" and server and key == "escape" then
+    if state == "hosting game" and server then
+        print("end the gameeeeeeeee")
         local msg = "endgm:"
         for i = 1,4 do
             local score = Util:calculateID(4,i)
