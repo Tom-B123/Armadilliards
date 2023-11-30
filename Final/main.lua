@@ -227,8 +227,6 @@ stateSwitch:addCase("in game",function(dt)
     if not player then return end
     processReceived()
 
-    World:update(dt)
-
     local x,y = Util:processGameInputs()
 
     if x ~= 0 or y ~= 0 then
