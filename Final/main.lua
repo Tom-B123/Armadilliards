@@ -257,7 +257,7 @@ stateSwitch:addCase("hosting game",function(dt)
     if tick % 1 == 0 then
         server:send("all","upgm:"..World:getUpgm())
     end
-    if love.keyboard.isDown("y") then
+    if love.keyboard.isDown("y") and order == 1 then
         local msg = "endgm:"
         for i = 1,4 do
             local score = Util:calculateID(4,i)
