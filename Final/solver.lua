@@ -59,6 +59,29 @@ function Ball:verlet(dt)
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
 end
 
+function Ball:edgeConstraint()
+    if self.x - self.radius < 0 then
+        self.x   = self.radius
+        self.vx  = -self.vx
+        self.lvx = -self.lvx
+    end
+    if self.x + self.radius > 800 then
+        self.x   = 800 - self.radius
+        self.vx  = -self.vx
+        self.lvx = -self.lvx
+    end
+    if self.y - self.radius < 0 then
+        self.y   = self.radius
+        self.vy  = -self.vy
+        self.lvy = -self.lvy
+    end
+    if self.y + self.radius > 600 then
+        self.y   = 600 - self.radius
+        self.vy  = -self.vy
+        self.lvy = -self.lvy
+    end
+end
+
 --Drawing ball objects
 function Ball:draw()
     love.graphics.circle("fill",self.x,self.y,self.radius)
@@ -110,6 +133,7 @@ end
 --Updates the position of every ball
 function World:update(dt)
     for i, ball in ipairs(self.balls) do
+        ball:edgeConstraint()
         ball:verlet(dt)
     end
 end
