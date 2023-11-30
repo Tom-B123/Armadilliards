@@ -233,7 +233,7 @@ stateSwitch:addCase("in game",function(dt)
     if not player then return end
     processReceived()
 
-    if not editingText then
+    if order == 1 and not editingText then
         local x,y = Util:processGameInputs()
 
         if x ~= 0 or y ~= 0 then
@@ -249,7 +249,7 @@ stateSwitch:addCase("hosting game",function(dt)
 
     World:update(dt)
     local balls = World.balls
-    if not editingText then
+    if order == 1 and not editingText then
         local nx,ny = Util:processGameInputs()
         applyMove(balls[1],nx,ny)
     end
@@ -264,6 +264,9 @@ stateSwitch:addCase("hosting game",function(dt)
             if i < 4 then msg = msg.."_" end
         end
         server:send("all",msg)
+        state[2] = "end screen"
+        lState[2] = nil
+        order = 2
     end
 end)
 
