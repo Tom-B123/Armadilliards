@@ -48,6 +48,7 @@ local netSwitch = Switch:new()
 local function newMessage(sender,message)
     --Append the name of the sender onto the message
     local name = LobbyPlayer:getName(sender)
+    if sender == "server" then name = "server" end
     if name then table.insert(messageLog,name..": "..message) end
 end
 
