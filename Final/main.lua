@@ -161,6 +161,14 @@ local function playersAllReady()
     return true
 end
 
+local function applyMove(ball,vx,vy)
+    local speed = 0.4
+    if ball then
+        ball.vx = ball.vx + vx * speed
+        ball.vy = ball.vy + vy * speed
+    end
+end
+
 --============================================================================================--
 --============================================================================================--
 
@@ -236,8 +244,7 @@ stateSwitch:addCase("hosting game",function(dt)
     World:update(dt)
     local balls = World.balls
     local nx,ny = Util:processGameInputs()
-    balls[1].vx = balls[1].vx + nx
-    balls[1].vy = balls[1].vy + ny
+    applyMove(balls[1],nx,ny)
     if tick % 1 == 0 then
         server:send("all","upgm:"..World:getUpgm())
     end
@@ -883,21 +890,13 @@ end)
 netSwitch:addCase("plin",function(args)
     if not server then return end
 
-    local speed = 0.4
-
     local splitData = Util:split(args,"_")
     local ID,x,y = splitData[1], splitData[2], splitData[3]
 
-    local nx,ny = x,y
-
     local ballID = LobbyPlayer:getBallID(ID)
-    print(ID,ballID)
     local ball = World:getByID(ballID)
 
-    if ball then
-        ball.vx = ball.vx + nx * speed
-        ball.vy = ball.vy + ny * speed
-    end
+    applyMove(ball,x,y)
 end)
 
 --update gamestate
