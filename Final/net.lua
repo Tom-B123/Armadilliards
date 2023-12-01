@@ -258,6 +258,11 @@ function LobbyPlayer:removeID(ID)
         end
     end
     if ind > -1 then
+        self:setBallID (ID,nil)
+        self:setName   (ID,nil)
+        self:setTeam   (ID,nil)
+        self:setReady  (ID,nil)
+        self:setInLobby(ID,nil)
         table.remove(self.IDTable,ind)
     end
 end

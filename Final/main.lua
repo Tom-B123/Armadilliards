@@ -862,6 +862,8 @@ netSwitch:addCase("econ",function(args)
             JoinableLobby:clear()
 
             clearMessages()
+        else
+            table.insert(toRemoveIDs,playerID)
         end
     end
 end)
@@ -1232,7 +1234,7 @@ function love.update(dt)
     for i,ID in ipairs(toRemoveIDs) do
         LobbyPlayer:removeID(ID)
     end
-    
+
     tick = tick + 1
 end
 
