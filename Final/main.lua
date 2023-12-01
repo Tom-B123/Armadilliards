@@ -8,6 +8,7 @@ require("solver")
 local player = nil
 local lobbyToCreate = {name = "new lobby",IP = Socket.dns.toip(Socket.dns.gethostname( )), port = 1000, maxPlayers = 8}
 
+local toConnectMain = false
 local toClosePlayer = false
 local toConnectPlayer = nil
 local server = nil
@@ -852,6 +853,7 @@ netSwitch:addCase("econ",function(args)
                 state[1] = "gamemode select"
             else
                 state[1] = "searching for lobby"
+                toConnectMain = true
             end
             lState[2] = nil
             state[2]  = nil
@@ -1220,6 +1222,11 @@ function love.update(dt)
     if toConnectPlayer then
         player = toConnectPlayer
         toConnectPlayer = nil
+    end
+
+    if toConnectMain and player then
+        player:connectToMain()
+        toConnectMain = false
     end
 
     tick = tick + 1
