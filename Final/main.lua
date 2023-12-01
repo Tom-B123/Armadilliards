@@ -604,6 +604,7 @@ newStateSwitch:addCase("end screen",function()
 end)
 
 newStateSwitch:addCase("lobby pause screen",function()
+    if not player then return end
     clearButtons()
 
     newButton(2,"back",{1,1,1},300,200,500,250, function()
@@ -612,10 +613,15 @@ newStateSwitch:addCase("lobby pause screen",function()
         order = 1
     end)
 
-    newButton(2,"quit lobby",{1,1,1},300,275,500,325, function()
-        --quit the lobby and remove this player from LobbyPlayers of the host, as well as all other players
-    end)
-
+    if server then
+        newButton(2,"close lobby",{1,1,1},300,275,500,325, function()
+            --Close the lobby and kick every player from the lobby, v complicated
+        end)
+    else
+        newButton(2,"exit lobby",{1,1,1},300,275,500,325, function()
+            player:send("econ:"..player.ID)
+        end)
+    end
     lState[2] = state[2]
 end)
 
@@ -829,14 +835,24 @@ end)
 netSwitch:addCase("econ",function(args)
     if server then
         local ID = args
-        server:send("all","econ:"..ID)
+        local isMain = tostring(state[1] == "hosting main")
+        server:send("all","econ:"..ID.."_"..isMain)
         --end the connection with client
         --LobbyPlayer:removeID(ID)
     elseif player then
-        local ID = args
-        if ID == player.ID then
+        local splitData = Util:split(args,"_")
+        local playerID, isMain =
+        splitData[1],splitData[2]
+
+        if playerID == player.ID then
             toClosePlayer = false
-            state[1] = "gamemode select"
+
+            if Util:toBool(isMain) then
+                state[1] = "gamemode select"
+            else
+                state[1] = "searching for lobby"
+            end
+
             lState[1] = nil
 
             JoinableLobby:clear()
@@ -1044,11 +1060,11 @@ netSwitch:addCase("upgm",function(args)
                 local nball = World:newBall(x,y,true)
                 World:assignID(nball,ID,0)
             end
-            -- do World:getByID(ID) when IDs are consistent between players
         end
     end
 end)
 
+--End game and display the end screen
 netSwitch:addCase("endgm",function(args)
     local splitData = Util:split(args,"_")
     local winningTeam = ""
