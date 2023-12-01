@@ -690,7 +690,7 @@ drawStateSwitch:addCase("hosting lobby",function()
     end
 end)
 
-drawStateSwitch:addCase("connecting to lobby",function()
+drawStateSwitch:addCase("connecting to lobby",function( )
     love.graphics.print("connecting to lobby...",100,100)
 end)
 
@@ -821,7 +821,7 @@ netSwitch:addCase("updt",function(args)
     if not LobbyPlayer:getName(ID) then LobbyPlayer:new(ID) end
 
     if field == "name" then LobbyPlayer:setName(ID,value)
-    elseif field == "ready" then LobbyPlayer:setReady(ID,value)
+    elseif field == "ready" then LobbyPlayer:setReady(ID,Util:toBool(value))
     elseif field == "team" then LobbyPlayer:setTeam(ID,value)
     end
 end)
