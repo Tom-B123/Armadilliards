@@ -213,9 +213,11 @@ stateSwitch:addCase("hosting lobby",function()
         for i,ID in ipairs(LobbyPlayer:getIDs()) do
             local name = LobbyPlayer:getName(ID)
             local ready = LobbyPlayer:getReady(ID)
+            local lobby = LobbyPlayer:getInLobby(ID)
             local team = LobbyPlayer:getTeam(ID)
             server:send("all","updt:"..ID.."_name_"..name)
             server:send("all","updt:"..ID.."_ready_"..tostring(ready))
+            server:send("all","updt:"..ID.."in lobby"..tostring(lobby))
             server:send("all","updt:"..ID.."_team_".."_"..team)
         end
     elseif tick % 2 == 0 then
@@ -490,6 +492,7 @@ newStateSwitch:addCase("hosting lobby",function()
         LobbyPlayer:new(player.ID)
         LobbyPlayer:setName(player.ID,player.name)
         LobbyPlayer:setReady(player.ID,true)
+        LobbyPlayer:setInLobby(player.ID,true)
         LobbyPlayer:setTeam(player.ID,"team 1")
     end
 
@@ -571,22 +574,26 @@ newStateSwitch:addCase("in game",function()
 end)
 
 newStateSwitch:addCase("end screen",function()
+    if not player then return end
     clearButtons()
 
     newButton(2,"Return to lobby",{1,1,1},300,200,500,250,function()
         --Last state set to in game to stop Ids being dropped
+        LobbyPlayer:setInLobby(player.ID,true)
         if server then
             state[2]  = nil
             lState[2] = nil
             lState[1] = "in game"
             state[1]  = "hosting lobby"
             order = 1
+            server:send("all","updt:"..player.ID.."_in lobby_"..true)
         else
             state[2]  = nil
             lState[2] = nil
             lState[1] = "in game"
             state[1]  = "in lobby"
             order = 1
+            player:send("updt:"..player.ID.."_in lobby_"..true)
         end
     end)
 
@@ -700,12 +707,13 @@ drawStateSwitch:addCase("hosting lobby",function()
     drawMessages()
     drawButtons(1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
-        local name, ready, team = 
-        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getTeam(ID)
+        local name, ready, lobby, team = 
+        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getInLobby(ID), LobbyPlayer:getTeam(ID)
 
         if name and ready ~= nil and team then
             love.graphics.print(name,0,20*i)
             love.graphics.print(tostring(ready),200,20*i)
+            love.graphics.print(tostring(lobby),300,20*i)
             love.graphics.print(team,400,20*i)
         end
     end
@@ -719,12 +727,13 @@ drawStateSwitch:addCase("in lobby",function()
     drawMessages()
     drawButtons(1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
-        local name, ready, team = 
-        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getTeam(ID)
+        local name, ready, lobby, team = 
+        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getInLobby(ID), LobbyPlayer:getTeam(ID)
 
         if name and ready ~= nil and team then
             love.graphics.print(name,0,20*i)
             love.graphics.print(tostring(ready),200,20*i)
+            love.graphics.print(tostring(lobby),300,20*i)
             love.graphics.print(team,400,20*i)
         end
     end
@@ -788,6 +797,7 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:new(ID)
         LobbyPlayer:setName(ID,name)
         LobbyPlayer:setReady(ID,false)
+        LobbyPlayer:setInLobby(ID,true)
         LobbyPlayer:setTeam(ID,"team 1")
         
         server:send("all","ncon:"..ID.."_"..name.."_confirm")
@@ -798,18 +808,17 @@ netSwitch:addCase("ncon",function(args)
 
         local ID, name, conf = splitData[1],splitData[2],splitData[3]
 
-        if conf == "confirm" then
-            if ID == player.ID then
-                --On confirmation, make a LobbyPlayer object with player's details
-                LobbyPlayer:clear()
-                LobbyPlayer:new(player.ID)
-                LobbyPlayer:setName(player.ID,player.name)
-                LobbyPlayer:setReady(player.ID,false)
-                LobbyPlayer:setTeam(player.ID,"team 1")
-                if getState(1) == "connecting to lobby" then
-                    lState[1] = nil
-                    state[1] = "in lobby"
-                end
+        if conf == "confirm" and ID == player.ID then
+            --On confirmation, make a LobbyPlayer object with player's details
+            LobbyPlayer:clear()
+            LobbyPlayer:new(player.ID)
+            LobbyPlayer:setName(player.ID,player.name)
+            LobbyPlayer:setReady(player.ID,false)
+            LobbyPlayer:setInLobby(player.ID,true)
+            LobbyPlayer:setTeam(player.ID,"team 1")
+            if getState(1) == "connecting to lobby" then
+                lState[1] = nil
+                state[1] = "in lobby"
             end
         end
     end
@@ -848,6 +857,7 @@ netSwitch:addCase("updt",function(args)
 
     if field == "name" then LobbyPlayer:setName(ID,value)
     elseif field == "ready" then LobbyPlayer:setReady(ID,value)
+    elseif field == "in lobby" then LobbyPlayer:setInLobby(ID,value)
     elseif field == "team" then LobbyPlayer:setTeam(ID,value)
     end
 end)
@@ -966,12 +976,19 @@ end)
 
 --Start a new game
 netSwitch:addCase("start",function(args)
-    --Remove any 
+    if not player then return end
+    --Remove any graphics from menus, eg pause menu
     state[2] = nil
     lState[2] = nil
     state[1] = "in game"
     lState[1] = nil
     order = 1
+    LobbyPlayer:setInLobby(player.ID,false)
+    if server then
+        server:send("all","updt:"..player.ID.."_in lobby_"..false)
+    else
+        player:send("updt:"..player.ID.."_in lobby_"..false)
+    end
 end)
 
 --Asign ball ID to a player
