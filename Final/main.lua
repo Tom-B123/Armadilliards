@@ -860,7 +860,8 @@ netSwitch:addCase("econ",function(args)
             lState[1] = nil
 
             JoinableLobby:clear()
-
+            LobbyPlayer:clear()
+            
             clearMessages()
         else
             table.insert(toRemoveIDs,playerID)
