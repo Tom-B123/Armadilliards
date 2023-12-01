@@ -861,7 +861,7 @@ netSwitch:addCase("econ",function(args)
 
             JoinableLobby:clear()
             LobbyPlayer:clear()
-            
+
             clearMessages()
         else
             table.insert(toRemoveIDs,playerID)
@@ -943,7 +943,7 @@ netSwitch:addCase("create",function(args)
         server:send("all","create:"..hostID.."_"..ID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
         local splitData = Util:split(args,"_")
-        local hostID, lobbyID, lobbyName, IP, port, maxPlayers = 
+        local hostID, lobbyID, lobbyName, IP, port, maxPlayers =
         splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
 
         if player.ID == hostID then
