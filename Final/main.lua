@@ -765,13 +765,11 @@ drawStateSwitch:addCase("end screen",function()
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",200,200,400,300)
     love.graphics.setColor(1,1,1)
-    drawMessages()
     drawButtons(2)
 end)
 
 drawStateSwitch:addCase("lobby pause screen",function()
     love.graphics.setColor(1,1,1)
-    drawMessages()
     drawButtons(2)
 end)
 
@@ -1084,10 +1082,6 @@ end
 
 --Handle keyboard inputs
 function love.keypressed(key)
-    local a,b = state[1],state[2]
-    if not a then a = "nil" end
-    if not b then b = "nil" end
-    print("order 1: "..a.." order 2: "..b)
     if editingText and player then
         if key == "escape" then
             state[order] = nil
@@ -1136,7 +1130,7 @@ function love.keypressed(key)
     
     elseif key == "escape" then
         --If in an offline state
-        if not inLobby() then
+        if not inLobby() and state[1] ~= "end screen" then
             --If in a menu, esc closes that menu
             if order > 1 then
                 state[order] = nil
