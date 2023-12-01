@@ -66,6 +66,9 @@ local toBoolDict = {}
 toBoolDict["true"] = true
 toBoolDict["false"] = false
 
+--Convert a string or bool into a bool
 function Util:toBool(string)
+    --If already a bool, return the bool
+    if type(string) == "boolean" then return string end
     return toBoolDict[string]
 end
