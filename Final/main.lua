@@ -8,6 +8,7 @@ require("solver")
 local player = nil
 local lobbyToCreate = {name = "new lobby",IP = Socket.dns.toip(Socket.dns.gethostname( )), port = 1000, maxPlayers = 8}
 
+local toRemoveIDs = {}
 local toConnectMain = false
 local toClosePlayer = false
 local toConnectPlayer = nil
@@ -839,8 +840,7 @@ netSwitch:addCase("econ",function(args)
         local ID = args
         local isMain = tostring(state[1] == "hosting main")
         server:send("all","econ:"..ID.."_"..isMain)
-        --end the connection with client
-        --LobbyPlayer:removeID(ID)
+        table.insert(toRemoveIDs,ID)
     elseif player then
         local splitData = Util:split(args,"_")
         local playerID, isMain =
@@ -1229,6 +1229,10 @@ function love.update(dt)
         toConnectMain = false
     end
 
+    for i,ID in ipairs(toRemoveIDs) do
+        LobbyPlayer:removeID(ID)
+    end
+    
     tick = tick + 1
 end
 

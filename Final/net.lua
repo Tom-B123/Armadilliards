@@ -251,7 +251,15 @@ function LobbyPlayer:getIDs()
 end
 
 function LobbyPlayer:removeID(ID)
-    --remove all values attributed to that ID
+    local ind = -1
+    for i, nID in ipairs(self.IDTable) do
+        if ID == nID then
+            ind = i
+        end
+    end
+    if ind > -1 then
+        table.remove(self.IDTable,ind)
+    end
 end
 
 function LobbyPlayer:getBallID(ID)
