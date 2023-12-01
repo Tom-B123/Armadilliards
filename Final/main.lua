@@ -17,7 +17,6 @@ local server = nil
 --number of ticks between each lobby refresh
 local refreshRate = 30
 
-
 local canQuit = false
 local tick = 0
 
