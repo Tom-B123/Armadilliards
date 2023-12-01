@@ -198,7 +198,7 @@ end
 function Player:connectToMain()
     --Send messages before closing
     self:close()
-    self.client = Client:new(mainPort,mainIP)
+    self.client = Client:new(mainIP,mainPort)
 end
 
 function Player:join(lobbyID)
