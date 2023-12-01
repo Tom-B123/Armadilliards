@@ -61,7 +61,11 @@ function Util:findDistance(x,y)
     return (x*x + y*y)^0.5
 end
 
-local toBoolDict = {"true",true,"false",false}
+local toBoolDict = {}
+
+toBoolDict["true"] = true
+toBoolDict["false"] = false
+
 function Util:toBool(string)
     return toBoolDict[string]
 end
