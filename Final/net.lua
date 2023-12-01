@@ -152,10 +152,17 @@ function Lobby:close()
     self.server:close()
 end
 
-
-function Lobby:create(client,name,port,IP,hostName)
-    --create a new inactive lobby object
-    --send back to client
+function Lobby:sendUpdateMessage()
+    for i,ID in ipairs(LobbyPlayer:getIDs()) do
+        local name = LobbyPlayer:getName(ID)
+        local ready = LobbyPlayer:getReady(ID)
+        local lobby = LobbyPlayer:getInLobby(ID)
+        local team = LobbyPlayer:getTeam(ID)
+        self:send("all","updt:"..ID.."_name_"..name)
+        self:send("all","updt:"..ID.."_ready_"..tostring(ready))
+        self:send("all","updt:"..ID.."_in lobby_"..tostring(lobby))
+        self:send("all","updt:"..ID.."_team_"..team)
+    end
 end
 
 --Player class, adds to the server class with more functionality

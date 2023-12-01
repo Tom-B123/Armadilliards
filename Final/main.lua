@@ -12,6 +12,10 @@ local toClosePlayer = false
 local toConnectPlayer = nil
 local server = nil
 
+--number of ticks between each lobby refresh
+local refreshRate = 30
+
+
 local canQuit = false
 local tick = 0
 
@@ -187,7 +191,7 @@ end
 --Adding cases to the switch statements
 stateSwitch:addCase("hosting main",function()
     if not server then return end
-    if tick % 120 == 0 then
+    if tick % refreshRate == 0 then
         for i,ID in ipairs(JoinableLobby.IDTable) do
             local name, hostID, IP, port, playerCount, maxPlayers = JoinableLobby:getAll(ID)
             local hostName = LobbyPlayer:getName(hostID)
@@ -209,17 +213,8 @@ end)
 stateSwitch:addCase("hosting lobby",function()
     if not server then return end
     processReceived()
-    if tick % 120 == 0 then
-        for i,ID in ipairs(LobbyPlayer:getIDs()) do
-            local name = LobbyPlayer:getName(ID)
-            local ready = LobbyPlayer:getReady(ID)
-            local lobby = LobbyPlayer:getInLobby(ID)
-            local team = LobbyPlayer:getTeam(ID)
-            server:send("all","updt:"..ID.."_name_"..name)
-            server:send("all","updt:"..ID.."_ready_"..tostring(ready))
-            server:send("all","updt:"..ID.."_in lobby_"..tostring(lobby))
-            server:send("all","updt:"..ID.."_team_"..team)
-        end
+    if tick % refreshRate == 0 then
+        server:sendUpdateMessage()
     elseif tick % 2 == 0 then
         server:update()
     else
@@ -256,25 +251,34 @@ stateSwitch:addCase("hosting game",function(dt)
     processReceived()
 
     World:update(dt)
+
     local balls = World.balls
     if order == 1 and not editingText then
         local nx,ny = Util:processGameInputs()
         applyMove(balls[1],nx,ny)
     end
+
+    if tick % refreshRate == 0 then
+        server:sendUpdateMessage()
+    end
     if tick % 1 == 0 then
         server:send("all","upgm:"..World:getUpgm())
     end
+
     if love.keyboard.isDown("y") and order == 1 then
         local msg = "endgm:"
+
         for i = 1,4 do
             local score = Util:calculateID(4,i)
             msg = msg.."team"..i.."_"..score
             if i < 4 then msg = msg.."_" end
         end
+
         server:send("all",msg)
         state[2] = "end screen"
         lState[2] = nil
         order = 2
+
     end
 end)
 
