@@ -384,6 +384,7 @@ newStateSwitch:addCase("searching for lobby",function()
     if not player then return end
     clearButtons()
     
+    JoinableLobby:clear()
     --no text, the player name is drawn separatly above the button
     newButton(1,"",{1,1,1},300,25,500,75,function()
         state[2] = "editing player name"
@@ -852,7 +853,8 @@ netSwitch:addCase("econ",function(args)
             else
                 state[1] = "searching for lobby"
             end
-
+            lState[2] = nil
+            state[2]  = nil
             lState[1] = nil
 
             JoinableLobby:clear()
