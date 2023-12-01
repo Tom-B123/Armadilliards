@@ -176,6 +176,11 @@ local function applyMove(ball,vx,vy)
     end
 end
 
+--Returns true if the player is in a lobby / in game
+local function inLobby()
+    return (state[1] == "in lobby" or state[1] == "hosting lobby" or state[1] == "in game" or state[1] == "hosting game")
+end
+
 --============================================================================================--
 --============================================================================================--
 
@@ -583,6 +588,22 @@ newStateSwitch:addCase("end screen",function()
             state[1]  = "in lobby"
             order = 1
         end
+    end)
+
+    lState[2] = state[2]
+end)
+
+newStateSwitch:addCase("lobby pause screen",function()
+    clearButtons()
+
+    newButton(2,"back",{1,1,1},300,200,500,250, function()
+        state[2] = nil
+        lState[2] = nil
+        order = 1
+    end)
+
+    newButton(2,"quit lobby",{1,1,1},300,275,500,325, function()
+        --quit the lobby and remove this player from LobbyPlayers of the host, as well as all other players
     end)
 
     lState[2] = state[2]
@@ -1021,6 +1042,10 @@ netSwitch:addCase("endgm",function(args)
     newMessage("server","The winner is: "..winningTeam.." with "..maxScore.." points")
 end)
 
+--============================================================================================--
+--============================================================================================--
+
+--Handles keyboard inputs for writing text
 function love.textinput(t)
     if not editingText then return end
     if not player then return end
@@ -1080,23 +1105,35 @@ function love.keypressed(key)
         end
     
     elseif key == "escape" then
-        --If in a menu, esc closes that menu
-        if order > 1 then
-            state[order] = nil
-            lState[order] = nil
-            order = order - 1
-        --If not in a menu, esc opens options
+        --If in an offline state
+        if not inLobby() then
+            --If in a menu, esc closes that menu
+            if order > 1 then
+                state[order] = nil
+                lState[order] = nil
+                order = order - 1
+            --If not in a menu, esc opens options
+            else
+                order = 2
+                lState[2] = nil
+                state[2] = "user settings"
+            end
+        --If in and online state
         else
-            order = 2
-            lState[2] = nil
-            state[2] = "user settings"
+            if order > 1 then
+                state[order] = nil
+                lState[order] = nil
+                order = order - 1
+            else
+                order = 2
+                lState[2] = nil
+                state[2] = "lobby pause screen"
+            end
         end
-    elseif key == "t" and (state[1] == "in lobby" or state[1] == "hosting lobby" or state[1] == "in game" or state[1] == "hosting game") then
+    elseif key == "t" and inLobby() and state[2] ~= "end screen" then
         lState[2] = nil
         state[2] = "editing message"
         order = 2
-    elseif state == "main menu" then
-        state[1] = "gamemode select"
     end
 end
 
