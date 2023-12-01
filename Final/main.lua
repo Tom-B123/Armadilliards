@@ -757,6 +757,11 @@ drawStateSwitch:addCase("end screen",function()
     drawButtons(2)
 end)
 
+drawStateSwitch:addCase("lobby pause screen",function()
+    love.graphics.setColor(1,1,1)
+    drawMessages()
+    drawButtons(2)
+end)
 
 --============================================================================================--
 --============================================================================================--
@@ -961,6 +966,9 @@ end)
 
 --Start a new game
 netSwitch:addCase("start",function(args)
+    --Remove any 
+    state[2] = nil
+    lState[2] = nil
     state[1] = "in game"
     lState[1] = nil
     order = 1
