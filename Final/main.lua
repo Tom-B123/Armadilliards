@@ -217,8 +217,8 @@ stateSwitch:addCase("hosting lobby",function()
             local team = LobbyPlayer:getTeam(ID)
             server:send("all","updt:"..ID.."_name_"..name)
             server:send("all","updt:"..ID.."_ready_"..tostring(ready))
-            server:send("all","updt:"..ID.."in lobby"..tostring(lobby))
-            server:send("all","updt:"..ID.."_team_".."_"..team)
+            server:send("all","updt:"..ID.."_in lobby_"..tostring(lobby))
+            server:send("all","updt:"..ID.."_team_"..team)
         end
     elseif tick % 2 == 0 then
         server:update()
@@ -586,14 +586,14 @@ newStateSwitch:addCase("end screen",function()
             lState[1] = "in game"
             state[1]  = "hosting lobby"
             order = 1
-            server:send("all","updt:"..player.ID.."_in lobby_"..true)
+            server:send("all","updt:"..player.ID.."_in lobby_true")
         else
             state[2]  = nil
             lState[2] = nil
             lState[1] = "in game"
             state[1]  = "in lobby"
             order = 1
-            player:send("updt:"..player.ID.."_in lobby_"..true)
+            player:send("updt:"..player.ID.."_in lobby_true")
         end
     end)
 
@@ -985,9 +985,9 @@ netSwitch:addCase("start",function(args)
     order = 1
     LobbyPlayer:setInLobby(player.ID,false)
     if server then
-        server:send("all","updt:"..player.ID.."_in lobby_"..false)
+        server:send("all","updt:"..player.ID.."_in lobby_false")
     else
-        player:send("updt:"..player.ID.."_in lobby_"..false)
+        player:send("updt:"..player.ID.."_in lobby_false")
     end
 end)
 
