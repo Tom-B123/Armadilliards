@@ -821,7 +821,7 @@ netSwitch:addCase("updt",function(args)
     if not LobbyPlayer:getName(ID) then LobbyPlayer:new(ID) end
 
     if field == "name" then LobbyPlayer:setName(ID,value)
-    elseif field == "ready" then LobbyPlayer:setReady(ID,Util:toBool(value))
+    elseif field == "ready" then LobbyPlayer:setReady(ID,value)
     elseif field == "team" then LobbyPlayer:setTeam(ID,value)
     end
 end)

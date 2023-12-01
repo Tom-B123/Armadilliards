@@ -255,7 +255,6 @@ function LobbyPlayer:setBallID(ID,ballID)
 end
 
 function LobbyPlayer:getName(ID)
-    --returns the player name, or nil
     local name = self.nameDict[ID]
     return name
 end
@@ -265,7 +264,6 @@ function LobbyPlayer:setName(ID,name)
 end
 
 function LobbyPlayer:getTeam(ID)
-    --returns the player name, or nil
     local team = self.teamDict[ID]
     return team
 end
@@ -275,13 +273,15 @@ function LobbyPlayer:setTeam(ID,team)
 end
 
 function LobbyPlayer:getReady(ID)
-    --returns the player name, or nil
     local isReady = self.readyDict[ID]
     return isReady
 end
 
 function LobbyPlayer:setReady(ID,ready)
-    self.readyDict[ID] = ready
+    local boolReady = Util:toBool(ready)
+    if boolReady ~= nil then
+        self.readyDict[ID] = boolReady
+    end
 end
 
 --Joinable lobby table, gets lobby data via the lobby ID
