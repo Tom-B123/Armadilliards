@@ -162,7 +162,7 @@ end
 --Checks if every player in the lobby is ready
 local function playersAllReady()
     for i,ID in ipairs(LobbyPlayer:getIDs()) do
-        if not LobbyPlayer:getReady(ID) then return false end
+        if not (LobbyPlayer:getReady(ID) and LobbyPlayer:getInLobby(ID))  then return false end
     end
     return true
 end

@@ -222,7 +222,7 @@ LobbyPlayer = {
     IDTable = {},
     nameDict = {},
     readyDict = {},
-    inGameDict = {},
+    inLobbyDict = {},
     teamDict = {}
 }
 
@@ -235,7 +235,7 @@ function LobbyPlayer:clear()
     self.ballIDDict = {}
     self.nameDict = {}
     self.readyDict = {}
-    self.inGameDict = {}
+    self.inLobbyDict = {}
     self.teamDict = {}
 end
 
@@ -286,15 +286,15 @@ function LobbyPlayer:setReady(ID,ready)
     end
 end
 
-function LobbyPlayer:getInGame(ID)
-    local inGame = self.inGameDict[ID]
-    return inGame
+function LobbyPlayer:getInLobby(ID)
+    local inLobby = self.inLobbyDict[ID]
+    return inLobby
 end
 
-function LobbyPlayer:setInGame(ID,inGame)
-    local boolInGame = Util:toBool(inGame)
-    if boolInGame ~= nil then
-        self.inGameDict[ID] = boolInGame
+function LobbyPlayer:setInLobby(ID,inLobby)
+    local boolInLobby = Util:toBool(inLobby)
+    if boolInLobby ~= nil then
+        self.inLobbyDict[ID] = boolInLobby
     end
 end
 
