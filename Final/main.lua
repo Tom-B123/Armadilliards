@@ -553,7 +553,7 @@ newStateSwitch:addCase("hosting game",function()
     
     LobbyPlayer:setInLobby(player.ID,false)
     -- server:send("all","updt:"..player.ID.."_in lobby_false")
-    
+
     World:newBall(50,50,true)
     World:newBall(150,50,true)
     World:newBall(50,150,true)
@@ -1084,6 +1084,10 @@ end
 
 --Handle keyboard inputs
 function love.keypressed(key)
+    local a,b = state[1],state[2]
+    if not a then a = "nil" end
+    if not b then b = "nil" end
+    print("order 1: "..a.." order 2: "..b)
     if editingText and player then
         if key == "escape" then
             state[order] = nil
