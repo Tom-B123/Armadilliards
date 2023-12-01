@@ -488,9 +488,6 @@ newStateSwitch:addCase("hosting lobby",function()
 
     clearButtons()
 
-    --Clears all existing balls
-    World:clear()
-
     if lState[1] ~= "in game" then
         LobbyPlayer:clear()
         LobbyPlayer:new(player.ID)
@@ -506,6 +503,8 @@ newStateSwitch:addCase("hosting lobby",function()
             state[1] = "hosting game"
             lState[1] = nil
             order = 1
+            --Clears all existing balls
+            World:clear()
         else
             sendMessage("ready up")
         end
@@ -525,9 +524,6 @@ newStateSwitch:addCase("in lobby",function()
     if not player then return end
     
     clearButtons()
-    
-    --Clears all existing balls
-    World:clear()
 
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
         local ready = LobbyPlayer:getReady(player.ID)
@@ -552,8 +548,11 @@ newStateSwitch:addCase("editing message",function()
 end)
 
 newStateSwitch:addCase("hosting game",function()
-    if not server then return end
+    if not (server and player) then return end
     clearButtons()
+    
+    LobbyPlayer:setInLobby(player.ID,false)
+    -- server:send("all","updt:"..player.ID.."_in lobby_false")
     
     World:newBall(50,50,true)
     World:newBall(150,50,true)
@@ -988,11 +987,9 @@ netSwitch:addCase("start",function(args)
     lState[1] = nil
     order = 1
     LobbyPlayer:setInLobby(player.ID,false)
-    if server then
-        server:send("all","updt:"..player.ID.."_in lobby_false")
-    else
-        player:send("updt:"..player.ID.."_in lobby_false")
-    end
+    player:send("updt:"..player.ID.."_in lobby_false")
+    --Clears all existing balls
+    World:clear()
 end)
 
 --Asign ball ID to a player
