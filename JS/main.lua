@@ -12,8 +12,12 @@ local function calculateID(length,salt)
     return out
 end
 
-local ID = calculateID(6)
+local ID = calculateID(8,1)
+local name = "new player"
 
+local lobbyID = calculateID(6,2)
+
+local IP = Socket.dns.toip(Socket.dns.gethostname( ))
 local mainIP = "127.0.0.1"
 local mainPort = 500
 
@@ -23,13 +27,15 @@ local msg = ""
 
 local messages = {}
 
+client:send("create:"..lobbyID.."_".."new lobby".."_"..name.."_"..(0).."_"..(8).."_"..IP.."_"..(1000))
+
 local function process(data)
     if data and data ~= "no dat" then table.insert(messages,data) end
 end
 
 function love.update()
     messages = {}
-    client:send("ncon:ID")
+    
     local data,err = client:receive()
     if data then process(data) end
 end

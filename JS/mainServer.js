@@ -1,5 +1,19 @@
 const net = require('net');
 
+var lobbyDict = {}
+
+class Lobby {
+    constructor(ID, name, hostName, playerCount, maxPlayers, IP, port) {
+        this.ID = ID
+        this.name = name;
+        this.hostName = hostName;
+        this.playerCount = playerCount;
+        this.maxPlayers = maxPlayers;
+        this.IP = IP
+        this.port = port
+    }
+}
+
 //Split string by a separator into a table
 function split(string, sep) {
     var out = [];
@@ -27,21 +41,25 @@ function netSwitch(message) {
     const args         = splitCommand[1];
     const splitData    = split(args,"_")
     
-    // Commands that will be received: ncon, econ, create, join
+    // Commands that will be received: updt (changing player counts), econ, create, join
     switch (command) {
-        case "ncon":
-            var playerID = splitData[0];
-            var playerName = splitData[1];
-            console.log("new connection: " + playerID);
-            messageQueue.push("ncon:"+playerID+"_"+playerName+"_confirm\n")
+        case "updt":
             break;
         case "econ":
             var playerID = splitData[0];
             console.log("end connection: " + playerID);
             break;
         case "create":
-            var playerID = splitData[0];
-            console.log("create new lobby: " + playerID);
+            var lobbyID     = splitData[0];
+            var name        = splitData[1];
+            var hostName    = splitData[2];
+            var playerCount = splitData[3];
+            var maxPlayers  = splitData[4];
+            var IP          = splitData[5];
+            var port        = splitData[6];
+            var nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port)
+            lobbyDict[lobbyID] = nLobby
+            console.log("create new lobby: " + lobbyID);
             break;
         case "join":
             var playerID = splitData[0];
