@@ -4,8 +4,12 @@ const server = net.createServer((socket) => {
     console.log('Client connected.');
 
     socket.on('data', (data) => {
+
+        // Data.toString() = server:receive
+        // Socket.write(msg) = server:send(msg)
+
         console.log('Received from client:', data.toString());
-        socket.write('Hello from Node.js!\n');
+        socket.write(data.toString()+"\n");
     });
 
     socket.on('end', () => {
