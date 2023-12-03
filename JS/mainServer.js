@@ -60,7 +60,7 @@ const server = net.createServer((socket) => {
         if (message) {
             netSwitch(message);
         }
-        socket.write("no dat");
+        socket.write(data.toString() + "\n");
     });
 
     socket.on('end', () => {
