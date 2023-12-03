@@ -16,18 +16,21 @@ class Lobby {
 
 //Split string by a separator into a table
 function split(string, sep) {
+    var found = false;
     var out = [];
     var tmp = "";
     for (i in string) {
         const char = string[i];
         if (char == sep) {
+            found = true;
             out.push(tmp);
-            tmp = ""
+            tmp = "";
         }
         else {
             tmp = tmp + char;
         }
     }
+    if (found == false) { return 0; }
     out.push(tmp);
     return out;
 }
@@ -36,8 +39,8 @@ var messageQueue = [];
 
 // Converts the command into a function to execute
 function netSwitch(message) {
-    if (message == "\n") { return }
     const splitCommand = split(message,":");
+    if (splitCommand == 0) { return }
     const command      = splitCommand[0];
     const args         = splitCommand[1];
     const splitData    = split(args,"_")
@@ -68,7 +71,7 @@ function netSwitch(message) {
                 var nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
                 lobbyDict[lobbyID] = nLobby;
                 console.log("create new lobby: " + lobbyID);
-                messageQueue.push("create:" + playerID + "_" + lobbyID);
+                messageQueue.push("create:" + playerID + "_" + lobbyID + "\n");
             }
 
             break;
@@ -81,8 +84,8 @@ function netSwitch(message) {
                 const IP    = lobby.IP;
                 const port  = lobby.port;
 
-                messageQueue.push("join:" + playerID + "_" + lobbyID);
-                console.log("player: " + playerID + " to join lobby: " + lobbyID);
+                messageQueue.push("join:" + playerID + "_" + lobbyID + "\n");
+                console.log("player: " + playerID + " to join lobby: " + lobbyID );
             }
             else {
                 console.log("unable to join lobby: " + lobbyID);
