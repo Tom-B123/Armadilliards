@@ -119,6 +119,12 @@ const server = net.createServer((socket) => {
     socket.on('end', () => {
         console.log('Client disconnected');
     });
+
+    socket.on("error", (error) => {
+        if (error.code == "ECONNRESET") {
+            console.log("client closed unexpectedly");
+        }
+    })
 });
 
 const PORT = 500;
