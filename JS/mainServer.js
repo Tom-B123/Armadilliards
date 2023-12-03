@@ -66,7 +66,7 @@ const server = net.createServer((socket) => {
         }
         for (i in messageQueue) {
             const message = messageQueue[i];
-            socket.write(message + "\n");
+            socket.write(message);
         }
         socket.write("no dat\n");
         

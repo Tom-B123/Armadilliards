@@ -24,18 +24,14 @@ local msg = ""
 local messages = {}
 
 local function process(data)
-    if data then table.insert(messages,data) end
+    if data and data ~= "no dat" then table.insert(messages,data) end
 end
 
 function love.update()
     messages = {}
     client:send("ncon:ID")
     local data,err = client:receive()
-    while data do
-        process(data)
-        data,err = client:receive()
-    end
-    if data then msg = data end
+    if data then process(data) end
 end
 
 function love.draw()
