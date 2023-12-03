@@ -30,8 +30,8 @@ local function process(data)
 end
 
 function love.keypressed(key)
-    if key == "c" then client:send("create:"..lobbyID.."_".."new lobby".."_"..name.."_"..(0).."_"..(8).."_"..IP.."_"..(1000).."\n") end
-    if key == "j" then client:send("join:"..ID.."_"..lobbyID.."\n") end
+    if key == "c" then client:send("create:"..lobbyID.."_".."new lobby".."_"..name.."_"..(0).."_"..(8).."_"..IP.."_"..(1000).."_".."\n") end
+    if key == "j" then client:send("join:"..ID.."_"..lobbyID.."_".."\n") end
 end
 
 function love.update()
