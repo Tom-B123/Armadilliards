@@ -1,5 +1,25 @@
 const net = require('net');
 
+function split(string, sep) {
+    var out = [];
+    var tmp = "";
+    for (i in string) {
+        const char = string[i];
+        if (char == sep) {
+            out.push(tmp);
+            tmp = ""
+        }
+        else {
+            tmp = tmp + char;
+        }
+    }
+    out.push(tmp);
+    return out;
+}
+
+const splitData = split("updt:ID_name_player 3",":");
+console.log(splitData[0],split(splitData[1],"_"));
+
 const server = net.createServer((socket) => {
     console.log('Client connected.');
 
