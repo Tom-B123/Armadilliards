@@ -13,7 +13,7 @@ const server = net.createServer((socket) => {
     });
 });
 
-const PORT = 8080;
+const PORT = 500;
 const HOST = '127.0.0.1';
 
 server.listen(PORT, HOST, () => {
