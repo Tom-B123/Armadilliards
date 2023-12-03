@@ -1,5 +1,6 @@
 const net = require('net');
 
+//Split string by a separator into a table
 function split(string, sep) {
     var out = [];
     var tmp = "";
@@ -17,13 +18,14 @@ function split(string, sep) {
     return out;
 }
 
+// Converts the command into a function to execute
 function netSwitch(message) {
     const splitCommand = split(message,":");
-    const command = splitCommand[0];
-    const args    = splitCommand[1];
-    const splitData = split(args,"_")
-    // Net switch, converts the command into a function to execute
-    // Commands that will be received: ncon, econ, updt?, create, join
+    const command      = splitCommand[0];
+    const args         = splitCommand[1];
+    const splitData    = split(args,"_")
+    
+    // Commands that will be received: ncon, econ, create, join
     switch (command) {
         case "ncon":
             var playerID = splitData[0];
@@ -44,15 +46,9 @@ function netSwitch(message) {
             break;
         default:
             console.log("unknown command")
-
     }
 }
 
-netSwitch("ncon:123981234_124234")
-netSwitch("econ:123981234_124234")
-netSwitch("create:123981234_124234")
-netSwitch("join:123981234_124234")
-netSwitch("amingus:123981234_124234")
 const server = net.createServer((socket) => {
     console.log('Client connected.');
 
@@ -60,9 +56,11 @@ const server = net.createServer((socket) => {
 
         // Data.toString() = server:receive
         // Socket.write(msg) = server:send(msg)
-
-        console.log('Received from client:', data.toString());
-        socket.write(data.toString()+"\n");
+        const message = data.toString();
+        if (message) {
+            netSwitch(message);
+        }
+        socket.write("no dat");
     });
 
     socket.on('end', () => {

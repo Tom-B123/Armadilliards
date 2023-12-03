@@ -22,7 +22,7 @@ local client = assert(Socket.connect(mainIP,mainPort))
 local msg = ""
 
 function love.update()
-    client:send(ID)
+    client:send("ncon:ID")
     local data,err = client:receive()
     if data then msg = data end
 end
