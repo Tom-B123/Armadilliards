@@ -23,24 +23,27 @@ local mainPort = 500
 
 local client = assert(Socket.connect(mainIP,mainPort))
 
-local msg = ""
-
 local messages = {}
-
-client:send("create:"..lobbyID.."_".."new lobby".."_"..name.."_"..(0).."_"..(8).."_"..IP.."_"..(1000))
 
 local function process(data)
     if data and data ~= "no dat" then table.insert(messages,data) end
 end
 
+function love.keypressed(key)
+    if key == "c" then client:send("create:"..lobbyID.."_".."new lobby".."_"..name.."_"..(0).."_"..(8).."_"..IP.."_"..(1000)) end
+    if key == "j" then client:send("join:"..ID.."_"..lobbyID) end
+end
+
 function love.update()
     messages = {}
-    
+    client:send("\n")
+
     local data,err = client:receive()
     if data then process(data) end
 end
 
 function love.draw()
+    love.graphics.print("hosting: "..lobbyID.."_".."new lobby".."_"..name.."_"..(0).."_"..(8).."_"..IP.."_"..(1000))
     for i,message in ipairs(messages) do
         love.graphics.print(message,0,i*20)
     end

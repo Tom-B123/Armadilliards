@@ -36,6 +36,7 @@ var messageQueue = [];
 
 // Converts the command into a function to execute
 function netSwitch(message) {
+    if (message == "\n") { return }
     const splitCommand = split(message,":");
     const command      = splitCommand[0];
     const args         = splitCommand[1];
@@ -50,21 +51,43 @@ function netSwitch(message) {
             console.log("end connection: " + playerID);
             break;
         case "create":
-            var lobbyID     = splitData[0];
-            var name        = splitData[1];
-            var hostName    = splitData[2];
-            var playerCount = splitData[3];
-            var maxPlayers  = splitData[4];
-            var IP          = splitData[5];
-            var port        = splitData[6];
-            var nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port)
-            lobbyDict[lobbyID] = nLobby
-            console.log("create new lobby: " + lobbyID);
+            var lobbyID = splitData[0];
+
+            if (lobbyID in lobbyDict) {
+                console.log("lobby: " + lobbyID + " already exists");
+            }
+            else {
+                var name        = splitData[1];
+                var hostName    = splitData[2];
+                var playerCount = splitData[3];
+                var maxPlayers  = splitData[4];
+                var IP          = splitData[5];
+                var port        = splitData[6];
+                var playerID    = splitData[7];
+
+                var nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
+                lobbyDict[lobbyID] = nLobby;
+                console.log("create new lobby: " + lobbyID);
+                messageQueue.push("create:" + playerID + "_" + lobbyID);
+            }
+
             break;
         case "join":
             var playerID = splitData[0];
-            var lobbyID = splitData[1];
-            console.log("player: " + playerID + " to join lobby: " + lobbyID);
+            var lobbyID  = splitData[1];
+
+            if (lobbyID in lobbyDict) {
+                const lobby = lobbyDict[lobbyID];
+                const IP    = lobby.IP;
+                const port  = lobby.port;
+
+                messageQueue.push("join:" + playerID + "_" + lobbyID);
+                console.log("player: " + playerID + " to join lobby: " + lobbyID);
+            }
+            else {
+                console.log("unable to join lobby: " + lobbyID);
+            }
+
             break;
         default:
             console.log("unknown command")
@@ -86,7 +109,7 @@ const server = net.createServer((socket) => {
             const message = messageQueue[i];
             socket.write(message);
         }
-        socket.write("no dat\n");
+        socket.write("\n");
         
     });
 
