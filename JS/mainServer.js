@@ -18,6 +18,8 @@ function split(string, sep) {
     return out;
 }
 
+var messageQueue = [];
+
 // Converts the command into a function to execute
 function netSwitch(message) {
     const splitCommand = split(message,":");
@@ -29,7 +31,9 @@ function netSwitch(message) {
     switch (command) {
         case "ncon":
             var playerID = splitData[0];
+            var playerName = splitData[1];
             console.log("new connection: " + playerID);
+            messageQueue.push("ncon:"+playerID+"_"+playerName+"_confirm\n")
             break;
         case "econ":
             var playerID = splitData[0];
@@ -53,18 +57,23 @@ const server = net.createServer((socket) => {
     console.log('Client connected.');
 
     socket.on('data', (data) => {
-
+        messageQueue = []
         // Data.toString() = server:receive
         // Socket.write(msg) = server:send(msg)
         const message = data.toString();
         if (message) {
             netSwitch(message);
         }
-        socket.write(data.toString() + "\n");
+        for (i in messageQueue) {
+            const message = messageQueue[i];
+            socket.write(message + "\n");
+        }
+        socket.write("no dat\n");
+        
     });
 
     socket.on('end', () => {
-        console.log('Client disconnected.');
+        console.log('Client disconnected');
     });
 });
 

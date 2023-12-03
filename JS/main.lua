@@ -21,12 +21,25 @@ local client = assert(Socket.connect(mainIP,mainPort))
 
 local msg = ""
 
+local messages = {}
+
+local function process(data)
+    if data then table.insert(messages,data) end
+end
+
 function love.update()
+    messages = {}
     client:send("ncon:ID")
     local data,err = client:receive()
+    while data do
+        process(data)
+        data,err = client:receive()
+    end
     if data then msg = data end
 end
 
 function love.draw()
-    love.graphics.print(msg)
+    for i,message in ipairs(messages) do
+        love.graphics.print(message,0,i*20)
+    end
 end
