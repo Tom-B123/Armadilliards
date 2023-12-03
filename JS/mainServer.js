@@ -84,7 +84,7 @@ function netSwitch(message) {
                 const IP    = lobby.IP;
                 const port  = lobby.port;
 
-                messageQueue.push("join:" + playerID + "_" + lobbyID + "\n");
+                messageQueue.push("join:" + playerID + "_" + lobbyID + "_" + IP + "_" + port + "_\n");
                 console.log("player: " + playerID + " to join lobby: " + lobbyID );
             }
             else {
