@@ -12,6 +12,13 @@ class Lobby {
         this.IP = IP
         this.port = port
     }
+
+    setName(name)               {this.name = name;}
+    setHostName(hostName)       {this.hostName = hostName;}
+    setPlayerCount(playerCount) {this.playerCount = playerCount;}
+    setMaxPlayers(maxPlayers)   {this.maxPlayers = maxPlayers;}
+    setIP(IP)                   {this.IP = IP;}
+    setPort(port)               {this.port = port;}
 }
 
 function isLobby(ID) {
@@ -41,13 +48,40 @@ function split(string, sep) {
 
 let messageQueue = [];
 
+function updateLobby(ID,field,value) {
+    if (!isLobby(ID)) { return; }
+    let lobby = lobbyDict[ID];
+    switch (field) {
+        case "name":
+            lobby.setName(value);
+            break;
+        case "host name":
+            lobby.setHostName(value);
+            break;
+        case "player count":
+            lobby.setPlayerCount(value);
+            break;
+        case "max players":
+            lobby.setMaxPlayers(value);
+            break;
+        case "IP":
+            lobby.setIP(value);
+            break;
+        case "port":
+            lobby.setPort(value);
+            break;
+        default:
+            console.log("invalid field");
+    }
+}
+
 // Converts the command into a function to execute
 function netSwitch(message) {
     const splitCommand = split(message,":");
-    if (splitCommand  == 0) { return }
+    if (splitCommand  == 0) { return; }
     const command      = splitCommand[0];
     const args         = splitCommand[1];
-    const splitData    = split(args,"_")
+    const splitData    = split(args,"_");
     
     //using {} with 'let' / 'const' to keep variables local to each case
     // Commands that will be received: 
@@ -68,13 +102,17 @@ function netSwitch(message) {
             const field   = splitData[1];
             const value   = splitData[2];
 
-            console.log("updated: " + field + " to " + value + " in " + lobbyID)
+            console.log("updated: " + field + " to " + value + " in " + lobbyID);
+
+            updateLobby(field,value);
+
             break;
         }
 
         case "econ": {
             const playerID = splitData[0];
             console.log("end connection: " + playerID);
+
             break;
         }
 
@@ -130,7 +168,7 @@ function netSwitch(message) {
         console.log("closing lobby: " + lobbyID)
         break;
     }
-    
+
     default:
         console.log("unknown command")
     }
