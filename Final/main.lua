@@ -910,6 +910,7 @@ netSwitch:addCase("join",function(args)
 
     --     server:send("all","join:"..playerID.."_"..lobbyID.."_\n")
     if not player then return end
+    print(args)
     local splitData = Util:split(args,"_")
     local ID,IP,port = splitData[1], splitData[2],splitData[3]
 

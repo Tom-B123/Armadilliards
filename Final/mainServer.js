@@ -53,8 +53,8 @@ function getUplobs() {
 //Split string by a separator into a table
 function split(string, sep) {
     let found = false;
-    let out = [];
-    let tmp = "";
+    let out   = [];
+    let tmp   = "";
     for (i in string) {
         const char = string[i];
         if (char == sep) {
@@ -132,8 +132,8 @@ function netSwitch(message) {
                 break;
             }
 
-            const field   = splitData[1];
-            const value   = splitData[2];
+            const field = splitData[1];
+            const value = splitData[2];
 
             console.log("updated: " + field + " to " + value + " in " + lobbyID);
 
@@ -157,11 +157,11 @@ function netSwitch(message) {
                 break;
             }
 
-            const lobbyName        = splitData[1];
-            const hostID      = splitData[2]
-            const hostName    = splitData[3];
-            const IP          = splitData[4];
-            const port        = splitData[5];
+            const lobbyName  = splitData[1];
+            const hostID     = splitData[2]
+            const hostName   = splitData[3];
+            const IP         = splitData[4];
+            const port       = splitData[5];
             const maxPlayers = splitData[6];
 
             const nLobby = new Lobby(lobbyID,lobbyName,hostName,0,maxPlayers,IP,port);
@@ -173,7 +173,6 @@ function netSwitch(message) {
     }
 
     case "join": {
-        console.log(splitData);
         const lobbyID  = splitData[1];
 
         if (!isLobby(lobbyID)) {
