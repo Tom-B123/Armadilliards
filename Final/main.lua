@@ -1176,6 +1176,7 @@ function love.update(dt)
         toConnectMain = false
     end
 
+    --Allows for delays in changing state
     if toChangeState and tempTick == 1 then
         lState[1]     = nil
         state[1]      = toChangeState
