@@ -192,24 +192,6 @@ end
 
 --Adding cases to the switch statements
 
-
-
--- stateSwitch:addCase("hosting main",function()
---     if not server then return end
---     if tick % refreshRate == 0 then
---         for i,ID in ipairs(JoinableLobby.IDTable) do
---             local name, hostID, IP, port, playerCount, maxPlayers = JoinableLobby:getAll(ID)
---             local hostName = LobbyPlayer:getName(hostID)
---             server:send("all","uplobs:"..name.."_"..hostName.."_"..hostID.."_"..
---             IP.."_"..port.."_"..ID.."_"..playerCount.."_"..maxPlayers)
---         end
---     elseif tick % 2 == 0 then
---         server:update()
---     end
---     server:send("all","no dat")
---     processReceived()
--- end)
-
 stateSwitch:addCase("searching for lobby",function()
     if not player then return end
 
@@ -232,16 +214,19 @@ end)
 
 stateSwitch:addCase("connecting to lobby",function()
     if not player then return end
+
     processReceived()
 end)
 
 stateSwitch:addCase("in lobby",function()
     if not player then return end
+
     processReceived()
 end)
 
 stateSwitch:addCase("in game",function(dt)
     if not player then return end
+
     processReceived()
 
     if order == 1 and not editingText then
@@ -319,6 +304,7 @@ end)
 
 newStateSwitch:addCase("connecting to server",function()
     clearButtons()
+    print("connecting to main")
     local nPlayer = Player:tryConnect()
     if not nPlayer then
         lState[1] = "connecting to server"
@@ -332,20 +318,6 @@ newStateSwitch:addCase("connecting to server",function()
         -- player:send("ncon:"..player.ID.."_"..player.name)
     end
 end)
-
--- newStateSwitch:addCase("hosting main",function()
---     clearButtons()
---     if server then
---         newButton(1,"close main server",{1,0,0},50,50,750,250,function()
---             state[1] = "gamemode select"
---             server:close()
---         end)
---         lState[1] = "hosting main"
---     else
---         lState[1] = "connecting to server"
---         state[1] = "connection error"
---     end
--- end)
 
 newStateSwitch:addCase("connection error",function()
     clearButtons()
@@ -527,7 +499,7 @@ end)
 
 newStateSwitch:addCase("connecting to lobby",function()
     if not player then return end
-    
+
     player:send("ncon:"..player.ID.."_"..player.name.."_\n")
     lState[1] = state[1]
 end)
@@ -575,8 +547,6 @@ newStateSwitch:addCase("hosting game",function()
     World:generateIDs()
 
     World:assign(LobbyPlayer:getIDs())
-
-    print("asgn:"..World:getAsgn())
 
     lState[1] = state[1]
 end)
@@ -808,12 +778,14 @@ end)
 --New connection, sends initial information about the player
 netSwitch:addCase("ncon",function(args)
     if server then
+        print("new connection")
         local splitData = Util:split(args,"_")
 
         local ID = splitData[1]
         local name = splitData[2]
 
-        if LobbyPlayer:getName(ID) ~= nil then
+        -- if LobbyPlayer:getName(ID) ~= nil then
+            print("confirmed connection")
             LobbyPlayer:new(ID)
             LobbyPlayer:setName(ID,name)
             LobbyPlayer:setReady(ID,false)
@@ -821,7 +793,7 @@ netSwitch:addCase("ncon",function(args)
             LobbyPlayer:setTeam(ID,"team 1")
             
             server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
-        end
+        -- end
     end
 
     if player then
@@ -899,18 +871,7 @@ end)
 
 --Request and confirm joining a new lobby
 netSwitch:addCase("join",function(args)
-    -- if server then
-    --     local splitData = Util:split(args,"_")
-    --     local playerID,lobbyID = splitData[1], splitData[2]
-
-    --     print("player: "..playerID.." ("..LobbyPlayer:getName(playerID)..") ".." wants to join lobby: "..lobbyID)
-        
-    --     local IP = JoinableLobby:getIP(lobbyID)
-    --     local port = JoinableLobby:getPort(lobbyID)
-
-    --     server:send("all","join:"..playerID.."_"..lobbyID.."_\n")
     if not player then return end
-    print(args)
     local splitData = Util:split(args,"_")
     local ID,IP,port = splitData[1], splitData[2],splitData[3]
 
@@ -929,28 +890,6 @@ end)
 
 --Create a new lobby and confirm creation
 netSwitch:addCase("create",function(args)
-    -- if server then
-    --     local splitData = Util:split(args,"_")
-    --     local hostName, hostID, lobbyName, lobbyID, IP, port, maxPlayers = 
-    --     splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
-        
-    --     --If ports are already in use on that IP, use the next port
-    --     local existingPorts = JoinableLobby:getPortsByIP(IP)
-    --     if existingPorts then
-    --         port = tonumber(existingPorts[#existingPorts]) + 1
-    --     end
-
-    --     print(IP.." hosting a lobby on port: "..port)
-
-    --     JoinableLobby:new(lobbyID)
-    --     JoinableLobby:setName(lobbyID,lobbyName)
-    --     JoinableLobby:setHostName(lobbyID,hostName)
-    --     JoinableLobby:setIP(lobbyID,IP)
-    --     JoinableLobby:setPort(lobbyID,port)
-    --     JoinableLobby:setPlayerCount(lobbyID,0)
-    --     JoinableLobby:setMaxPlayers(lobbyID,maxPlayers)
-        
-    --     server:send("all","create:"..hostID.."_"..lobbyID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
     if not player then return end
     local splitData = Util:split(args,"_")
     local hostID, lobbyID, lobbyName, IP, port, maxPlayers =
