@@ -1,3 +1,4 @@
+--Ctrl + alt + L activates run on save!!!!!
 Socket = require("socket")
 
 --Returns a psudo-random string of numbers, with set length

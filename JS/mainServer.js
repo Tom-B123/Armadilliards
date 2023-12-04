@@ -1,6 +1,6 @@
 const net = require('net');
 
-var lobbyDict = {}
+let lobbyDict = {};
 
 class Lobby {
     constructor(ID, name, hostName, playerCount, maxPlayers, IP, port) {
@@ -14,11 +14,15 @@ class Lobby {
     }
 }
 
+function isLobby(ID) {
+    return ID in lobbyDict;
+}
+
 //Split string by a separator into a table
 function split(string, sep) {
-    var found = false;
-    var out = [];
-    var tmp = "";
+    let found = false;
+    let out = [];
+    let tmp = "";
     for (i in string) {
         const char = string[i];
         if (char == sep) {
@@ -35,51 +39,68 @@ function split(string, sep) {
     return out;
 }
 
-var messageQueue = [];
+let messageQueue = [];
 
 // Converts the command into a function to execute
 function netSwitch(message) {
     const splitCommand = split(message,":");
-    if (splitCommand == 0) { return }
+    if (splitCommand  == 0) { return }
     const command      = splitCommand[0];
     const args         = splitCommand[1];
     const splitData    = split(args,"_")
     
-    // Commands that will be received: updt (changing player counts), econ, create, join
+    // Commands that will be received: 
+    // updt (changing player counts),
+    // econ (cleanly exit a player),
+    // create (create a new lobby object),
+    // join (send data to join a server),
+    // clse (cleanly delete a lobby object)
     switch (command) {
-        case "updt":
+        //using {} with 'let' to keep variables local to each case
+        case "updt": {
+            let lobbyID = splitData[0];
+            if (!isLobby(lobbyID)) {
+                console.log("invalid lobby name");
+                break;
+            }
+            let field   = splitData[1];
+            let values  = splitData[2];
+
             break;
-        case "econ":
-            var playerID = splitData[0];
+            }
+        case "econ": {
+            let playerID = splitData[0];
             console.log("end connection: " + playerID);
             break;
-        case "create":
-            var lobbyID = splitData[0];
+            }
+        case "create": {
+            let lobbyID = splitData[0];
 
-            if (lobbyID in lobbyDict) {
+            if (isLobby(lobbyID)) {
                 console.log("lobby: " + lobbyID + " already exists");
             }
             else {
-                var name        = splitData[1];
-                var hostName    = splitData[2];
-                var playerCount = splitData[3];
-                var maxPlayers  = splitData[4];
-                var IP          = splitData[5];
-                var port        = splitData[6];
-                var playerID    = splitData[7];
+                let name        = splitData[1];
+                let hostName    = splitData[2];
+                let playerCount = splitData[3];
+                let maxPlayers  = splitData[4];
+                let IP          = splitData[5];
+                let port        = splitData[6];
+                let playerID    = splitData[7];
 
-                var nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
+                let nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
                 lobbyDict[lobbyID] = nLobby;
                 console.log("create new lobby: " + lobbyID);
                 messageQueue.push("create:" + playerID + "_" + lobbyID + "\n");
             }
 
             break;
-        case "join":
-            var playerID = splitData[0];
-            var lobbyID  = splitData[1];
+            }
+        case "join": {
+            let playerID = splitData[0];
+            let lobbyID  = splitData[1];
 
-            if (lobbyID in lobbyDict) {
+            if (isLobby(lobbyID)) {
                 const lobby = lobbyDict[lobbyID];
                 const IP    = lobby.IP;
                 const port  = lobby.port;
@@ -90,15 +111,15 @@ function netSwitch(message) {
             else {
                 console.log("unable to join lobby: " + lobbyID);
             }
-
             break;
+            }
         default:
             console.log("unknown command")
     }
 }
 
 const server = net.createServer((socket) => {
-    console.log('Client connected.');
+    console.log('Client connected');
 
     socket.on('data', (data) => {
         messageQueue = []
