@@ -784,16 +784,14 @@ netSwitch:addCase("ncon",function(args)
         local ID = splitData[1]
         local name = splitData[2]
 
-        -- if LobbyPlayer:getName(ID) ~= nil then
-            print("confirmed connection")
-            LobbyPlayer:new(ID)
-            LobbyPlayer:setName(ID,name)
-            LobbyPlayer:setReady(ID,false)
-            LobbyPlayer:setInLobby(ID,true)
-            LobbyPlayer:setTeam(ID,"team 1")
-            
-            server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
-        -- end
+        print("confirmed connection")
+        LobbyPlayer:new(ID)
+        LobbyPlayer:setName(ID,name)
+        LobbyPlayer:setReady(ID,false)
+        LobbyPlayer:setInLobby(ID,true)
+        LobbyPlayer:setTeam(ID,"team 1")
+        
+        server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
     end
 
     if player then
