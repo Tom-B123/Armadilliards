@@ -9,7 +9,7 @@ class Lobby {
         this.name        = name;
         this.hostName    = hostName;
         this.playerCount = playerCount;
-        this.maxPlayer   = maxPlayers;
+        this.maxPlayers   = maxPlayers;
         this.IP          = IP;
         this.port        = port;
     }
@@ -23,7 +23,7 @@ class Lobby {
         msg += this.IP + "_";
         msg += this.port + "_";
         msg += this.playerCount + "_";
-        msg += this.maxPlayers;
+        msg += this.maxPlayers + "_";
         return msg;
     }
 
@@ -46,7 +46,6 @@ function getUplobs() {
         const lobby = lobbyDict[ID];
         const msg = lobby.getInfo();
         updateQueue.push(msg);
-        console.log("sending uplobs");
     }
    
 }
