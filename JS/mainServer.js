@@ -1,5 +1,6 @@
 const net = require('net');
 
+let lobbyIDs  = [];
 let lobbyDict = {};
 
 class Lobby {
@@ -13,6 +14,19 @@ class Lobby {
         this.port = port
     }
 
+    // Gets info as a csv string
+    getInfo() {
+        let msg = "uplobs:"
+        msg += this.ID + "_";
+        msg += this.name + "_";
+        msg += this.hostName + "_";
+        msg += this.IP + "_";
+        msg += this.port + "_";
+        msg += this.playerCount + "_";
+        msg += this.maxPlayers;
+        return msg;
+    }
+
     setName(name)               {this.name = name;}
     setHostName(hostName)       {this.hostName = hostName;}
     setPlayerCount(playerCount) {this.playerCount = playerCount;}
@@ -23,6 +37,17 @@ class Lobby {
 
 function isLobby(ID) {
     return ID in lobbyDict;
+}
+
+// Lua uplobs message
+//server:send("all","uplobs:"..ID.."_"..name.."_"..hostName.."_"..IP.."_"..port.."_"..ID.."_"..playerCount.."_"..maxPlayers)
+function getUplobs() {
+    for (i in lobbyIDs) {
+        const ID = lobbyIDs[i];
+        const lobby = lobbyDict[ID];
+        const msg = lobby.getInfo();
+        console.log(msg);
+    }
 }
 
 //Split string by a separator into a table
@@ -134,9 +159,10 @@ function netSwitch(message) {
 
             const nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
             lobbyDict[lobbyID] = nLobby;
+            lobbyIDs.push(lobbyID);
             console.log("create new lobby: " + lobbyID);
             messageQueue.push("create:" + playerID + "_" + lobbyID + "\n");
-
+            getUplobs();
         break;
     }
 
