@@ -43,13 +43,13 @@ end
 
 function love.update()
     messages = {}
-    -- client:send("no dat\n")
+    client:send("no dat\n")
 
     local data,err = client:receive()
     while data do
         process(data)
         data,err = client:receive()
-        if err then print(err) end
+        if err ~= "timeout" then print(err) end
     end
 end
 
