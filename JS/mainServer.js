@@ -1,17 +1,17 @@
-const net = require('net');
+const net = require("net");
 
 let lobbyIDs  = [];
 let lobbyDict = {};
 
 class Lobby {
     constructor(ID, name, hostName, playerCount, maxPlayers, IP, port) {
-        this.ID = ID
-        this.name = name;
-        this.hostName = hostName;
+        this.ID          = ID
+        this.name        = name;
+        this.hostName    = hostName;
         this.playerCount = playerCount;
-        this.maxPlayers = maxPlayers;
-        this.IP = IP
-        this.port = port
+        this.maxPlayer   = maxPlayers;
+        this.IP          = IP;
+        this.port        = port;
     }
 
     // Gets info as a csv string
@@ -42,12 +42,13 @@ function isLobby(ID) {
 // Lua uplobs message
 //server:send("all","uplobs:"..ID.."_"..name.."_"..hostName.."_"..IP.."_"..port.."_"..ID.."_"..playerCount.."_"..maxPlayers)
 function getUplobs() {
-    for (i in lobbyIDs) {
-        const ID = lobbyIDs[i];
+    for (const ID of lobbyIDs) {
         const lobby = lobbyDict[ID];
         const msg = lobby.getInfo();
-        console.log(msg);
+        updateQueue.push(msg);
+        console.log("sending uplobs");
     }
+   
 }
 
 //Split string by a separator into a table
@@ -72,6 +73,7 @@ function split(string, sep) {
 }
 
 let messageQueue = [];
+let updateQueue = [];
 
 function updateLobby(ID,field,value) {
     if (!isLobby(ID)) { return; }
@@ -138,8 +140,6 @@ function netSwitch(message) {
 
             updateLobby(lobbyID,field,value);
 
-            getUplobs()
-
             break;
         }
 
@@ -171,7 +171,6 @@ function netSwitch(message) {
             lobbyIDs.push(lobbyID);
             console.log("create new lobby: " + lobbyID);
             messageQueue.push("create:" + playerID + "_" + lobbyID + "\n");
-            getUplobs();
         break;
     }
 
@@ -184,9 +183,9 @@ function netSwitch(message) {
         }
 
         const playerID = splitData[0];
-        const lobby = lobbyDict[lobbyID];
-        const IP    = lobby.IP;
-        const port  = lobby.port;
+        const lobby    = lobbyDict[lobbyID];
+        const IP       = lobby.IP;
+        const port     = lobby.port;
 
         messageQueue.push("join:" + playerID + "_" + lobbyID + "_" + IP + "_" + port + "_\n");
         console.log("player: " + playerID + " to join lobby: " + lobbyID );
@@ -209,27 +208,53 @@ function netSwitch(message) {
     }
 }
 
-const server = net.createServer((socket) => {
-    console.log('Client connected');
+const clients = new Set();
 
-    socket.on('data', (data) => {
+function send(clientsToReceive,msg) {
+    if (clientsToReceive == "all") {
+        clientsToReceive = clients
+    }
+    for (const client of clientsToReceive) {
+        client.write(msg);
+    }
+}
+
+const server = net.createServer((socket) => {
+    console.log("Client connected");
+
+    clients.add(socket);
+
+    socket.on("update lobbies", () => {
+        for (i in updateQueue) {
+            const msg = updateQueue[i];
+            socket.write(msg);
+        }
+        updateQueue = [];
+    })
+
+    socket.on("data", (data) => {
         messageQueue = []
-        // Data.toString() = server:receive
-        // Socket.write(msg) = server:send(msg)
+
         const message = data.toString();
         if (message) {
             netSwitch(message);
         }
-        for (i in messageQueue) {
-            const message = messageQueue[i];
-            socket.write(message);
+        // process commands sent by clients
+        for (const message of messageQueue) {
+            send("all",message);
         }
-        socket.write("\n");
-        
+        // sending update messages
+        for (const message of updateQueue) {
+            send("all",message);
+        }
+        if (updateQueue) {
+            updateQueue == [];
+        }
+        send("all","no dat\n");
     });
 
-    socket.on('end', () => {
-        console.log('Client disconnected');
+    socket.on("end", () => {
+        console.log("Client disconnected");
     });
 
     socket.on("error", (error) => {
@@ -240,8 +265,14 @@ const server = net.createServer((socket) => {
 });
 
 const PORT = 500;
-const HOST = '127.0.0.1';
+const HOST = "127.0.0.1";
 
 server.listen(PORT, HOST, () => {
     console.log(`Server listening on ${HOST}:${PORT}`);
 });
+
+function update() {
+    getUplobs();
+}
+
+setInterval(update,1000);

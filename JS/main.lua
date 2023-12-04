@@ -23,11 +23,15 @@ local mainIP = "127.0.0.1"
 local mainPort = 500
 
 local client = assert(Socket.connect(mainIP,mainPort))
+client:settimeout(0)
 
 local messages = {}
 
 local function process(data)
-    if data and data ~= "no dat" then table.insert(messages,data) end
+    if data and data ~= "no dat" then
+        table.insert(messages,data)
+        print(data)
+    end
 end
 
 function love.keypressed(key)
@@ -39,10 +43,14 @@ end
 
 function love.update()
     messages = {}
-    client:send("\n")
+    -- client:send("no dat\n")
 
     local data,err = client:receive()
-    if data then process(data) end
+    while data do
+        process(data)
+        data,err = client:receive()
+        if err then print(err) end
+    end
 end
 
 function love.draw()
