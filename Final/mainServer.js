@@ -173,6 +173,7 @@ function netSwitch(message) {
     }
 
     case "join": {
+        console.log(splitData);
         const lobbyID  = splitData[1];
 
         if (!isLobby(lobbyID)) {
@@ -185,7 +186,7 @@ function netSwitch(message) {
         const IP       = lobby.IP;
         const port     = lobby.port;
 
-        messageQueue.push("join:" + playerID + "_" + lobbyID + "_" + IP + "_" + port + "_\n");
+        messageQueue.push("join:" + playerID + "_" + IP + "_" + port + "_\n");
         console.log("player: " + playerID + " to join lobby: " + lobbyID );
 
         break;

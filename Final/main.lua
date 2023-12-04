@@ -899,31 +899,30 @@ end)
 
 --Request and confirm joining a new lobby
 netSwitch:addCase("join",function(args)
-    if server then
-        local splitData = Util:split(args,"_")
-        local playerID,lobbyID = splitData[1], splitData[2]
+    -- if server then
+    --     local splitData = Util:split(args,"_")
+    --     local playerID,lobbyID = splitData[1], splitData[2]
 
-        print("player: "..playerID.." ("..LobbyPlayer:getName(playerID)..") ".." wants to join lobby: "..lobbyID)
+    --     print("player: "..playerID.." ("..LobbyPlayer:getName(playerID)..") ".." wants to join lobby: "..lobbyID)
         
-        local IP = JoinableLobby:getIP(lobbyID)
-        local port = JoinableLobby:getPort(lobbyID)
+    --     local IP = JoinableLobby:getIP(lobbyID)
+    --     local port = JoinableLobby:getPort(lobbyID)
 
-        server:send("all","join:"..playerID.."_"..IP.."_"..port.."_\n")
-    elseif player then
-        local splitData = Util:split(args,"_")
-        local ID,IP,port = splitData[1], splitData[2],splitData[3]
+    --     server:send("all","join:"..playerID.."_"..lobbyID.."_\n")
+    if not player then return end
+    local splitData = Util:split(args,"_")
+    local ID,IP,port = splitData[1], splitData[2],splitData[3]
 
-        if ID == player.ID then
-            lState[1] = nil
-            state[1] = "connecting to lobby"
-            order = 1
+    if ID == player.ID then
+        lState[1] = nil
+        state[1] = "connecting to lobby"
+        order = 1
 
-            local nPlayer = Player:new(IP,port)
-            nPlayer.name = player.name
-            nPlayer.ID = player.ID
+        local nPlayer = Player:new(IP,port)
+        nPlayer.name = player.name
+        nPlayer.ID = player.ID
 
-            toConnectPlayer = nPlayer
-        end
+        toConnectPlayer = nPlayer
     end
 end)
 
