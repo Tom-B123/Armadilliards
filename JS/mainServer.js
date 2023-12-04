@@ -263,6 +263,7 @@ const server = net.createServer((socket) => {
     })
 });
 
+// Port and IP the server is on
 const PORT = 500;
 const HOST = "127.0.0.1";
 
