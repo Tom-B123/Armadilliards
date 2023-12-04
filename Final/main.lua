@@ -6,7 +6,8 @@ require("util")
 require("solver")
 
 local player = nil
-local lobbyToCreate = {name = "new lobby",IP = Socket.dns.toip(Socket.dns.gethostname( )), port = 1000, maxPlayers = 8}
+--Default values for creating a lobby
+local lobbyToCreate = {name = "new lobby", maxPlayers = 8}
 
 local toRemoveIDs = {}
 local toConnectMain = false
@@ -115,10 +116,10 @@ end
 local function sendMessage(message)
     if not message then message = editingText end
     if player and not server then
-        player:send("msg:"..player.ID.."_"..message)
+        player:send("msg:"..player.ID.."_"..message.."_\n")
     end
     if player and server then
-        server:send("all","msg:"..player.ID.."_"..message)
+        server:send("all","msg:"..player.ID.."_"..message.."_\n")
         newMessage(player.ID,message)
     end
     editingText = nil
@@ -211,6 +212,9 @@ end
 
 stateSwitch:addCase("searching for lobby",function()
     if not player then return end
+
+    player:send("no dat\n")
+
     processReceived()
 end)
 
@@ -222,7 +226,7 @@ stateSwitch:addCase("hosting lobby",function()
     elseif tick % 2 == 0 then
         server:update()
     else
-        server:send("all","no dat")
+        server:send("all","no dat".."_\n")
     end
 end)
 
@@ -244,14 +248,14 @@ stateSwitch:addCase("in game",function(dt)
         local x,y = Util:processGameInputs()
 
         if x ~= 0 or y ~= 0 then
-            player:send("plin:"..player.ID.."_"..x.."_"..y)
+            player:send("plin:"..player.ID.."_"..x.."_"..y.."_\n")
         end
     end
 end)
 
 stateSwitch:addCase("hosting game",function(dt)
     if not server then return end
-    server:send("all","no dat")
+    server:send("all","no dat".."_\n")
     processReceived()
 
     World:update(dt)
@@ -266,7 +270,7 @@ stateSwitch:addCase("hosting game",function(dt)
         server:sendUpdateMessage()
     end
     if tick % 1 == 0 then
-        server:send("all","upgm:"..World:getUpgm())
+        server:send("all","upgm:"..World:getUpgm().."_\n")
     end
 
     if love.keyboard.isDown("y") and order == 1 then
@@ -278,7 +282,7 @@ stateSwitch:addCase("hosting game",function(dt)
             if i < 4 then msg = msg.."_" end
         end
 
-        server:send("all",msg)
+        server:send("all",msg.."_\n")
         state[2] = "end screen"
         lState[2] = nil
         order = 2
@@ -400,7 +404,7 @@ newStateSwitch:addCase("searching for lobby",function()
         order = 2
     end)
     newButton(1,"back",{1,1,1},300,475,500,525,function()
-        player:send("econ:"..player.ID)
+        player:send("econ:"..player.ID.."_\n")
     end)
     lState[1] = state[1]
 end)
@@ -438,14 +442,18 @@ newStateSwitch:addCase("lobby creation",function()
         order = 3
     end)
     newButton(2,"Create",{1,1,1},300,450,500,500,function()
-        
-    player:send("create:"..
-        player.ID.."_"..
-        lobbyToCreate.name.."_"..
-        lobbyToCreate.IP.."_"..
-        lobbyToCreate.port.."_"..
-        lobbyToCreate.maxPlayers
-    )
+        local lobbyID = Util:calculateID(6)
+        local IP = Socket.dns.toip(Socket.dns.gethostname( ))
+        local port = 1000
+        player:send("create:"..
+            lobbyID.."_"..
+            lobbyToCreate.name.."_"..
+            player.ID.."_"..
+            player.name.."_"..
+            IP.."_"..
+            port.."_"..
+            lobbyToCreate.maxPlayers.."_\n"
+        )
     end)
     lState[2] = state[2]
 end)
@@ -503,7 +511,7 @@ newStateSwitch:addCase("hosting lobby",function()
 
     newButton(1,"start",{1,1,1},600,500,750,550,function()
         if playersAllReady() then
-            server:send("all","start:")
+            server:send("all","start:".."_\n")
             state[1] = "hosting game"
             lState[1] = nil
             order = 1
@@ -520,7 +528,7 @@ end)
 newStateSwitch:addCase("connecting to lobby",function()
     if not player then return end
     
-    player:send("ncon:"..player.ID.."_"..player.name)
+    player:send("ncon:"..player.ID.."_"..player.name.."_\n")
     lState[1] = state[1]
 end)
 
@@ -532,7 +540,7 @@ newStateSwitch:addCase("in lobby",function()
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
         local ready = LobbyPlayer:getReady(player.ID)
         LobbyPlayer:setReady(player.ID,not ready)
-        player:send("updt:"..player.ID.."_ready_"..tostring(not ready))
+        player:send("updt:"..player.ID.."_ready_"..tostring(not ready).."_\n")
     end)
 
     lState[1] = state[1]
@@ -593,14 +601,14 @@ newStateSwitch:addCase("end screen",function()
             lState[1] = "in game"
             state[1]  = "hosting lobby"
             order = 1
-            server:send("all","updt:"..player.ID.."_in lobby_true")
+            server:send("all","updt:"..player.ID.."_in lobby_true_\n")
         else
             state[2]  = nil
             lState[2] = nil
             lState[1] = "in game"
             state[1]  = "in lobby"
             order = 1
-            player:send("updt:"..player.ID.."_in lobby_true")
+            player:send("updt:"..player.ID.."_in lobby_true_\n")
         end
     end)
 
@@ -623,7 +631,7 @@ newStateSwitch:addCase("lobby pause screen",function()
         end)
     else
         newButton(2,"exit lobby",{1,1,1},300,275,500,325, function()
-            player:send("econ:"..player.ID)
+            player:send("econ:"..player.ID.."_\n")
         end)
     end
     lState[2] = state[2]
@@ -792,7 +800,7 @@ netSwitch:addCase("msg",function(args)
     local sender = splitData[1]
     local message = splitData[2]
 
-    if server then server:send("all","msg:"..sender.."_"..message) end
+    if server then server:send("all","msg:"..sender.."_"..message.."_\n") end
 
     newMessage(sender,message)
 end)
@@ -812,7 +820,7 @@ netSwitch:addCase("ncon",function(args)
             LobbyPlayer:setInLobby(ID,true)
             LobbyPlayer:setTeam(ID,"team 1")
             
-            server:send("all","ncon:"..ID.."_"..name.."_confirm")
+            server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
         end
     end
 
@@ -842,7 +850,7 @@ netSwitch:addCase("econ",function(args)
     if server then
         local ID = args
         local isMain = tostring(state[1] == "hosting main")
-        server:send("all","econ:"..ID.."_"..isMain)
+        server:send("all","econ:"..ID.."_"..isMain.."_\n")
         table.insert(toRemoveIDs,ID)
     elseif player then
         local splitData = Util:split(args,"_")
@@ -900,7 +908,7 @@ netSwitch:addCase("join",function(args)
         local IP = JoinableLobby:getIP(lobbyID)
         local port = JoinableLobby:getPort(lobbyID)
 
-        server:send("all","join:"..playerID.."_"..IP.."_"..port)
+        server:send("all","join:"..playerID.."_"..IP.."_"..port.."_\n")
     elseif player then
         local splitData = Util:split(args,"_")
         local ID,IP,port = splitData[1], splitData[2],splitData[3]
@@ -921,48 +929,47 @@ end)
 
 --Create a new lobby and confirm creation
 netSwitch:addCase("create",function(args)
-    if server then
-        local splitData = Util:split(args,"_")
-        local hostName, hostID, lobbyName, lobbyID, IP, port, maxPlayers = 
-        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
+    -- if server then
+    --     local splitData = Util:split(args,"_")
+    --     local hostName, hostID, lobbyName, lobbyID, IP, port, maxPlayers = 
+    --     splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
         
-        --If ports are already in use on that IP, use the next port
-        local existingPorts = JoinableLobby:getPortsByIP(IP)
-        if existingPorts then
-            port = tonumber(existingPorts[#existingPorts]) + 1
-        end
+    --     --If ports are already in use on that IP, use the next port
+    --     local existingPorts = JoinableLobby:getPortsByIP(IP)
+    --     if existingPorts then
+    --         port = tonumber(existingPorts[#existingPorts]) + 1
+    --     end
 
-        print(IP.." hosting a lobby on port: "..port)
+    --     print(IP.." hosting a lobby on port: "..port)
 
-        JoinableLobby:new(lobbyID)
-        JoinableLobby:setName(lobbyID,lobbyName)
-        JoinableLobby:setHostName(lobbyID,hostName)
-        JoinableLobby:setIP(lobbyID,IP)
-        JoinableLobby:setPort(lobbyID,port)
-        JoinableLobby:setPlayerCount(lobbyID,0)
-        JoinableLobby:setMaxPlayers(lobbyID,maxPlayers)
+    --     JoinableLobby:new(lobbyID)
+    --     JoinableLobby:setName(lobbyID,lobbyName)
+    --     JoinableLobby:setHostName(lobbyID,hostName)
+    --     JoinableLobby:setIP(lobbyID,IP)
+    --     JoinableLobby:setPort(lobbyID,port)
+    --     JoinableLobby:setPlayerCount(lobbyID,0)
+    --     JoinableLobby:setMaxPlayers(lobbyID,maxPlayers)
         
-        server:send("all","create:"..hostID.."_"..lobbyID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
-    elseif player then
-        local splitData = Util:split(args,"_")
-        local hostID, lobbyID, lobbyName, IP, port, maxPlayers =
-        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
+    --     server:send("all","create:"..hostID.."_"..lobbyID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
+    if not player then return end
+    local splitData = Util:split(args,"_")
+    local hostID, lobbyID, lobbyName, IP, port, maxPlayers =
+    splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
 
-        if player.ID == hostID then
-            state[1] = "hosting lobby"
-            state[2] = nil
-            lState[2] = nil
-            order = 1
+    if player.ID == hostID then
+        state[1] = "hosting lobby"
+        state[2] = nil
+        lState[2] = nil
+        order = 1
 
-            --Host has both a server and player object
-            server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
+        --Host has both a server and player object
+        server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
 
-            local nPlayer = Player:new(IP,port)
-            nPlayer.name = player.name
-            nPlayer.ID = player.ID
+        local nPlayer = Player:new(IP,port)
+        nPlayer.name = player.name
+        nPlayer.ID = player.ID
 
-            toConnectPlayer = nPlayer
-        end
+        toConnectPlayer = nPlayer
     end
 end)
 
@@ -1004,7 +1011,7 @@ netSwitch:addCase("start",function(args)
     lState[1] = nil
     order = 1
     LobbyPlayer:setInLobby(player.ID,false)
-    player:send("updt:"..player.ID.."_in lobby_false")
+    player:send("updt:"..player.ID.."_in lobby_false".."_\n")
     --Clears all existing balls
     World:clear()
 end)
@@ -1183,7 +1190,7 @@ end
 function love.quit()
     --return true to prevent quitting?
     if player then
-        player:send("econ:"..player.ID)
+        player:send("econ:"..player.ID.."_\n")
         return not canQuit
     end
     -- return true

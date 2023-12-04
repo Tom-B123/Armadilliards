@@ -157,19 +157,18 @@ function netSwitch(message) {
                 break;
             }
 
-            const name        = splitData[1];
-            const hostName    = splitData[2];
-            const playerCount = splitData[3];
-            const maxPlayers  = splitData[4];
-            const IP          = splitData[5];
-            const port        = splitData[6];
-            const playerID    = splitData[7];
+            const lobbyName        = splitData[1];
+            const hostID      = splitData[2]
+            const hostName    = splitData[3];
+            const IP          = splitData[4];
+            const port        = splitData[5];
+            const maxPlayers = splitData[6];
 
-            const nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
+            const nLobby = new Lobby(lobbyID,lobbyName,hostName,0,maxPlayers,IP,port);
             lobbyDict[lobbyID] = nLobby;
             lobbyIDs.push(lobbyID);
             console.log("create new lobby: " + lobbyID);
-            messageQueue.push("create:" + playerID + "_" + lobbyID + "\n");
+            messageQueue.push("create:" + hostID + "_" + lobbyID + "_" + lobbyName + "_" + IP + "_" + port + "_" + maxPlayers + "_" + "\n");
         break;
     }
 
