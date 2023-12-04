@@ -23,7 +23,7 @@ class Lobby {
         msg += this.IP + "_";
         msg += this.port + "_";
         msg += this.playerCount + "_";
-        msg += this.maxPlayers + "_";
+        msg += this.maxPlayers + "_\n";
         return msg;
     }
 

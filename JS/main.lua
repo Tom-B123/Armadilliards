@@ -49,7 +49,6 @@ function love.update()
     while data do
         process(data)
         data,err = client:receive()
-        if err ~= "timeout" then print(err) end
     end
 end
 
