@@ -65,6 +65,7 @@ Client.__index = Client
 function Client:new(IP,port)
     local object = {}
     setmetatable(object,Client)
+    print("connecting to "..IP.." : "..port)
     local client = assert(Socket.connect(IP, port))
     client:settimeout(0)
     object.client = client
