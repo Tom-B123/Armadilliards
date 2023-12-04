@@ -32,7 +32,9 @@ end
 
 function love.keypressed(key)
     if key == "c" then client:send("create:"..lobbyID.."_".."new lobby".."_"..name.."_"..(0).."_"..(8).."_"..IP.."_"..(1000).."_") end
+    if key == "delete" then client:send("clse:"..lobbyID.."_") end
     if key == "j" then client:send("join:"..ID.."_"..lobbyID.."_") end
+    if key == "u" then client:send("updt:"..lobbyID.."_".."player count".."_"..(2).."_") end
 end
 
 function love.update()

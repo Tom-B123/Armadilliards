@@ -58,61 +58,72 @@ function netSwitch(message) {
     switch (command) {
         //using {} with 'let' to keep variables local to each case
         case "updt": {
-            let lobbyID = splitData[0];
+            const lobbyID = splitData[0];
             if (!isLobby(lobbyID)) {
                 console.log("invalid lobby name");
                 break;
             }
-            let field   = splitData[1];
-            let values  = splitData[2];
 
+            const field   = splitData[1];
+            const value   = splitData[2];
+            console.log("updated: " + field + " to " + value + " in " + lobbyID)
             break;
-            }
+        }
         case "econ": {
-            let playerID = splitData[0];
+            const playerID = splitData[0];
             console.log("end connection: " + playerID);
             break;
-            }
+        }
         case "create": {
-            let lobbyID = splitData[0];
+            const lobbyID = splitData[0];
 
             if (isLobby(lobbyID)) {
                 console.log("lobby: " + lobbyID + " already exists");
-            }
-            else {
-                let name        = splitData[1];
-                let hostName    = splitData[2];
-                let playerCount = splitData[3];
-                let maxPlayers  = splitData[4];
-                let IP          = splitData[5];
-                let port        = splitData[6];
-                let playerID    = splitData[7];
-
-                let nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
-                lobbyDict[lobbyID] = nLobby;
-                console.log("create new lobby: " + lobbyID);
-                messageQueue.push("create:" + playerID + "_" + lobbyID + "\n");
+                break;
             }
 
+            const name        = splitData[1];
+            const hostName    = splitData[2];
+            const playerCount = splitData[3];
+            const maxPlayers  = splitData[4];
+            const IP          = splitData[5];
+            const port        = splitData[6];
+            const playerID    = splitData[7];
+
+            const nLobby = new Lobby(lobbyID,name,hostName,playerCount,maxPlayers,IP,port);
+            lobbyDict[lobbyID] = nLobby;
+            console.log("create new lobby: " + lobbyID);
+            messageQueue.push("create:" + playerID + "_" + lobbyID + "\n");
+
+        break;
+    }
+    case "join": {
+        const lobbyID  = splitData[1];
+
+        if (!isLobby(lobbyID)) {
+            console.log("unable to join lobby: " + lobbyID);
             break;
-            }
-        case "join": {
-            let playerID = splitData[0];
-            let lobbyID  = splitData[1];
+        }
 
-            if (isLobby(lobbyID)) {
-                const lobby = lobbyDict[lobbyID];
-                const IP    = lobby.IP;
-                const port  = lobby.port;
+        const playerID = splitData[0];
+        const lobby = lobbyDict[lobbyID];
+        const IP    = lobby.IP;
+        const port  = lobby.port;
 
-                messageQueue.push("join:" + playerID + "_" + lobbyID + "_" + IP + "_" + port + "_\n");
-                console.log("player: " + playerID + " to join lobby: " + lobbyID );
+        messageQueue.push("join:" + playerID + "_" + lobbyID + "_" + IP + "_" + port + "_\n");
+        console.log("player: " + playerID + " to join lobby: " + lobbyID );
+
+        break;
+    }
+        case "clse": {
+            const lobbyID = splitData[0];
+            if (!isLobby(lobbyID)) {
+                console.log("invalid lobby name");
+                break;
             }
-            else {
-                console.log("unable to join lobby: " + lobbyID);
-            }
+            console.log("closing lobby: " + lobbyID)
             break;
-            }
+        }
         default:
             console.log("unknown command")
     }
