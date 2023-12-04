@@ -327,7 +327,7 @@ JoinableLobby = {
     IPDict = {},
     portDict = {},
     IPPortsDict = {},
-    hostIDDict = {}
+    hostNameDict = {}
 }
 
 function JoinableLobby:new(ID)
@@ -360,12 +360,12 @@ function JoinableLobby:setName(ID,name)
     self.nameDict[ID] = name
 end
 
-function JoinableLobby:getHostID(ID)
-    return self.hostIDDict[ID]
+function JoinableLobby:getHostName(hostName)
+    return self.hostNameDict[hostName]
 end
 
-function JoinableLobby:setHostID(ID,hostID)
-    self.hostIDDict[ID] = hostID
+function JoinableLobby:setHostName(ID,hostName)
+    self.hostNameDict[hostName] = hostName
 end
 
 function JoinableLobby:getIP(ID)

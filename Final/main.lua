@@ -108,7 +108,7 @@ local function changePlayerName()
     state[2] = nil
     lState[2] = nil
     order = 1
-    player:send("updt:"..player.ID.."_name_"..player.name)
+    -- player:send("updt:"..player.ID.."_name_"..player.name)
 end
 
 --Apply editing text to message, and send to other players
@@ -190,21 +190,24 @@ end
 --============================================================================================--
 
 --Adding cases to the switch statements
-stateSwitch:addCase("hosting main",function()
-    if not server then return end
-    if tick % refreshRate == 0 then
-        for i,ID in ipairs(JoinableLobby.IDTable) do
-            local name, hostID, IP, port, playerCount, maxPlayers = JoinableLobby:getAll(ID)
-            local hostName = LobbyPlayer:getName(hostID)
-            server:send("all","uplobs:"..name.."_"..hostName.."_"..hostID.."_"..
-            IP.."_"..port.."_"..ID.."_"..playerCount.."_"..maxPlayers)
-        end
-    elseif tick % 2 == 0 then
-        server:update()
-    end
-    server:send("all","no dat")
-    processReceived()
-end)
+
+
+
+-- stateSwitch:addCase("hosting main",function()
+--     if not server then return end
+--     if tick % refreshRate == 0 then
+--         for i,ID in ipairs(JoinableLobby.IDTable) do
+--             local name, hostID, IP, port, playerCount, maxPlayers = JoinableLobby:getAll(ID)
+--             local hostName = LobbyPlayer:getName(hostID)
+--             server:send("all","uplobs:"..name.."_"..hostName.."_"..hostID.."_"..
+--             IP.."_"..port.."_"..ID.."_"..playerCount.."_"..maxPlayers)
+--         end
+--     elseif tick % 2 == 0 then
+--         server:update()
+--     end
+--     server:send("all","no dat")
+--     processReceived()
+-- end)
 
 stateSwitch:addCase("searching for lobby",function()
     if not player then return end
@@ -315,31 +318,30 @@ newStateSwitch:addCase("connecting to server",function()
     local nPlayer = Player:tryConnect()
     if not nPlayer then
         lState[1] = "connecting to server"
-        state[1] = "hosting main"
-        server = Lobby:hostMain()
+        state[1] = "connection error"
     else
         lState[1] = "connecting to server"
         state[1] = "searching for lobby"
 
         player = nPlayer
         player.ID = Util:calculateID(8)
-        player:send("ncon:"..player.ID.."_"..player.name)
+        -- player:send("ncon:"..player.ID.."_"..player.name)
     end
 end)
 
-newStateSwitch:addCase("hosting main",function()
-    clearButtons()
-    if server then
-        newButton(1,"close main server",{1,0,0},50,50,750,250,function()
-            state[1] = "gamemode select"
-            server:close()
-        end)
-        lState[1] = "hosting main"
-    else
-        lState[1] = "connecting to server"
-        state[1] = "connection error"
-    end
-end)
+-- newStateSwitch:addCase("hosting main",function()
+--     clearButtons()
+--     if server then
+--         newButton(1,"close main server",{1,0,0},50,50,750,250,function()
+--             state[1] = "gamemode select"
+--             server:close()
+--         end)
+--         lState[1] = "hosting main"
+--     else
+--         lState[1] = "connecting to server"
+--         state[1] = "connection error"
+--     end
+-- end)
 
 newStateSwitch:addCase("connection error",function()
     clearButtons()
@@ -921,27 +923,26 @@ end)
 netSwitch:addCase("create",function(args)
     if server then
         local splitData = Util:split(args,"_")
-        local hostID, lobbyName, IP, port, maxPlayers = 
-        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5]
+        local hostName, hostID, lobbyName, lobbyID, IP, port, maxPlayers = 
+        splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
         
         --If ports are already in use on that IP, use the next port
         local existingPorts = JoinableLobby:getPortsByIP(IP)
         if existingPorts then
             port = tonumber(existingPorts[#existingPorts]) + 1
-            
         end
 
         print(IP.." hosting a lobby on port: "..port)
 
-        local ID = JoinableLobby:new()
-        JoinableLobby:setName(ID,lobbyName)
-        JoinableLobby:setHostID(ID,hostID)
-        JoinableLobby:setIP(ID,IP)
-        JoinableLobby:setPort(ID,port)
-        JoinableLobby:setPlayerCount(ID,0)
-        JoinableLobby:setMaxPlayers(ID,maxPlayers)
+        JoinableLobby:new(lobbyID)
+        JoinableLobby:setName(lobbyID,lobbyName)
+        JoinableLobby:setHostName(lobbyID,hostName)
+        JoinableLobby:setIP(lobbyID,IP)
+        JoinableLobby:setPort(lobbyID,port)
+        JoinableLobby:setPlayerCount(lobbyID,0)
+        JoinableLobby:setMaxPlayers(lobbyID,maxPlayers)
         
-        server:send("all","create:"..hostID.."_"..ID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
+        server:send("all","create:"..hostID.."_"..lobbyID.."_"..lobbyName.."_"..IP.."_"..port.."_"..maxPlayers)
     elseif player then
         local splitData = Util:split(args,"_")
         local hostID, lobbyID, lobbyName, IP, port, maxPlayers =
@@ -970,21 +971,15 @@ netSwitch:addCase("uplobs",function(args)
     if not player then return end
 
     local splitData = Util:split(args,"_")
-    local lobbyName, hostName, hostID, IP, port, lobbyID, playerCount, maxPlayers = 
-    splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7], splitData[8]
-
-    --Sets the player name to display, as it may not be known
-    if not LobbyPlayer:getName(hostID) then
-        LobbyPlayer:new(hostID)
-        LobbyPlayer:setName(hostID,hostName)
-    end
+    local lobbyID, lobbyName, hostName, IP, port, playerCount, maxPlayers = 
+    splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
 
     --Uses getName arbitrarily, dictionary lookup will give nil only if the ID isn't stored
     if not JoinableLobby:getName(lobbyID) then
 
         JoinableLobby:new(lobbyID)
         JoinableLobby:setName(lobbyID,lobbyName)
-        JoinableLobby:setHostID(lobbyID,hostID)
+        JoinableLobby:setHostName(lobbyID,hostName)
         JoinableLobby:setIP(lobbyID,IP)
         JoinableLobby:setPort(lobbyID,port)
         JoinableLobby:setPlayerCount(lobbyID,playerCount)
