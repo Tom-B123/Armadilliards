@@ -49,14 +49,15 @@ function netSwitch(message) {
     const args         = splitCommand[1];
     const splitData    = split(args,"_")
     
+    //using {} with 'let' / 'const' to keep variables local to each case
     // Commands that will be received: 
-    // updt (changing player counts),
-    // econ (cleanly exit a player),
-    // create (create a new lobby object),
-    // join (send data to join a server),
-    // clse (cleanly delete a lobby object)
+    //     updt (changing player counts),
+    //     econ (cleanly exit a player),
+    //     create (create a new lobby object),
+    //     join (send data to join a server),
+    //     clse (cleanly delete a lobby object)
+
     switch (command) {
-        //using {} with 'let' to keep variables local to each case
         case "updt": {
             const lobbyID = splitData[0];
             if (!isLobby(lobbyID)) {
@@ -66,14 +67,17 @@ function netSwitch(message) {
 
             const field   = splitData[1];
             const value   = splitData[2];
+
             console.log("updated: " + field + " to " + value + " in " + lobbyID)
             break;
         }
+
         case "econ": {
             const playerID = splitData[0];
             console.log("end connection: " + playerID);
             break;
         }
+
         case "create": {
             const lobbyID = splitData[0];
 
@@ -97,6 +101,7 @@ function netSwitch(message) {
 
         break;
     }
+
     case "join": {
         const lobbyID  = splitData[1];
 
@@ -115,17 +120,19 @@ function netSwitch(message) {
 
         break;
     }
-        case "clse": {
-            const lobbyID = splitData[0];
-            if (!isLobby(lobbyID)) {
-                console.log("invalid lobby name");
-                break;
-            }
-            console.log("closing lobby: " + lobbyID)
+
+    case "clse": {
+        const lobbyID = splitData[0];
+        if (!isLobby(lobbyID)) {
+            console.log("invalid lobby name");
             break;
         }
-        default:
-            console.log("unknown command")
+        console.log("closing lobby: " + lobbyID)
+        break;
+    }
+    
+    default:
+        console.log("unknown command")
     }
 }
 
