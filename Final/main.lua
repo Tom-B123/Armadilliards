@@ -377,6 +377,9 @@ newStateSwitch:addCase("searching for lobby",function()
     end)
     newButton(1,"back",{1,1,1},300,475,500,525,function()
         player:send("econ:"..player.ID.."_\n")
+        state[1] = "gamemode select"
+        lState[1] = nil
+        order = 1
     end)
     lState[1] = state[1]
 end)
@@ -819,8 +822,7 @@ end)
 netSwitch:addCase("econ",function(args)
     if server then
         local ID = args
-        local isMain = tostring(state[1] == "hosting main")
-        server:send("all","econ:"..ID.."_"..isMain.."_\n")
+        server:send("all","econ:"..ID.."_".."false".."_\n")
         table.insert(toRemoveIDs,ID)
     elseif player then
         local splitData = Util:split(args,"_")

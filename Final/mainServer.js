@@ -109,7 +109,7 @@ function updateLobby(ID,field,value) {
 }
 
 // Converts the command into a function to execute
-function netSwitch(message) {
+function netSwitch(message,client) {
     const splitCommand = split(message,":");
     if (splitCommand  == 0) { return; }
     const command      = splitCommand[0];
@@ -144,8 +144,9 @@ function netSwitch(message) {
 
         case "econ": {
             const playerID = splitData[0];
-            console.log("end connection: " + playerID);
-
+            send([client],"econ:" + playerID);
+            // remove playerID from player IDs
+            closeClient(client);
             break;
         }
 
@@ -197,10 +198,9 @@ function netSwitch(message) {
             console.log("invalid lobby name");
             break;
         }
-        console.log("closing lobby: " + lobbyID)
+        console.log("closing lobby: " + lobbyID);
         break;
     }
-
     default:
         console.log("unknown command")
     }
@@ -215,6 +215,11 @@ function send(clientsToReceive,msg) {
     for (const client of clientsToReceive) {
         client.write(msg);
     }
+}
+
+function closeClient(socket) {
+    socket.end();
+    clients.delete(socket);
 }
 
 const server = net.createServer((socket) => {
@@ -235,7 +240,7 @@ const server = net.createServer((socket) => {
 
         const message = data.toString();
         if (message) {
-            netSwitch(message);
+            netSwitch(message,socket);
         }
         // process commands sent by clients
         for (const message of messageQueue) {
@@ -253,11 +258,13 @@ const server = net.createServer((socket) => {
 
     socket.on("end", () => {
         console.log("Client disconnected");
+        clients.delete(socket)
     });
 
     socket.on("error", (error) => {
         if (error.code == "ECONNRESET") {
             console.log("client closed unexpectedly");
+            clients.delete(socket)
         }
     })
 });
