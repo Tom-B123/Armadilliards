@@ -248,7 +248,7 @@ const server = net.createServer((socket) => {
             send("all",message);
         }
         if (updateQueue) {
-            updateQueue == [];
+            updateQueue = [];
         }
         send("all","no dat\n");
     });
