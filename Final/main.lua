@@ -9,47 +9,50 @@ local player = nil
 --Default values for creating a lobby
 local lobbyToCreate = {name = "new lobby", maxPlayers = 8}
 
-local toRemoveIDs = {}
-local toConnectMain = false
-local toClosePlayer = false
+local toRemoveIDs     = {}
+local toConnectMain   = false
+local toClosePlayer   = false
 local toConnectPlayer = nil
+local toChangeState   = nil
+local tempTick        = 0
+
 local server = nil
 
 --number of ticks between each lobby refresh
 local refreshRate = 30
 
 local canQuit = false
-local tick = 0
+local tick    = 0
 
 local messageLog = {}
 
 local monoSpace = love.graphics.newFont("cour.ttf",15)
 love.graphics.setFont(monoSpace)
 
-local editingText = nil
+local editingText  = nil
 local editingIndex = 1
 
-local state = {"main menu"}
+local state  = {"main menu"}
 local lState = {nil}
 --Order of states, used to overlap menues ontop of eachother
-local order = 1
+local order    = 1
 --hardcoded limit on orders, only 4 menues can overlap at once
 local maxOrder = 4
 --Stores all buttons within tables, corresponding to their order.
-local buttons = {}
+local buttons  = {}
 
 for i = 1,maxOrder do
     buttons[i] = {}
 end
 
 --To run every frame a state is active.
-local stateSwitch = Switch:new()
+local stateSwitch     = Switch:new()
 --To run the first frame a state is active
-local newStateSwitch = Switch:new()
+local newStateSwitch  = Switch:new()
 --To draw every frame a state is active.
 local drawStateSwitch = Switch:new()
 --Convert message to function
-local netSwitch = Switch:new()
+local netSwitch       = Switch:new()
 
 local function newMessage(sender,message)
     --Append the name of the sender onto the message
@@ -377,9 +380,8 @@ newStateSwitch:addCase("searching for lobby",function()
     end)
     newButton(1,"back",{1,1,1},300,475,500,525,function()
         player:send("econ:"..player.ID.."_\n")
-        state[1] = "gamemode select"
-        lState[1] = nil
-        order = 1
+        toChangeState = "gamemode select"
+        tempTick = 30
     end)
     lState[1] = state[1]
 end)
@@ -833,7 +835,7 @@ netSwitch:addCase("econ",function(args)
             toClosePlayer = false
 
             if Util:toBool(isMain) then
-                state[1] = "gamemode select"
+                
             else
                 state[1] = "searching for lobby"
                 toConnectMain = true
@@ -1174,11 +1176,19 @@ function love.update(dt)
         toConnectMain = false
     end
 
+    if toChangeState and tempTick == 1 then
+        state[1]      = toChangeState
+        lState[1]     = nil
+        order         = 1
+        toChangeState = nil
+    end
+
     for i,ID in ipairs(toRemoveIDs) do
         LobbyPlayer:removeID(ID)
     end
 
     tick = tick + 1
+    if tempTick > 0 then tempTick = tempTick - 1 end
 end
 
 --Draw each frame

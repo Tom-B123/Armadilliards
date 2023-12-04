@@ -144,7 +144,6 @@ function netSwitch(message,client) {
 
         case "econ": {
             const playerID = splitData[0];
-            send([client],"econ:" + playerID);
             // remove playerID from player IDs
             closeClient(client);
             break;
@@ -223,6 +222,9 @@ function closeClient(socket) {
 }
 
 const server = net.createServer((socket) => {
+
+    socket.setTimeout(0);
+
     console.log("Client connected");
 
     clients.add(socket);
