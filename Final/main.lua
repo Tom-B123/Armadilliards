@@ -13,6 +13,7 @@ local toRemoveIDs     = {}
 local toConnectMain   = false
 local toClosePlayer   = false
 local toConnectPlayer = nil
+--Used when exiting a server, sets a delay of n ticks before changing state to confirm exit.
 local toChangeState   = nil
 local tempTick        = 0
 
@@ -878,13 +879,13 @@ netSwitch:addCase("join",function(args)
     local ID,IP,port = splitData[1], splitData[2],splitData[3]
 
     if ID == player.ID then
-        lState[1] = nil
-        state[1] = "connecting to lobby"
-        order = 1
+        player:send("econ:"..player.ID.."_\n")
+        toChangeState   = "connecting to lobby"
+        tempTick        = 30
 
-        local nPlayer = Player:new(IP,port)
-        nPlayer.name = player.name
-        nPlayer.ID = player.ID
+        local nPlayer   = Player:new(IP,port)
+        nPlayer.name    = player.name
+        nPlayer.ID      = player.ID
 
         toConnectPlayer = nPlayer
     end
@@ -898,10 +899,9 @@ netSwitch:addCase("create",function(args)
     splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
 
     if player.ID == hostID then
-        state[1] = "hosting lobby"
-        state[2] = nil
-        lState[2] = nil
-        order = 1
+        player:send("econ:"..player.ID.."_\n")
+        toChangeState = "hosting lobby"
+        tempTick = 30
 
         --Host has both a server and player object
         server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
@@ -1177,10 +1177,12 @@ function love.update(dt)
     end
 
     if toChangeState and tempTick == 1 then
-        state[1]      = toChangeState
         lState[1]     = nil
-        order         = 1
+        state[1]      = toChangeState
+        state[2]      = nil
+        state[3]      = nil
         toChangeState = nil
+        order         = 1
     end
 
     for i,ID in ipairs(toRemoveIDs) do
