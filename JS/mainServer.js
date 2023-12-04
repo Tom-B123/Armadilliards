@@ -75,26 +75,33 @@ let messageQueue = [];
 
 function updateLobby(ID,field,value) {
     if (!isLobby(ID)) { return; }
+
     let lobby = lobbyDict[ID];
     switch (field) {
         case "name":
             lobby.setName(value);
             break;
+
         case "host name":
             lobby.setHostName(value);
             break;
+
         case "player count":
             lobby.setPlayerCount(value);
             break;
+
         case "max players":
             lobby.setMaxPlayers(value);
             break;
+
         case "IP":
             lobby.setIP(value);
             break;
+
         case "port":
             lobby.setPort(value);
             break;
+            
         default:
             console.log("invalid field");
     }
@@ -108,7 +115,7 @@ function netSwitch(message) {
     const args         = splitCommand[1];
     const splitData    = split(args,"_");
     
-    //using {} with 'let' / 'const' to keep variables local to each case
+    // Using {} with 'let' / 'const' to keep variables local to each case
     // Commands that will be received: 
     //     updt (changing player counts),
     //     econ (cleanly exit a player),
@@ -129,7 +136,9 @@ function netSwitch(message) {
 
             console.log("updated: " + field + " to " + value + " in " + lobbyID);
 
-            updateLobby(field,value);
+            updateLobby(lobbyID,field,value);
+
+            getUplobs()
 
             break;
         }
