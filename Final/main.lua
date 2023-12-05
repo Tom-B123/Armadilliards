@@ -775,12 +775,21 @@ end)
 --Send a message to players, relays this message to other players as the server
 netSwitch:addCase("msg",function(args)
     local splitData = Util:split(args,"_")
-    local sender = splitData[1]
-    local message = splitData[2]
+    local sender    = splitData[1]
+    local message   = splitData[2]
 
     if server then server:send("all","msg:"..sender.."_"..message.."_\n") end
 
     newMessage(sender,message)
+end)
+
+netSwitch:addCase("kick",function(args)
+    if not player then return end
+    local splitData = Util:split(args,"_")
+    local playerID  = splitData[1]
+
+    player:send("econ:"..playerID.."_\n")
+
 end)
 
 --New connection, sends initial information about the player
