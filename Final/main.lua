@@ -808,6 +808,10 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setInLobby(ID,true)
         LobbyPlayer:setTeam(ID,"team 1")
         
+        local nButton = newButton(1,"kick",{1,1,1},300,275,500,325, function()
+            server:send("all","kick:ID_\n")
+        end)
+
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
     end
 

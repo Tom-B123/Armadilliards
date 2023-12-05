@@ -426,3 +426,14 @@ function LobbyButton:setText(ID,text)
     local button = self.buttonsDict[ID]
     if button then button:setText(text) end
 end
+
+KickButton = {
+    buttonsDict = {}
+}
+function KickButton:new(ID,button)
+    self.buttonsDict[ID] = button
+end
+
+function KickButton:delete(ID)
+    self.buttonsDict[ID] = nil
+end
