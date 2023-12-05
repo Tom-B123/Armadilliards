@@ -206,10 +206,11 @@ stateSwitch:addCase("searching for lobby",function()
 end)
 
 stateSwitch:addCase("hosting lobby",function()
-    if not server then return end
+    if not (server and player) then return end
     processReceived()
     if tick % refreshRate == 0 then
         server:sendUpdateMessage()
+        player:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
     elseif tick % 2 == 0 then
         server:update()
     else
@@ -799,9 +800,6 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setTeam(ID,"team 1")
         
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
-        if player then
-            player:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
-        end
     end
 
     if player then
@@ -938,11 +936,14 @@ netSwitch:addCase("uplobs",function(args)
         JoinableLobby:setMaxPlayers(lobbyID,8)
 
         local y = #JoinableLobby.IDTable * 40
-        newButton(1,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
+        local nButton = newButton(1,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
             player:join(lobbyID)
         end)
+        LobbyButton:new(lobbyID,nButton)
     else
         JoinableLobby:setPlayerCount(lobbyID, playerCount)
+        local button = LobbyButton:getButton(lobbyID)
+        button:setText("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers)
     end
 end)
 

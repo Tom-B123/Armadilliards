@@ -414,3 +414,14 @@ end
 function JoinableLobby:setMaxPlayers(ID,maxPlayers)
     self.maxPlayersDict[ID] = maxPlayers
 end
+
+LobbyButton = {
+    buttonsDict = {}
+}
+function LobbyButton:new(ID,button)
+    self.buttonsDict[ID] = button
+end
+
+function LobbyButton:getButton(ID)
+    return self.buttonsDict[ID]
+end
