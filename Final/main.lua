@@ -73,10 +73,22 @@ local function clearMessages()
     messageLog = {}
 end
 
+local function removeButton(ord,dButton)
+    local ind = -1
+    for i,button in ipairs(buttons[ord]) do
+        if button == dButton then ind = i end
+    end
+    if ind > -1 then
+        table.remove(buttons,ind)
+    end
+end
+
 --Detect if the player clicks any buttons of the current order
 local function updateButtons()
     for i,button in ipairs(buttons[order]) do
-        button:update()
+        if button:update() then
+            removeButton(order,button)
+        end
     end
 end
 
@@ -808,7 +820,8 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setInLobby(ID,true)
         LobbyPlayer:setTeam(ID,"team 1")
         
-        local nButton = newButton(1,"kick",{1,1,1},300,275,500,325, function()
+        local y = #LobbyPlayer:getIDs() * 20
+        local nButton = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5, function()
             server:send("all","kick:"..ID.."_\n")
         end)
 
@@ -838,6 +851,7 @@ end)
 
 --End connection with main server
 netSwitch:addCase("econ",function(args)
+    print("econ:",args)
     if server then
         local splitData = Util:split(args,"_")
         local ID = splitData[1]
