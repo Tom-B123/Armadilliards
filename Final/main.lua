@@ -809,7 +809,7 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setTeam(ID,"team 1")
         
         local nButton = newButton(1,"kick",{1,1,1},300,275,500,325, function()
-            server:send("all","kick:ID_\n")
+            server:send("all","kick:"..ID.."_\n")
         end)
 
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
@@ -839,7 +839,8 @@ end)
 --End connection with main server
 netSwitch:addCase("econ",function(args)
     if server then
-        local ID = args
+        local splitData = Util:split(args,"_")
+        local ID = splitData[1]
         server:send("all","econ:"..ID.."_".."false".."_\n")
         table.insert(toRemoveIDs,ID)
     elseif player then
