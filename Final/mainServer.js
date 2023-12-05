@@ -2,6 +2,7 @@ const net = require("net");
 
 let lobbyIDs  = [];
 let lobbyDict = {};
+let portDict  = {};
 
 class Lobby {
     constructor(ID, name, hostName, playerCount, maxPlayers, IP, port) {
@@ -161,8 +162,17 @@ function netSwitch(message,client) {
             const hostID     = splitData[2]
             const hostName   = splitData[3];
             const IP         = splitData[4];
-            const port       = splitData[5];
+            let   port       = splitData[5];
             const maxPlayers = splitData[6];
+
+            // If that IP already uses a port, use the next available port
+            if (IP in portDict) {
+                const ports = portDict[IP];
+                port       += ports.length;
+            }
+
+            else { portDict[IP] = []; }
+            portDict[IP].push(port);
 
             const nLobby = new Lobby(lobbyID,lobbyName,hostName,0,maxPlayers,IP,port);
             lobbyDict[lobbyID] = nLobby;
