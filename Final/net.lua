@@ -108,7 +108,7 @@ function Lobby:new(ID,name,port,IP,hostName,maxPlayers)
     object.IP = IP
     object.hostName = hostName
 
-    object.playerCount = 0
+    object.playerCount = 1
     object.maxPlayers = maxPlayers
     object.clients = {}
     object.playersDict = {}
@@ -151,7 +151,7 @@ end
 
 function Lobby:update()
     self.server:update()
-    self.playerCount = #self.server.clients
+    self.playerCount = #self.server.clients + 1
 end
 
 function Lobby:close()
@@ -422,9 +422,7 @@ function LobbyButton:new(ID,button)
     self.buttonsDict[ID] = button
 end
 
-function LobbyButton:getButton(ID)
-    return self.buttonsDict[ID]
+function LobbyButton:setText(ID,text)
+    local button = self.buttonsDict[ID]
+    if button then button:setText(text) end
 end
-
-LobbyButton:new("ID","button")
-print(LobbyButton:getButton("ID"))

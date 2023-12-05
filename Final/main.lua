@@ -89,6 +89,7 @@ end
 local function newButton(ord,text,colour,x1,y1,x2,y2,command,params)
     local nButton = Button:new(text,colour,0,x1,y1,x2,y2,command,params)
     table.insert(buttons[ord],nButton)
+    return nButton
 end
 
 --Clears existing buttons on the current order (for when state changes and buttons need to change)
@@ -940,11 +941,9 @@ netSwitch:addCase("uplobs",function(args)
             player:join(lobbyID)
         end)
         LobbyButton:new(lobbyID,nButton)
-        print(LobbyButton:getButton(lobbyID))
     else
         JoinableLobby:setPlayerCount(lobbyID, playerCount)
-        local button = LobbyButton:getButton(lobbyID)
-        button:setText("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers)
+        local button = LobbyButton:setText(lobbyID,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers)
     end
 end)
 
