@@ -64,6 +64,10 @@ Client.__index = Client
 
 function Client:new(IP,port)
     local object = {}
+    if not (IP and port) then
+        IP = mainIP
+        port = mainPort
+    end
     setmetatable(object,Client)
     print("connecting to "..IP.." : "..port)
     local client = assert(Socket.connect(IP, port))
@@ -95,9 +99,10 @@ end
 Lobby = {}
 Lobby.__index = Lobby
 
-function Lobby:new(name,port,IP,hostName,maxPlayers)
+function Lobby:new(ID,name,port,IP,hostName,maxPlayers)
     local object = {}
     setmetatable(object,Lobby)
+    object.ID = ID
     object.name = name
     object.port = port
     object.IP = IP

@@ -149,7 +149,8 @@ local function processReceived()
         for i,message in ipairs(data) do
             local splitData = Util:split(message,":")
             local key,args = splitData[1],splitData[2]
-            if key ~= "no dat" then 
+            if args then
+                print(key,args)
                 netSwitch:case(key,args)
             end
         end
@@ -798,6 +799,9 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setTeam(ID,"team 1")
         
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
+        if player then
+            player:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
+        end
     end
 
     if player then
@@ -899,18 +903,18 @@ netSwitch:addCase("create",function(args)
     splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
 
     if player.ID == hostID then
-        player:send("econ:"..player.ID.."_\n")
+        -- player:send("econ:"..player.ID.."_\n")
         toChangeState = "hosting lobby"
         tempTick = 30
 
         --Host has both a server and player object
-        server = Lobby:new(lobbyName,port,IP,player.ID,maxPlayers)
+        server = Lobby:new(lobbyID,lobbyName,port,IP,player.ID,maxPlayers)
 
-        local nPlayer = Player:new(IP,port)
-        nPlayer.name = player.name
-        nPlayer.ID = player.ID
+        -- local nPlayer = Player:new()
+        -- nPlayer.name = player.name
+        -- nPlayer.ID = player.ID
 
-        toConnectPlayer = nPlayer
+        -- toConnectPlayer = nPlayer
     end
 end)
 
