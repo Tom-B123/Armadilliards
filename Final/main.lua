@@ -940,6 +940,7 @@ netSwitch:addCase("uplobs",function(args)
             player:join(lobbyID)
         end)
         LobbyButton:new(lobbyID,nButton)
+        print(LobbyButton:getButton(lobbyID))
     else
         JoinableLobby:setPlayerCount(lobbyID, playerCount)
         local button = LobbyButton:getButton(lobbyID)

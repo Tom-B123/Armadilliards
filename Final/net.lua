@@ -425,3 +425,6 @@ end
 function LobbyButton:getButton(ID)
     return self.buttonsDict[ID]
 end
+
+LobbyButton:new("ID","button")
+print(LobbyButton:getButton("ID"))
