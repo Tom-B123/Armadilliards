@@ -20,7 +20,7 @@ local tempTick        = 0
 local server = nil
 
 --number of ticks between each lobby refresh
-local refreshRate = 30
+local refreshRate = 120
 
 local canQuit = false
 local tick    = 0
@@ -307,7 +307,6 @@ newStateSwitch:addCase("gamemode select",function()
     end)
     lState[1] = state[1]
 end)
-
 
 newStateSwitch:addCase("connecting to server",function()
     clearButtons()
