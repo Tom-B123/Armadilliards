@@ -33,8 +33,8 @@ love.graphics.setFont(monoSpace)
 local editingText  = nil
 local editingIndex = 1
 
-local state  = {"main menu"}
-local lState = {nil}
+local state    = {"main menu"}
+local lState   = {nil}
 --Order of states, used to overlap menues ontop of eachother
 local order    = 1
 --hardcoded limit on orders, only 4 menues can overlap at once
@@ -121,11 +121,11 @@ end
 local function changePlayerName()
     if not player then return end
     if editingText == "" then editingText = "new player" end
-    player.name = editingText
-    editingText = nil
-    state[2] = nil
-    lState[2] = nil
-    order = 1
+    player.name    = editingText
+    editingText    = nil
+    state[2]       = nil
+    lState[2]      = nil
+    order          = 1
     -- player:send("updt:"..player.ID.."_name_"..player.name)
 end
 
@@ -140,20 +140,20 @@ local function sendMessage(message)
         newMessage(player.ID,message)
     end
     editingText = nil
-    state[2] = nil
-    lState[2] = nil
-    order = 1
+    state[2]    = nil
+    lState[2]   = nil
+    order       = 1
 end
 
 --Apply editing text to the lobby name
 local function changeLobbyName()
     if not player then return end
-    if editingText == "" then editingText = "new lobby" end
+    if editingText    == "" then editingText = "new lobby" end
     lobbyToCreate.name = editingText
-    editingText = nil
-    state[4] = nil
-    lState[4] = nil
-    order = 3
+    editingText        = nil
+    state[4]           = nil
+    lState[4]          = nil
+    order              = 3
 end
 
 --Pass received data into netSwitch
@@ -161,7 +161,7 @@ local function processReceived()
     local function process(data)
         for i,message in ipairs(data) do
             local splitData = Util:split(message,":")
-            local key,args = splitData[1],splitData[2]
+            local key,args  = splitData[1],splitData[2]
             if args then
                 print(key,args)
                 netSwitch:case(key,args)
@@ -224,7 +224,7 @@ stateSwitch:addCase("hosting lobby",function()
     if tick % refreshRate == 0 then
         server:sendUpdateMessage()
         player:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
-    elseif tick % 2 == 0 then
+    elseif tick % 2       == 0 then
         server:update()
     else
         server:send("all","no dat".."_\n")
@@ -287,9 +287,9 @@ stateSwitch:addCase("hosting game",function(dt)
         end
 
         server:send("all",msg.."_\n")
-        state[2] = "end screen"
+        state[2]  = "end screen"
         lState[2] = nil
-        order = 2
+        order     = 2
 
     end
 end)
@@ -312,7 +312,7 @@ newStateSwitch:addCase("gamemode select",function()
     end)
     newButton(1,"settings",{1,1,1},300,300,500,350,function()
         state[2] = "user settings"
-        order = 2
+        order    = 2
     end)
     newButton(1,"back",{1,1,1},300,500,500,550,function()
         state[1] = "main menu"
@@ -326,12 +326,12 @@ newStateSwitch:addCase("connecting to server",function()
     local nPlayer = Player:tryConnect()
     if not nPlayer then
         lState[1] = "connecting to server"
-        state[1] = "connection error"
+        state[1]  = "connection error"
     else
         lState[1] = "connecting to server"
-        state[1] = "searching for lobby"
+        state[1]  = "searching for lobby"
 
-        player = nPlayer
+        player    = nPlayer
         player.ID = Util:calculateID(8)
         -- player:send("ncon:"..player.ID.."_"..player.name)
     end
@@ -346,20 +346,20 @@ newStateSwitch:addCase("connection error",function()
     newButton(1,"back",{1,1,1},300,450,500,500,function()
         state[1] = "gamemode select"
     end)
-    lState[1] = state[1]
+    lState[1]    = state[1]
 end)
 
 newStateSwitch:addCase("user settings",function()
     clearButtons()
     newButton(2,"configure settings",{1,1,1},300,300,500,350,function()
-        order = 3
-        state[3] = "configure game settings"
+        order     = 3
+        state[3]  = "configure game settings"
         lState[3] = nil
     end)
     newButton(2,"back",{1,1,1},300,375,500,425,function()
-        state[2] = nil
+        state[2]  = nil
         lState[2] = nil
-        order = 1
+        order     = 1
     end)
     newButton(2,"quit",{1,1,1},300,450,500,500,function()
         love.event.quit()
@@ -370,9 +370,9 @@ end)
 newStateSwitch:addCase("configure game settings",function()
     newButton(3,"back",{1,1,1},300,375,500,425,function()
         --arbitrary values so user settings can open above any menu
-        state[3] = nil
+        state[3]  = nil
         lState[3] = nil
-        order = 2
+        order     = 2
     end)
     lState[3] = state[3]
 end)
@@ -384,19 +384,19 @@ newStateSwitch:addCase("searching for lobby",function()
     JoinableLobby:clear()
     --no text, the player name is drawn separatly above the button
     newButton(1,"",{1,1,1},300,25,500,75,function()
-        state[2] = "editing player name"
+        state[2]  = "editing player name"
         lState[2] = nil
-        order = 2
+        order     = 2
     end)
     newButton(1,"Create new lobby",{1,1,1},300,400,500,450,function()
         lState[2] = nil
-        state[2] = "lobby creation"
-        order = 2
+        state[2]  = "lobby creation"
+        order     = 2
     end)
     newButton(1,"back",{1,1,1},300,475,500,525,function()
         player:send("econ:"..player.ID.."_\n")
         toChangeState = "gamemode select"
-        tempTick = 30
+        tempTick      = 30
     end)
     lState[1] = state[1]
 end)
@@ -405,12 +405,12 @@ newStateSwitch:addCase("editing player name",function()
     if not player then return end
     clearButtons()
     
-    editingText = player.name
+    editingText  = player.name
     editingIndex = #editingText + 1
     newButton(2,"cancel",{1,0,0},300,80,398,105,function()
-        state[2] = nil
-        lState[2] = nil
-        order = 1
+        state[2]    = nil
+        lState[2]   = nil
+        order       = 1
         editingText = nil
     end)
     newButton(2,"confirm",{0,1,0},402,80,500,105,function()
@@ -423,20 +423,20 @@ newStateSwitch:addCase("lobby creation",function()
     if not player then return end
     clearButtons()
     newButton(2,"back",{1,1,1},300,300,500,350,function()
-        state[2] = nil
+        state[2]  = nil
         lState[2] = nil
-        state[1] = "searching for lobby"
-        order = 1
+        state[1]  = "searching for lobby"
+        order     = 1
     end)
     newButton(2,"Lobby settings",{1,1,1},300,375,500,425,function()
         lState[3] = nil
-        state[3] = "lobby settings"
-        order = 3
+        state[3]  = "lobby settings"
+        order     = 3
     end)
     newButton(2,"Create",{1,1,1},300,450,500,500,function()
         local lobbyID = Util:calculateID(6)
-        local IP = Socket.dns.toip(Socket.dns.gethostname( ))
-        local port = 1000
+        local IP      = Socket.dns.toip(Socket.dns.gethostname( ))
+        local port    = 1000
         player:send("create:"..
             lobbyID.."_"..
             lobbyToCreate.name.."_"..
@@ -455,16 +455,16 @@ newStateSwitch:addCase("lobby settings",function()
     --no text, lobby name drawn above text
     newButton(3,"",{1,1,1},300,300,500,350,function()
         lState[4] = nil
-        state[4] = "editing lobby name"
-        order = 4
+        state[4]  = "editing lobby name"
+        order     = 4
     end)
     newButton(3,"max players",{1,1,1},300,375,500,425,function()
         --change number of max players (2,4,8?)
     end)
     newButton(3,"back",{1,1,1},300,450,500,500,function()
-        state[3] = nil
+        state[3]  = nil
         lState[3] = nil
-        order = 2
+        order     = 2
     end)
     lState[3] = state[3]
 end)
@@ -473,12 +473,12 @@ newStateSwitch:addCase("editing lobby name",function()
     if not player then return end
     clearButtons()
     
-    editingText = lobbyToCreate.name
+    editingText  = lobbyToCreate.name
     editingIndex = #editingText + 1
     newButton(4,"cancel",{1,0,0},300,355,398,380,function()
-        state[4] = nil
-        lState[4] = nil
-        order = 3
+        state[4]    = nil
+        lState[4]   = nil
+        order       = 3
         editingText = nil
     end)
     newButton(4,"confirm",{0,1,0},402,355,500,380,function()
@@ -492,7 +492,7 @@ newStateSwitch:addCase("hosting lobby",function()
 
     clearButtons()
 
-    if lState[1] ~= "in game" then
+    if lState[1] ~= "in game"  then
         LobbyPlayer:clear()
         LobbyPlayer:new(player.ID)
         LobbyPlayer:setName(player.ID,player.name)
@@ -504,9 +504,9 @@ newStateSwitch:addCase("hosting lobby",function()
     newButton(1,"start",{1,1,1},600,500,750,550,function()
         if playersAllReady() then
             server:send("all","start:".."_\n")
-            state[1] = "hosting game"
+            state[1]  = "hosting game"
             lState[1] = nil
-            order = 1
+            order     = 1
             --Clears all existing balls
             World:clear()
         else
@@ -541,7 +541,7 @@ end)
 newStateSwitch:addCase("editing message",function()
     clearButtons()
 
-    editingText = ""
+    editingText  = ""
     editingIndex = 1
 
     newButton(2,"send",{1,1,1},450,400,500,450,function()
@@ -590,14 +590,14 @@ newStateSwitch:addCase("end screen",function()
             lState[2] = nil
             lState[1] = "in game"
             state[1]  = "hosting lobby"
-            order = 1
+            order     = 1
             server:send("all","updt:"..player.ID.."_in lobby_true_\n")
         else
             state[2]  = nil
             lState[2] = nil
             lState[1] = "in game"
             state[1]  = "in lobby"
-            order = 1
+            order     = 1
             player:send("updt:"..player.ID.."_in lobby_true_\n")
         end
     end)
@@ -610,9 +610,9 @@ newStateSwitch:addCase("lobby pause screen",function()
     clearButtons()
 
     newButton(2,"back",{1,1,1},300,200,500,250, function()
-        state[2] = nil
+        state[2]  = nil
         lState[2] = nil
-        order = 1
+        order     = 1
     end)
 
     if server then
@@ -718,8 +718,10 @@ drawStateSwitch:addCase("hosting lobby",function()
     drawMessages()
     drawButtons(1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
-        local name, ready, lobby, team = 
-        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getInLobby(ID), LobbyPlayer:getTeam(ID)
+        local name  = LobbyPlayer:getName(ID)
+        local ready = LobbyPlayer:getReady(ID)
+        local lobby = LobbyPlayer:getInLobby(ID)
+        local team  = LobbyPlayer:getTeam(ID)
 
         if name and ready ~= nil and team then
             love.graphics.print(name,0,20*i)
@@ -738,8 +740,10 @@ drawStateSwitch:addCase("in lobby",function()
     drawMessages()
     drawButtons(1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
-        local name, ready, lobby, team = 
-        LobbyPlayer:getName(ID), LobbyPlayer:getReady(ID), LobbyPlayer:getInLobby(ID), LobbyPlayer:getTeam(ID)
+        local name  = LobbyPlayer:getName(ID)
+        local ready = LobbyPlayer:getReady(ID)
+        local lobby = LobbyPlayer:getInLobby(ID)
+        local team  = LobbyPlayer:getTeam(ID)
 
         if name and ready ~= nil and team then
             love.graphics.print(name,0,20*i)
@@ -752,7 +756,7 @@ end)
 
 drawStateSwitch:addCase("editing message",function()
     drawButtons(2)
-    if editingText then love.graphics.print(editingText,50,400) end
+    if editingText        then love.graphics.print(editingText,50,400) end
     if tick % 30 > 30 / 2 then
         love.graphics.setColor(0.4,0.4,0.4,0.7)
         love.graphics.rectangle("fill",50 - 2.5 + (editingIndex-1)*9,400,5,17.5)
@@ -810,7 +814,7 @@ netSwitch:addCase("ncon",function(args)
         print("new connection")
         local splitData = Util:split(args,"_")
 
-        local ID = splitData[1]
+        local ID   = splitData[1]
         local name = splitData[2]
 
         print("confirmed connection")
@@ -821,7 +825,7 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setTeam(ID,"team 1")
         
         local y = #LobbyPlayer:getIDs() * 20
-        local nButton = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5)
+        local nButton   = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5)
 
         nButton.command = function()
             server:send("all","kick:"..ID.."_\n")
@@ -834,7 +838,9 @@ netSwitch:addCase("ncon",function(args)
     if player then
         local splitData = Util:split(args,"_")
 
-        local ID, name, conf = splitData[1],splitData[2],splitData[3]
+        local ID   = splitData[1]
+        local name = splitData[2]
+        local conf = splitData[3]
 
         if conf == "confirm" and ID == player.ID then
             --On confirmation, make a LobbyPlayer object with player's details
@@ -845,8 +851,8 @@ netSwitch:addCase("ncon",function(args)
             LobbyPlayer:setInLobby(player.ID,true)
             LobbyPlayer:setTeam(player.ID,"team 1")
             if getState(1) == "connecting to lobby" then
-                lState[1] = nil
-                state[1] = "in lobby"
+                lState[1]  = nil
+                state[1]   = "in lobby"
             end
         end
     end
@@ -857,21 +863,21 @@ netSwitch:addCase("econ",function(args)
     print("econ:",args)
     if server then
         local splitData = Util:split(args,"_")
-        local ID = splitData[1]
+        local ID        = splitData[1]
         server:send("all","econ:"..ID.."_".."false".."_\n")
         table.insert(toRemoveIDs,ID)
     elseif player then
         local splitData = Util:split(args,"_")
-        local playerID, isMain =
-        splitData[1],splitData[2]
+        local playerID  = splitData[1]
+        local isMain    = splitData[2]
 
-        if playerID == player.ID then
+        if playerID    == player.ID then
             toClosePlayer = false
 
             if Util:toBool(isMain) then
                 
             else
-                state[1] = "searching for lobby"
+                state[1]      = "searching for lobby"
                 toConnectMain = true
             end
             lState[2] = nil
@@ -892,24 +898,26 @@ end)
 netSwitch:addCase("updt",function(args)
     local splitData = Util:split(args,"_")
     --sender ID
-    local ID = splitData[1]
+    local ID    = splitData[1]
     local field = splitData[2]
     local value = splitData[3]
 
     if not LobbyPlayer:getName(ID) then LobbyPlayer:new(ID) end
 
-    if field == "name" then LobbyPlayer:setName(ID,value)
-    elseif field == "ready" then LobbyPlayer:setReady(ID,value)
-    elseif field == "in lobby" then LobbyPlayer:setInLobby(ID,value)
-    elseif field == "team" then LobbyPlayer:setTeam(ID,value)
+    if field     == "name"         then LobbyPlayer:setName(ID,value)
+    elseif field == "ready"        then LobbyPlayer:setReady(ID,value)
+    elseif field == "in lobby"     then LobbyPlayer:setInLobby(ID,value)
+    elseif field == "team"         then LobbyPlayer:setTeam(ID,value)
     end
 end)
 
 --Request and confirm joining a new lobby
 netSwitch:addCase("join",function(args)
     if not player then return end
-    local splitData = Util:split(args,"_")
-    local ID,IP,port = splitData[1], splitData[2],splitData[3]
+    local splitData  = Util:split(args,"_")
+    local ID   = splitData[1]
+    local IP   = splitData[2]
+    local port = splitData[3]
 
     if ID == player.ID then
         player:send("econ:"..player.ID.."_\n")
@@ -927,23 +935,23 @@ end)
 --Create a new lobby and confirm creation
 netSwitch:addCase("create",function(args)
     if not player then return end
-    local splitData = Util:split(args,"_")
-    local hostID, lobbyID, lobbyName, IP, port, maxPlayers =
-    splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6]
+    local splitData   = Util:split(args,"_")
 
-    if player.ID == hostID then
-        -- player:send("econ:"..player.ID.."_\n")
+    local hostID      = splitData[1]
+    local lobbyID     = splitData[2]
+    local lobbyName   = splitData[3]
+    local IP          = splitData[4]
+    local port        = splitData[5]
+    local maxPlayers  = splitData[6]
+
+    if player.ID     == hostID then
+
+        --Host has both a server and player object, player object is kept
         toChangeState = "hosting lobby"
-        tempTick = 30
+        tempTick      = 30
 
-        --Host has both a server and player object
-        server = Lobby:new(lobbyID,lobbyName,port,IP,player.ID,maxPlayers)
+        server        = Lobby:new(lobbyID,lobbyName,port,IP,player.ID,maxPlayers)
 
-        -- local nPlayer = Player:new()
-        -- nPlayer.name = player.name
-        -- nPlayer.ID = player.ID
-
-        -- toConnectPlayer = nPlayer
     end
 end)
 
@@ -951,12 +959,17 @@ end)
 netSwitch:addCase("uplobs",function(args)
     if not player then return end
 
-    local splitData = Util:split(args,"_")
-    local lobbyID, lobbyName, hostName, IP, port, playerCount, maxPlayers = 
-    splitData[1], splitData[2], splitData[3], splitData[4], splitData[5], splitData[6], splitData[7]
+    local splitData   = Util:split(args,"_")
 
-    --Uses getName arbitrarily, dictionary lookup will give nil only if the ID isn't stored
-    if not JoinableLobby:getName(lobbyID) then
+    local lobbyID     = splitData[1]
+    local lobbyName   = splitData[2]
+    local hostName    = splitData[3]
+    local IP          = splitData[4]
+    local port        = splitData[5]
+    local playerCount = splitData[6]
+    local maxPlayers  = splitData[7]
+
+    if not JoinableLobby:has(lobbyID) then
 
         JoinableLobby:new(lobbyID)
         JoinableLobby:setName(lobbyID,lobbyName)
@@ -981,11 +994,11 @@ end)
 netSwitch:addCase("start",function(args)
     if not player then return end
     --Remove any graphics from menus, eg pause menu
-    state[2] = nil
+    state[2]  = nil
     lState[2] = nil
-    state[1] = "in game"
+    state[1]  = "in game"
     lState[1] = nil
-    order = 1
+    order     = 1
     LobbyPlayer:setInLobby(player.ID,false)
     player:send("updt:"..player.ID.."_in lobby_false".."_\n")
     --Clears all existing balls
@@ -999,9 +1012,10 @@ netSwitch:addCase("asgn",function(args)
     local splitData = Util:split(args)
 
     for i = 1,#splitData / 2 do
-        local playerID,ballID = splitData[i*2-1],splitData[i*2]
-        if player.ID == playerID then
-            player.ballID = ballID
+        local playerID = splitData[i*2-1]
+        local ballID   = splitData[i*2]
+        if player.ID         == playerID then
+            player.ballID     = ballID
         end
     end
 end)
@@ -1011,10 +1025,13 @@ netSwitch:addCase("plin",function(args)
     if not server then return end
 
     local splitData = Util:split(args,"_")
-    local ID,x,y = splitData[1], splitData[2], splitData[3]
 
-    local ballID = LobbyPlayer:getBallID(ID)
-    local ball = World:getByID(ballID)
+    local ID        = splitData[1]
+    local x         = splitData[2]
+    local y         = splitData[3]
+
+    local ballID    = LobbyPlayer:getBallID(ID)
+    local ball      = World:getByID(ballID)
 
     applyMove(ball,x,y)
 end)
@@ -1025,22 +1042,26 @@ netSwitch:addCase("upgm",function(args)
 
     local splitData = Util:split(args,"_")
     --Changes = {{ID1,x1,y1},{ID2,x2,y2},{ID3,x3,y3}}
-    local changes = {}
+    local changes   = {}
 
     for i,msg in ipairs(splitData) do
-        local ind = i - 1
-        if changes[math.floor(ind/3)+1] == nil then changes[math.floor(ind/3)+1] = {} end
+        local ind   = i - 1
+        if changes[math.floor(ind/3)+1] == nil then
+            changes[math.floor(ind/3)+1] = {}
+        end
         changes[math.floor(ind/3)+1][(ind%3) + 1] = msg
     end
 
     for i, change in ipairs(changes) do
-        local ID,x,y = change[1],change[2],change[3]
+        local ID        = change[1]
+        local x         = change[2]
+        local y         = change[3]
         if ID and x and y then
-            local ball = World:getByID(ID)
+            local ball  = World:getByID(ID)
             if ball then
-                ball.x = x
+                ball.x  = x
                 ball.lx = x
-                ball.y = y
+                ball.y  = y
                 ball.ly = y
             else
                 local nball = World:newBall(x,y,true)
@@ -1052,19 +1073,20 @@ end)
 
 --End game and display the end screen
 netSwitch:addCase("endgm",function(args)
-    local splitData = Util:split(args,"_")
+    local splitData   = Util:split(args,"_")
     local winningTeam = ""
-    local maxScore = 0
+    local maxScore    = 0
     for i = 1,#splitData/2 do
-        local team,score = splitData[2*1-1],tonumber(splitData[2*i])
+        local team  = splitData[2*1-1]
+        local score = tonumber(splitData[2*i])
         if score and score > maxScore then
-            maxScore = score
-            winningTeam = team
+            maxScore     = score
+            winningTeam  = team
         end
     end
-    state[2] = "end screen"
+    state[2]  = "end screen"
     lState[2] = nil
-    order = 2
+    order     = 2
     newMessage("server","The winner is: "..winningTeam.." with "..maxScore.." points")
 end)
 
@@ -1074,55 +1096,57 @@ end)
 --Handles keyboard inputs for writing text
 function love.textinput(t)
     if not editingText then return end
-    if not player then return end
+    if not player      then return end
     if t == nil or t == ":" or t == "_" then return end
 
     --Adds text at the editing index and incriments the index
-    editingText = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
+    editingText  = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
     editingIndex = editingIndex + 1
 end
 
 --Handle keyboard inputs
 function love.keypressed(key)
     if editingText and player then
-        if key == "escape" then
-            state[order] = nil
+        if key == "escape"    then
+            state[order]  = nil
             lState[order] = nil
-            order = order - 1
-            editingText = nil
+            order         = order - 1
+            editingText   = nil
         
         elseif key == "return" then
-            if getState(2) == "editing player name" then changePlayerName()
-            elseif getState(2) == "editing message" then sendMessage()
-            elseif getState(4) == "editing lobby name" then changeLobbyName()
+            if getState(2)     == "editing player name" then changePlayerName()
+            elseif getState(2) == "editing message"     then sendMessage()
+            elseif getState(4) == "editing lobby name"  then changeLobbyName()
             end
         
         elseif key == "delete" then
             --Delete everything after the index when ctrl + delete
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
-                editingText = string.sub(editingText,1,editingIndex-1)
+                editingText  = string.sub(editingText,1,editingIndex-1)
+
             --Deletes the text at the editing index
             elseif editingIndex <= #editingText then
-                editingText = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
+                editingText  = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
             end
-        
+
         elseif key == "backspace" then
             --Delete everything before the index when ctrl + backspace
             if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
-                editingText = string.sub(editingText,editingIndex,#editingText)
+                editingText  = string.sub(editingText,editingIndex,#editingText)
                 editingIndex = 1
+
             --Deletes the text before the editing index and decriments the index
             elseif editingIndex > 1 then
-                editingText = string.sub(editingText,1,editingIndex-2)..string.sub(editingText,editingIndex,#editingText)
+                editingText  = string.sub(editingText,1,editingIndex-2)..string.sub(editingText,editingIndex,#editingText)
                 editingIndex = editingIndex - 1
             end
-        
+
             --Move the index left or right until there is no space left
-        elseif key == "left" then
+        elseif key == "left"    then
             if editingIndex > 1 then 
                 editingIndex = editingIndex - 1
             end
-        
+
         elseif key == "right" then
             if editingIndex < #editingText + 1 then
                 editingIndex = editingIndex + 1
@@ -1134,32 +1158,33 @@ function love.keypressed(key)
         --If in an offline state
         if not inLobby() and state[1] ~= "end screen" then
             --If in a menu, esc closes that menu
-            if order > 1 then
-                state[order] = nil
+            if order > 1   then
+                state[order]  = nil
                 lState[order] = nil
-                order = order - 1
+                order         = order - 1
+
             --If not in a menu, esc opens options
             else
-                order = 2
-                lState[2] = nil
-                state[2] = "user settings"
+                order         = 2
+                lState[2]     = nil
+                state[2]      = "user settings"
             end
         --If in and online state
         else
             if order > 1 then
-                state[order] = nil
+                state[order]  = nil
                 lState[order] = nil
-                order = order - 1
+                order         = order - 1
             else
-                order = 2
-                lState[2] = nil
-                state[2] = "lobby pause screen"
+                order         = 2
+                lState[2]     = nil
+                state[2]      = "lobby pause screen"
             end
         end
     elseif key == "t" and inLobby() and state[2] ~= "end screen" then
         lState[2] = nil
-        state[2] = "editing message"
-        order = 2
+        state[2]  = "editing message"
+        order     = 2
     end
 end
 
@@ -1189,26 +1214,26 @@ function love.update(dt)
     local nState = getNewState()
     while nState do
         newStateSwitch:case(nState)
-        nState = getNewState()
+        nState   = getNewState()
     end
 
     for i = 1,maxOrder do
         stateSwitch:case(getState(i),dt)
     end
 
-    if toClosePlayer then
-        player = nil
-        toClosePlayer = false
+    if toClosePlayer   then
+        player          = nil
+        toClosePlayer   = false
     end
 
     if toConnectPlayer then
-        player = toConnectPlayer
+        player          = toConnectPlayer
         toConnectPlayer = nil
     end
 
     if toConnectMain and player then
         player:connectToMain()
-        toConnectMain = false
+        toConnectMain   = false
     end
 
     --Allows for delays in changing state
@@ -1226,7 +1251,7 @@ function love.update(dt)
     end
 
     tick = tick + 1
-    if tempTick > 0 then tempTick = tempTick - 1 end
+    if tempTick > 0    then tempTick = tempTick - 1 end
 end
 
 --Draw each frame

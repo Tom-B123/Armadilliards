@@ -353,6 +353,10 @@ function JoinableLobby:clear()
     self.hostIDDict = {}
 end
 
+function JoinableLobby:has(ID)
+    return self.nameDict[ID] ~= nil
+end
+
 function JoinableLobby:getAll(ID)
     return  self:getName(ID), self:getHostID(ID), self:getIP(ID),
             self:getPort(ID), self:getPlayerCount(ID), self:getMaxPlayers(ID)
