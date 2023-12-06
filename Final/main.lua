@@ -79,9 +79,7 @@ local function removeButton(ord,dButton)
         if button == dButton then ind = i end
     end
     if ind > -1 then
-        print(#buttons)
         table.remove(buttons[ord],ind)
-        print(#buttons)
     end
 end
 
@@ -163,7 +161,6 @@ local function processReceived()
             local splitData = Util:split(message,":")
             local key,args  = splitData[1],splitData[2]
             if args then
-                print(key,args)
                 netSwitch:case(key,args)
             end
         end
@@ -274,7 +271,10 @@ stateSwitch:addCase("hosting game",function(dt)
         server:sendUpdateMessage()
     end
     if tick % 1 == 0 then
-        server:send("all","upgm:"..World:getUpgm().."_\n")
+        local gameState = World:getUpgm()
+        for i, ball in ipairs(gameState) do
+            server:send("all",ball)
+        end
     end
 
     if love.keyboard.isDown("y") and order == 1 then
@@ -1054,11 +1054,12 @@ netSwitch:addCase("upgm",function(args)
 
     for i, change in ipairs(changes) do
         local ID        = change[1]
-        local ascX         = change[2]
-        local ascY         = change[3]
+        local ascX      = change[2]
+        local ascY      = change[3]
+        print(ascX,ascY)
         if ID and ascX and ascY then
             local ball  = World:getByID(ID)
-            local x,y = Util:AscToCoord(ascX,ascY)
+            local x,y   = Util:AscToCoord(ascX,ascY)
             if ball then
                 ball.x  = x
                 ball.lx = x

@@ -24,10 +24,13 @@ function Util:calculateID(length,salt)
     return out
 end
 
+--58 = ":", 95 = "_"
 function Util:convertToAsc(num)
     if num < 0 then return -1 end
     local out = ""
     repeat
+        if     num % 256 == 58 then num = num + 1
+        elseif num % 256 == 95 then num = num + 1 end
         local char = string.char(num % 256)
         out = char..out
         num = math.floor(num / 256)
@@ -52,7 +55,7 @@ function Util:coordToAsc(x,y)
     if x < 0    or y < 0    then return end
     local ascX = self:convertToAsc(x*10)
     local ascY = self:convertToAsc(y*10)
-    return ascX.."_"..ascY
+    return "_"..ascX.."_"..ascY.."_\n"
 end
 
 function Util:AscToCoord(ascX,ascY)

@@ -217,10 +217,9 @@ end
 
 --Create a string for updating player's positions
 function World:getUpgm()
-    local out = ""
+    local out = {}
     for i, ball in ipairs(self.balls) do
-        out = out..ball.ID.."_"..Util:coordToAsc(ball.x,ball.y)
-        if i < #self.balls then out = out.."_" end
+        table.insert(out,"upgm:"..ball.ID..Util:coordToAsc(ball.x,ball.y))
     end
     return out
 end
