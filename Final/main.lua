@@ -46,6 +46,10 @@ for i = 1,maxOrder do
     buttons[i] = {}
 end
 
+--Stores player inputs to send to the host all at once when cooldown = 0
+local inputCooldown = 4
+local inputSum = {x=0,y=0}
+
 --To run every frame a state is active.
 local stateSwitch     = Switch:new()
 --To run the first frame a state is active
@@ -210,8 +214,9 @@ end
 stateSwitch:addCase("searching for lobby",function()
     if not player then return end
 
-    player:send("no dat\n")
-
+    if tick % 2 == 0 then
+        player:send("no dat\n")
+    end
     processReceived()
 end)
 
@@ -245,12 +250,18 @@ stateSwitch:addCase("in game",function(dt)
 
     processReceived()
 
-    if order == 1 and not editingText then
-        local x,y = Util:processGameInputs()
+    local x,y = Util:processGameInputs()
 
-        if x ~= 0 or y ~= 0 then
-            player:send("plin:"..player.ID.."_"..x.."_"..y.."_\n")
-        end
+    inputSum.x = inputSum.x + x
+    inputSum.y = inputSum.y + y
+
+    if order == 1 and not editingText and tick % inputCooldown == 0 then
+        
+        local inX = inputSum.x
+        local inY = inputSum.y
+        player:send("plin:"..player.ID.."_"..inX.."_"..inY.."_\n")
+        inputSum.x = 0
+        inputSum.y = 0
     end
 end)
 
