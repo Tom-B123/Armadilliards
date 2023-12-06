@@ -24,21 +24,58 @@ function Util:calculateID(length,salt)
     return out
 end
 
---58 = ":", 95 = "_"
-function Util:convertToAsc(num)
+--Number to Hex
+local numHex = {}
+--Hex to number
+local hexNum = {}
+local extra = 0
+for i = 0,15 do
+    if i <= 9 then extra = 48
+    else           extra = 55 end
+    local char   = string.char(i+extra)
+    numHex[i]    = char
+    hexNum[char] = i
+end
+
+function Util:numToHex(num)
+    if num < 0 then return -1 end
+    
+    local out = ""
+    repeat
+        local charNum = math.floor(num % 16)
+        local char = numHex[charNum]
+        out = char..out
+        num = math.floor(num / 16)
+    until  num == 0
+    return out
+end
+
+function Util:hexToNum(hex)
+    local sum = 0
+    local mult = 1
+    for i = #hex,1,-1 do
+        local char = hex:sub(i,i)
+        sum = sum + (hexNum[char] * mult)
+        mult = mult * 16
+    end
+    return sum
+end
+
+function Util:numToAsc(num)
     if num < 0 then return -1 end
     local out = ""
     repeat
-        if     num % 256 == 58 then num = num + 1
-        elseif num % 256 == 95 then num = num + 1 end
-        local char = string.char(num % 256)
+        local charNum = math.floor(num % 256)
+        local char = string.char(charNum)
+        if char == "_" then char = string.char(charNum+1) end
+        if char == ":" then char = string.char(charNum+1) end
         out = char..out
         num = math.floor(num / 256)
     until  num == 0
     return out
 end
 
-function Util:convertToNum(asc)
+function Util:ascToNum(asc)
     if #asc > 7 then return -1 end
     local sum = 0
     local mult = 1
@@ -50,17 +87,17 @@ function Util:convertToNum(asc)
     return sum
 end
 
-function Util:coordToAsc(x,y)
+function Util:coordToHex(x,y)
     if x > 4096 or y > 4096 then return end
     if x < 0    or y < 0    then return end
-    local ascX = self:convertToAsc(x*10)
-    local ascY = self:convertToAsc(y*10)
-    return "_"..ascX.."_"..ascY.."_\n"
+    local hexX = self:numToHex(x*10)
+    local hexY = self:numToHex(y*10)
+    return "_"..hexX.."_"..hexY.."_\n"
 end
 
-function Util:AscToCoord(ascX,ascY)
-    local numX = self:convertToNum(ascX) / 10
-    local numY = self:convertToNum(ascY) / 10
+function Util:HexToCoord(hexX,hexY)
+    local numX = self:hexToNum(hexX) / 10
+    local numY = self:hexToNum(hexY) / 10
     return numX,numY
 end
 
