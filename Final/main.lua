@@ -1054,10 +1054,11 @@ netSwitch:addCase("upgm",function(args)
 
     for i, change in ipairs(changes) do
         local ID        = change[1]
-        local x         = change[2]
-        local y         = change[3]
-        if ID and x and y then
+        local ascX         = change[2]
+        local ascY         = change[3]
+        if ID and ascX and ascY then
             local ball  = World:getByID(ID)
+            local x,y = Util:AscToCoord(ascX,ascY)
             if ball then
                 ball.x  = x
                 ball.lx = x

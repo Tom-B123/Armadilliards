@@ -219,7 +219,7 @@ end
 function World:getUpgm()
     local out = ""
     for i, ball in ipairs(self.balls) do
-        out = out..ball.ID.."_"..ball.x.."_"..ball.y
+        out = out..ball.ID.."_"..Util:coordToAsc(ball.x,ball.y)
         if i < #self.balls then out = out.."_" end
     end
     return out

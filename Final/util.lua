@@ -47,6 +47,20 @@ function Util:convertToNum(asc)
     return sum
 end
 
+function Util:coordToAsc(x,y)
+    if x > 4096 or y > 4096 then return end
+    if x < 0    or y < 0    then return end
+    local ascX = self:convertToAsc(x*10)
+    local ascY = self:convertToAsc(y*10)
+    return ascX.."_"..ascY
+end
+
+function Util:AscToCoord(ascX,ascY)
+    local numX = self:convertToNum(ascX) / 10
+    local numY = self:convertToNum(ascY) / 10
+    return numX,numY
+end
+
 function Util:processGameInputs()
     local x = 0
     local y = 0
