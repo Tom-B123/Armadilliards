@@ -22,12 +22,12 @@ local server = nil
 --number of ticks between each lobby refresh
 local refreshRate = 120
 
-local canQuit = false
-local tick    = 0
+local canQuit     = false
+local tick        = 0
 
-local messageLog = {}
+local messageLog  = {}
 
-local monoSpace = love.graphics.newFont("cour.ttf",15)
+local monoSpace   = love.graphics.newFont("cour.ttf",15)
 love.graphics.setFont(monoSpace)
 
 local editingText  = nil
@@ -79,16 +79,16 @@ local function removeButton(ord,dButton)
         if button == dButton then ind = i end
     end
     if ind > -1 then
-        table.remove(buttons,ind)
+        print(#buttons)
+        table.remove(buttons[ord],ind)
+        print(#buttons)
     end
 end
 
 --Detect if the player clicks any buttons of the current order
 local function updateButtons()
     for i,button in ipairs(buttons[order]) do
-        if button:update() then
-            removeButton(order,button)
-        end
+        button:update()
     end
 end
 
@@ -821,9 +821,12 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setTeam(ID,"team 1")
         
         local y = #LobbyPlayer:getIDs() * 20
-        local nButton = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5, function()
+        local nButton = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5)
+
+        nButton.command = function()
             server:send("all","kick:"..ID.."_\n")
-        end)
+            removeButton(1,nButton)
+        end
 
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
     end

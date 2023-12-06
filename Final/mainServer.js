@@ -282,7 +282,7 @@ const server = net.createServer((socket) => {
 });
 
 const PORT = 500;
-const HOST = "127.0.0.1";
+const HOST = "0.0.0.0";
 
 server.listen(PORT, HOST, () => {
     console.log(`Server listening on ${HOST}:${PORT}`);

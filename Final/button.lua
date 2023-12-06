@@ -16,7 +16,6 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     object.command = command
     object.params = params
     object.mouseState = false
-    object.selfDestruct = false
     return object
 end
 
@@ -50,13 +49,10 @@ end
 
 --Update function, called every frame.
 function Button:update()
-    local toDelete = false
     if self:isHovered() and self:getClick() then
         self:execute()
-        if self.selfDestruct then toDelete = true end
     end
     self.mouseState = love.mouse.isDown(1)
-    return toDelete
 end
 
 function Button:draw()
