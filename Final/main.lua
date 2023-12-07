@@ -69,6 +69,7 @@ local function newMessage(sender,message)
 end
 
 local function drawMessages()
+    love.graphics.setColor(1,1,1)
     for i,message in ipairs(messageLog) do
         local topPos = 550 - #messageLog * 20
         love.graphics.print(message,100,topPos + i*20)
