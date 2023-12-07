@@ -40,7 +40,9 @@ local order    = 1
 --hardcoded limit on orders, only 4 menues can overlap at once
 local maxOrder = 4
 --Stores all buttons within tables, corresponding to their order.
-local buttons  = {}
+local buttons      = {}
+local lobbyButtons = {}
+local kickButtons  = {}
 
 for i = 1,maxOrder do
     buttons[i] = {}

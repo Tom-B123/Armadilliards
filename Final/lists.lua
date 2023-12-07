@@ -149,3 +149,39 @@ function List:iterator()
         end
     end
 end
+
+--Loops through a list ind times, then removes that value
+function List:removeInd(ind)
+    for i = 1,ind-1 do
+        self:next()
+    end
+    self:pop()
+    for i = 1,ind-1 do
+        self:prev()
+    end
+end
+
+--Loops through a list until the value is found
+function List:find(val)
+    if self:getVal() == val then return 1 end
+    local list = self
+    local head = self.head
+    local ind  = 1
+    repeat
+        print("checking: "..list:getVal())
+        list:next()
+        ind = ind + 1
+    until list:getVal() == val or head == list.head
+    if head == list.head then return -1 end
+    return ind
+end
+
+local list = List:new()
+list:push(5)
+list:push(10)
+list:push(15)
+-- list:removeInd(0)
+print(list:find(15))
+print(list:find(10))
+print(list:find(5))
+-- for i in list:iterator() do print(i) end
