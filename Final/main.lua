@@ -217,6 +217,7 @@ stateSwitch:addCase("searching for lobby",function()
     if tick % 2 == 0 then
         player:send("no dat\n")
     end
+    
     processReceived()
 end)
 
@@ -391,7 +392,12 @@ end)
 newStateSwitch:addCase("searching for lobby",function()
     if not player then return end
     clearButtons()
-    
+
+    if server then
+        server:close()
+        server = nil
+    end
+
     JoinableLobby:clear()
     --no text, the player name is drawn separatly above the button
     newButton(1,"",{1,1,1},300,25,500,75,function()
@@ -632,6 +638,11 @@ newStateSwitch:addCase("lobby pause screen",function()
                 if ID ~= player.ID then server:send("all","kick:"..ID.."_\n") end
             end
             player:send("clse:"..server.ID.."_\n")
+            toChangeState = "searching for lobby"
+            JoinableLobby:clear()
+            tempTick      = 30
+            state[2]      = nil
+            order         = 1
         end)
     else
         newButton(2,"exit lobby",{1,1,1},300,275,500,325, function()
@@ -822,6 +833,20 @@ netSwitch:addCase("kick",function(args)
 
 end)
 
+netSwitch:addCase("clse",function(args)
+    if not player then return end
+    local splitData = Util:split(args,"_")
+
+    local lobbyID = splitData[1]
+    local button = LobbyButton:get(lobbyID)
+
+    if button then
+        removeButton(1,button)
+        LobbyButton:remove(button)
+        print("closing lobby")
+    end
+end)
+
 --New connection, sends initial information about the player
 netSwitch:addCase("ncon",function(args)
     if server then
@@ -838,7 +863,7 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setInLobby(ID,true)
         LobbyPlayer:setTeam(ID,"team 1")
         
-        local y = #LobbyPlayer:getIDs() * 20
+        local y         = #LobbyPlayer:getIDs() * 20
         local nButton   = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5)
 
         nButton.command = function()
@@ -971,7 +996,7 @@ end)
 
 --Update lobby list
 netSwitch:addCase("uplobs",function(args)
-    if not player then return end
+    if not player or server then return end
 
     local splitData   = Util:split(args,"_")
 
@@ -984,7 +1009,7 @@ netSwitch:addCase("uplobs",function(args)
     local maxPlayers  = splitData[7]
 
     if not JoinableLobby:has(lobbyID) then
-
+        
         JoinableLobby:new(lobbyID)
         JoinableLobby:setName(lobbyID,lobbyName)
         JoinableLobby:setHostName(lobbyID,hostName)

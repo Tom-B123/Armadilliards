@@ -51,6 +51,23 @@ function getUplobs() {
    
 }
 
+function removeLobby(ID) {
+    let ind = -1;
+    for (i in lobbyIDs) {
+        const lobbyID = lobbyIDs[i];
+        if (lobbyID == ID) {
+            ind = i;
+        }
+    }
+    if (ind > -1) {
+        delete lobbyDict[ID];
+        if (lobbyIDs.length <= 1) {
+            lobbyIDs = [];
+        }
+        lobbyIDs.splice(ind, 1); 
+    }
+}
+
 //Split string by a separator into a table
 function split(string, sep) {
     let found = false;
@@ -208,10 +225,12 @@ function netSwitch(message,client) {
             break;
         }
         console.log("closing lobby: " + lobbyID);
+        removeLobby(lobbyID);
+        messageQueue.push("clse:" + lobbyID + "_\n");
         break;
     }
     default:
-        console.log("unknown command")
+        console.log("unknown command");
     }
 }
 
@@ -219,7 +238,7 @@ const clients = new Set();
 
 function send(clientsToReceive,msg) {
     if (clientsToReceive == "all") {
-        clientsToReceive = clients
+        clientsToReceive = clients;
     }
     for (const client of clientsToReceive) {
         client.write(msg);
