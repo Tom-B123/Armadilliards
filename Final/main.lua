@@ -711,8 +711,12 @@ end)
 
 drawStateSwitch:addCase("searching for lobby",function()
     if not player then return end
-    drawButtons(1)
     drawLobbyButtons()
+    love.graphics.setColor(1,1,1)
+    love.graphics.rectangle("fill",0,0,800,100)
+    love.graphics.rectangle("fill",0,400,800,100)
+    drawButtons(1)
+    
     -- Drawing the player name onto the edit player name button
     
     local playerNameText
@@ -843,9 +847,8 @@ netSwitch:addCase("kick",function(args)
     if not player or server then return end
     local splitData = Util:split(args,"_")
     local playerID  = splitData[1]
-
+    JoinableLobby:clear()
     player:send("econ:"..playerID.."_\n")
-
 end)
 
 netSwitch:addCase("clse",function(args)
