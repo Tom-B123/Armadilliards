@@ -40,11 +40,12 @@ local order    = 1
 -- hardcoded limit on orders, only 4 menues can overlap at once
 local maxOrder = 4
 -- Stores all buttons within tables, corresponding to their order.
-local buttons      = {}
-local lobbyButtons = List:new()
-local kickButtons  = {}
+local buttons        = {}
+local lobbyButtons   = List:new()
+local kickButtons    = {}
 
-local lobbyScroll  = 0
+local lobbyScroll    = 0
+local lobbyScrollVel = 0
 
 for i = 1,maxOrder do
     buttons[i] = {}
@@ -110,6 +111,11 @@ local function drawLobbyButtons()
         button:setCoords(100,200+i*20 + lobbyScroll,700,220+i*20 + lobbyScroll)
         button:draw()
     end
+end
+
+local function updateScroll(dt)
+    lobbyScroll = lobbyScroll + lobbyScrollVel * dt
+    lobbyScrollVel = lobbyScrollVel * 0.9
 end
 
 local function updateLobbyButtons()
@@ -1169,7 +1175,8 @@ end
 --Scroll the lobbys list with wheel
 function love.wheelmoved( dx, dy )
     if state[1] ~= "searching for lobby" then return end
-    lobbyScroll = lobbyScroll + dy * 20
+    local scrollSpeed = 100
+    lobbyScrollVel = lobbyScrollVel + dy * scrollSpeed
 end
 
 -- Handle keyboard inputs
@@ -1276,7 +1283,7 @@ function love.update(dt)
     end
 
     updateButtons()
-
+    updateScroll(dt)
     -- Loop through all state changes this frame
     local nState = getNewState()
     while nState do
