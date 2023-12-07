@@ -1,4 +1,4 @@
---Creates a new node object
+-- Creates a new node object
 local function newNode(val)
     return {val = val, next = nil, prev = nil}
 end
@@ -7,7 +7,7 @@ List = {}
 
 List.__index = List
 
---Creates a new list object
+-- Creates a new list object
 function List:new()
     local object = {}
     setmetatable(object,List)
@@ -16,7 +16,7 @@ function List:new()
     return object
 end
 
---Returns the current head value
+-- Returns the current head value
 function List:getVal()
     if self.head then
         return self.head.val
@@ -24,12 +24,12 @@ function List:getVal()
     return nil
 end
 
---Returns the length of the list
+-- Returns the length of the list
 function List:getLength()
     return self.length
 end
 
---Moves the head forwards one place
+-- Moves the head forwards one place
 function List:next()
     if self.head then
         self.head = self.head.next
@@ -38,7 +38,7 @@ function List:next()
     return false
 end
 
---Moves the head back one place
+-- Moves the head back one place
 function List:prev()
     if self.head then
         self.head = self.head.prev
@@ -47,7 +47,7 @@ function List:prev()
     return false
 end
 
---Adds a new value to the head of the list
+-- Adds a new value to the head of the list
 function List:push(val)
     if self.length == 0 then
         self.head = newNode(val)
@@ -71,7 +71,7 @@ function List:push(val)
     self.length = self.length + 1
 end
 
---Removes and returns the head value of the list
+-- Removes and returns the head value of the list
 function List:pop()
     local val
     if self.length <= 0 then
@@ -89,12 +89,12 @@ function List:pop()
     return val
 end
 
---Adds a new value to the head of the list
+-- Adds a new value to the head of the list
 function List:enqueue(val)
     self:push(val)
 end
 
---Removes and returns the end value of the list
+-- Removes and returns the end value of the list
 function List:dequeue()
     local val
     if self.length <= 0 then
@@ -111,7 +111,7 @@ function List:dequeue()
     return val
 end
 
---Adds a value to the end of the list
+-- Adds a value to the end of the list
 function List:append(val)
     if self.length == 0 then
         self.head = newNode(val)
@@ -133,7 +133,7 @@ function List:append(val)
     self.length = self.length + 1
 end
 
---Returns an iterator function to read the Linked List closer to an array
+-- Returns an iterator function to read the Linked List closer to an array
 function List:iterator()
     local current = self.head
     local firstIteration = true
@@ -150,7 +150,7 @@ function List:iterator()
     end
 end
 
---Loops through a list ind times, then removes that value
+-- Loops through a list ind times, then removes that value
 function List:removeInd(ind)
     for i = 1,ind-1 do
         self:next()
@@ -161,27 +161,21 @@ function List:removeInd(ind)
     end
 end
 
---Loops through a list until the value is found
+-- Loops through a list until the value is found
 function List:find(val)
-    if self:getVal() == val then return 1 end
-    local list = self
-    local head = self.head
+    local temp = self.head
+    if temp == nil then return -1 end
     local ind  = 1
-    repeat
-        print("checking: "..list:getVal())
-        list:next()
+    for i = 1,self.length do
+        if temp.val == val then return ind end
+        temp = temp.next
         ind = ind + 1
-    until list:getVal() == val or head == list.head
-    if head == list.head then return -1 end
-    return ind
+    end
+    return -1
 end
 
-local list = List:new()
-list:push(5)
-list:push(10)
-list:push(15)
--- list:removeInd(0)
-print(list:find(15))
-print(list:find(10))
-print(list:find(5))
--- for i in list:iterator() do print(i) end
+-- Find the index of the item, then remove it from the list
+function List:removeItem(item)
+    local ind = self:find(item)
+    if ind > -1 then self:removeInd(ind) end
+end
