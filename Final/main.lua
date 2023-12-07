@@ -628,6 +628,9 @@ newStateSwitch:addCase("lobby pause screen",function()
 
     if server then
         newButton(2,"close lobby",{1,1,1},300,275,500,325, function()
+            for i, ID in ipairs(LobbyPlayer:getIDs()) do
+                server:send("all","kick:"..ID.."_\n")
+            end
             --Close the lobby and kick every player from the lobby, v complicated
         end)
     else
@@ -811,7 +814,7 @@ netSwitch:addCase("msg",function(args)
 end)
 
 netSwitch:addCase("kick",function(args)
-    if not player then return end
+    if not player or server then return end
     local splitData = Util:split(args,"_")
     local playerID  = splitData[1]
 
