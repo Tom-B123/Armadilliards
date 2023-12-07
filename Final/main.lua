@@ -713,9 +713,9 @@ end)
 drawStateSwitch:addCase("searching for lobby",function()
     if not player then return end
     drawLobbyButtons()
-    love.graphics.setColor(1,1,1)
+    love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill",0,0,800,100)
-    love.graphics.rectangle("fill",0,400,800,100)
+    love.graphics.rectangle("fill",0,375,800,225)
     drawButtons(1)
     
     -- Drawing the player name onto the edit player name button
