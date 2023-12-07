@@ -109,6 +109,12 @@ local function drawLobbyButtons()
     end
 end
 
+local function updateLobbyButtons()
+    for i,button in lobbyButtons:iterator() do
+        button:update()
+    end
+end
+
 local function newButton(ord,text,colour,x1,y1,x2,y2,command,params)
     local nButton = Button:new(text,colour,0,x1,y1,x2,y2,command,params)
     table.insert(buttons[ord],nButton)
@@ -221,6 +227,8 @@ end
 
 stateSwitch:addCase("searching for lobby",function()
     if not player then return end
+
+    updateLobbyButtons()
 
     if tick % 2 == 0 then
         player:send("no dat\n")
@@ -850,7 +858,7 @@ netSwitch:addCase("clse",function(args)
     if button then
         removeButton(1,button)
         LobbyButton:remove(button)
-        print("closing lobby")
+        lobbyButtons:removeItem(button)
     end
 end)
 
