@@ -140,6 +140,10 @@ function List:iterator()
     local ind = 0
     return function ()
         if current then
+            if self.length == 1 then
+                current = nil
+                return 1,self:getVal()
+            end
             local val = current.val
             current = current.next
             ind = ind + 1

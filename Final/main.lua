@@ -1029,7 +1029,7 @@ netSwitch:addCase("uplobs",function(args)
         local nButton = Button:new("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},0,100,100 + y,700,135 + y,function()
             player:join(lobbyID)
         end)
-        lobbyButtons:push(nButton)
+        lobbyButtons:append(nButton)
         LobbyButton:new(lobbyID,nButton)
     else
         JoinableLobby:setPlayerCount(lobbyID, playerCount)
