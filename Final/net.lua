@@ -232,11 +232,12 @@ end
 
 --LobbyPlayer table, uses the player ID to get other player data
 LobbyPlayer = {
-    IDTable = {},
-    nameDict = {},
-    readyDict = {},
+    IDTable     = {},
+    ballIDDict  = {},
+    nameDict    = {},
+    readyDict   = {},
     inLobbyDict = {},
-    teamDict = {}
+    teamDict    = {}
 }
 
 function LobbyPlayer:new(ID)
@@ -244,12 +245,12 @@ function LobbyPlayer:new(ID)
 end
 
 function LobbyPlayer:clear()
-    self.IDTable = {}
-    self.ballIDDict = {}
-    self.nameDict = {}
-    self.readyDict = {}
+    self.IDTable     = {}
+    self.ballIDDict  = {}
+    self.nameDict    = {}
+    self.readyDict   = {}
     self.inLobbyDict = {}
-    self.teamDict = {}
+    self.teamDict    = {}
 end
 
 function LobbyPlayer:getIDs()

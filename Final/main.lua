@@ -506,10 +506,10 @@ newStateSwitch:addCase("hosting lobby",function()
     if lState[1] ~= "in game"  then
         LobbyPlayer:clear()
         LobbyPlayer:new(player.ID)
-        LobbyPlayer:setName(player.ID,player.name)
-        LobbyPlayer:setReady(player.ID,true)
-        LobbyPlayer:setInLobby(player.ID,true)
-        LobbyPlayer:setTeam(player.ID,"team 1")
+        LobbyPlayer:setName(player.ID,     player.name)
+        LobbyPlayer:setReady(player.ID,    true)
+        LobbyPlayer:setInLobby(player.ID,  true)
+        LobbyPlayer:setTeam(player.ID,    "team 1")
     end
 
     newButton(1,"start",{1,1,1},600,500,750,550,function()
@@ -629,9 +629,9 @@ newStateSwitch:addCase("lobby pause screen",function()
     if server then
         newButton(2,"close lobby",{1,1,1},300,275,500,325, function()
             for i, ID in ipairs(LobbyPlayer:getIDs()) do
-                server:send("all","kick:"..ID.."_\n")
+                if ID ~= player.ID then server:send("all","kick:"..ID.."_\n") end
             end
-            --Close the lobby and kick every player from the lobby, v complicated
+            player:send("clse:"..server.ID.."_\n")
         end)
     else
         newButton(2,"exit lobby",{1,1,1},300,275,500,325, function()
@@ -1000,7 +1000,7 @@ netSwitch:addCase("uplobs",function(args)
         LobbyButton:new(lobbyID,nButton)
     else
         JoinableLobby:setPlayerCount(lobbyID, playerCount)
-        local button = LobbyButton:setText(lobbyID,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers)
+        LobbyButton:setText(lobbyID,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers)
     end
 end)
 
