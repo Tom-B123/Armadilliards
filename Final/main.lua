@@ -44,6 +44,8 @@ local buttons      = {}
 local lobbyButtons = List:new()
 local kickButtons  = {}
 
+local lobbyScroll  = 0
+
 for i = 1,maxOrder do
     buttons[i] = {}
 end
@@ -105,7 +107,7 @@ end
 
 local function drawLobbyButtons()
     for i,button in lobbyButtons:iterator() do
-        button:setCoords(100,200+i*20,700,220+i*20)
+        button:setCoords(100,200+i*20 + lobbyScroll,700,220+i*20 + lobbyScroll)
         button:draw()
     end
 end
@@ -1162,6 +1164,12 @@ function love.textinput(t)
     -- Adds text at the editing index and incriments the index
     editingText  = string.sub(editingText,1,editingIndex-1)..t..string.sub(editingText,editingIndex,#editingText)
     editingIndex = editingIndex + 1
+end
+
+--Scroll the lobbys list with wheel
+function love.wheelmoved( dx, dy )
+    if state[1] ~= "searching for lobby" then return end
+    lobbyScroll = lobbyScroll + dy * 20
 end
 
 -- Handle keyboard inputs
