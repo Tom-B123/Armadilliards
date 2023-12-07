@@ -19,9 +19,11 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     return object
 end
 
-function Button:move(x,y)
-    self.x = self.x + x
-    self.y = self.y + y
+function Button:setCoords(x1,y1,x2,y2)
+    self.x1 = x1
+    self.y1 = y1
+    self.x2 = x2
+    self.y2 = y2
 end
 
 function Button:setText(text)

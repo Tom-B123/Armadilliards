@@ -137,15 +137,17 @@ end
 function List:iterator()
     local current = self.head
     local firstIteration = true
+    local ind = 0
     return function ()
         if current then
             local val = current.val
             current = current.next
+            ind = ind + 1
             if current == self.head and not firstIteration then
                 current = nil
             end
             firstIteration = false
-            return val
+            return ind,val
         end
     end
 end

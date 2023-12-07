@@ -41,7 +41,7 @@ local order    = 1
 local maxOrder = 4
 -- Stores all buttons within tables, corresponding to their order.
 local buttons      = {}
-local lobbyButtons = {}
+local lobbyButtons = List:new()
 local kickButtons  = {}
 
 for i = 1,maxOrder do
@@ -98,6 +98,13 @@ end
 
 local function drawButtons(ord)
     for j,button in ipairs(buttons[ord]) do
+        button:draw()
+    end
+end
+
+local function drawLobbyButtons()
+    for i,button in lobbyButtons:iterator() do
+        button:setCoords(100,200+i*20,700,220+i*20)
         button:draw()
     end
 end
@@ -697,6 +704,7 @@ end)
 drawStateSwitch:addCase("searching for lobby",function()
     if not player then return end
     drawButtons(1)
+    drawLobbyButtons()
     -- Drawing the player name onto the edit player name button
     
     local playerNameText
@@ -1018,9 +1026,10 @@ netSwitch:addCase("uplobs",function(args)
         JoinableLobby:setMaxPlayers(lobbyID,8)
 
         local y = #JoinableLobby.IDTable * 40
-        local nButton = newButton(1,"lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},100,100 + y,700,135 + y,function()
+        local nButton = Button:new("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},0,100,100 + y,700,135 + y,function()
             player:join(lobbyID)
         end)
+        lobbyButtons:push(nButton)
         LobbyButton:new(lobbyID,nButton)
     else
         JoinableLobby:setPlayerCount(lobbyID, playerCount)
