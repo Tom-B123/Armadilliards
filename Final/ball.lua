@@ -1,3 +1,0 @@
-local Ball = {}
-
-return Ball

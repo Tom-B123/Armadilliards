@@ -4,6 +4,7 @@ require("button")
 require("net")
 require("util")
 require("solver")
+local drawBall  = require("drawBall")
 
 local player = nil
 -- Default values for creating a lobby
