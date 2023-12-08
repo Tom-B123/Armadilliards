@@ -949,7 +949,6 @@ end)
 
 -- End connection with main server
 netSwitch:addCase("econ",function(args)
-    print("econ:",args)
     if server then
         local splitData = Util:split(args,"_")
         local ID        = splitData[1]
@@ -1103,12 +1102,9 @@ netSwitch:addCase("asgn",function(args)
     for i = 1,#splitData / 2 do
         local ballID   = splitData[i*2-1]
         local playerID = splitData[i*2]
-        print(playerID,ballID)
         if player.ID         == playerID then
-            print(ballID)
             player.ballID     = ballID
             local playerBall  = World:getByID(ballID)
-            print(playerBall)
             World:setFocus(playerBall)
             
         end

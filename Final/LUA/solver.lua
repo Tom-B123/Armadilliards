@@ -107,7 +107,7 @@ function Ball:draw(offsetX,offsetY)
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        self.ID
+        "name"
     )
 end
 
