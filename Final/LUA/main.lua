@@ -445,6 +445,7 @@ newStateSwitch:addCase("searching for lobby",function()
         player:send("econ:"..player.ID.."_\n")
         toChangeState = "gamemode select"
         tempTick      = 30
+        JoinableLobby:clear()
     end)
     lState[1] = state[1]
 end)
@@ -1095,17 +1096,19 @@ end)
 -- Asign ball ID to a player
 netSwitch:addCase("asgn",function(args)
     if not player then return end
-
-    local splitData = Util:split(args)
+    local splitData = Util:split(args,"_")
 
     for i = 1,#splitData / 2 do
-        local playerID = splitData[i*2-1]
-        local ballID   = splitData[i*2]
+        local ballID   = splitData[i*2-1]
+        local playerID = splitData[i*2]
+        print(playerID,ballID)
         if player.ID         == playerID then
+            print(ballID)
             player.ballID     = ballID
             local playerBall  = World:getByID(ballID)
+            print(playerBall)
             World:setFocus(playerBall)
-            print("set focus")
+            
         end
     end
 end)
