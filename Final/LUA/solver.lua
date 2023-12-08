@@ -90,6 +90,7 @@ end
 
 --Drawing ball objects
 function Ball:draw()
+    print(self.yaw,self.pitch)
     drawBall:draw(self.x,self.y,self.yaw,self.pitch,self.colour,1)
 end
 

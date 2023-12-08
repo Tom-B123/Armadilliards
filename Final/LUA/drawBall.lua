@@ -23,11 +23,10 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale)
     --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
     --Rotates the sprite around the z axis by the yaw value.
     local function tryDraw()
-        print("drawing balls")
         love.graphics.setColor(colour)
-        love.graphics.draw(ball,x,y,yaw,1,1,16,16)
+        love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
         love.graphics.setColor(1,1,1)
-        love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,1,1,16,16)
+        love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
     end
     pcall(tryDraw)
 end
