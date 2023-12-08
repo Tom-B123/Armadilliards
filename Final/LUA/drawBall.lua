@@ -26,7 +26,9 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name)
         love.graphics.setColor(colour)
         love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
         love.graphics.setColor(1,1,1)
-        if name then love.graphics.print(name,x,y-20) end
+        if name then 
+            love.graphics.print(name,x - (4.5 * #name),y-32)
+        end
         love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
     end
     pcall(tryDraw)

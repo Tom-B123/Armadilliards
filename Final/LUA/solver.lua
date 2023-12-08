@@ -15,7 +15,7 @@ colours[4] = {0,0,1}
 function Ball:new(x,y)
     local object = {}
     setmetatable(object,Ball)
-    object.ID = ""
+    object.ID       = ""
     object.playerID = nil
     object.x        = x
     object.y        = y
@@ -102,12 +102,16 @@ end
 
 --Drawing ball objects
 function Ball:draw(offsetX,offsetY)
+    local name = nil
+    if self.playerID then 
+        name = LobbyPlayer:getName(self.playerID)
+    end
     drawBall:draw(
         self.x + offsetX,
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        "name"
+        name
     )
 end
 
