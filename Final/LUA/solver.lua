@@ -5,7 +5,7 @@ local Ball    = {}
 Ball.__index  = Ball
 
 local colours = {}
-colours[1] = {0,0,1}
+colours[1] = {0.1,0.1,0.1}
 colours[2] = {1,0,0}
 colours[3] = {0,1,0}
 colours[4] = {1,1,0}
@@ -28,7 +28,7 @@ function Ball:new(x,y)
     object.radius   = 16
     object.yaw      = 0
     object.pitch    = 0
-    object.colour   = colours[math.random(1,4)]
+    object.colour   = colours[1]
     return object
 end
 
