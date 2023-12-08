@@ -165,14 +165,22 @@ function World:generateIDs()
     end
 end
 
---Assigns a playerID to the ball
-function World:assign(playerIDs)
+--Assigns playerIDs to the ball
+function World:assignAll(playerIDs)
     for i,playerID in ipairs(playerIDs) do
         local ball = self.playableBalls[i]
         if ball then
             ball.playerID = playerID
             LobbyPlayer:setBallID(playerID,ball.ID)
         end
+    end
+end
+
+function World:assign(playerID,ballID)
+    local ball = self:getByID(ballID)
+    if ball then
+        ball.playerID = playerID
+        LobbyPlayer:setBallID(playerID,ball.ID)
     end
 end
 
