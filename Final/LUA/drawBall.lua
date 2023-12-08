@@ -12,7 +12,7 @@ for y = 0,3 do
     end
 end
 
-function drawBall:draw(x,y,yaw,pitch,colour,scale)
+function drawBall:draw(x,y,yaw,pitch,colour,scale,name)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
 
@@ -26,6 +26,7 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale)
         love.graphics.setColor(colour)
         love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
         love.graphics.setColor(1,1,1)
+        love.graphics.print(name,x,y)
         love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
     end
     pcall(tryDraw)

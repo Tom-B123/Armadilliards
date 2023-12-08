@@ -106,7 +106,8 @@ function Ball:draw(offsetX,offsetY)
         self.x + offsetX,
         self.y + offsetY,
         self.yaw,self.pitch,
-        self.colour,1
+        self.colour,1,
+        self.ID
     )
 end
 
