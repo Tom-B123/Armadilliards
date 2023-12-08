@@ -681,6 +681,7 @@ end)
 
 drawStateSwitch:addCase("main menu",function()
     love.graphics.print("This is the main menu",300,100)
+    drawBall:draw(tick)
     drawButtons(1)
 end)
 
