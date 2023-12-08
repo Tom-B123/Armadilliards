@@ -5,6 +5,11 @@ require("net")
 require("util")
 require("solver")
 
+local mobile = false
+if love.system.getOS() == 'iOS' or love.system.getOS() == 'Android' then
+    mobile = true
+end
+
 local player = nil
 -- Default values for creating a lobby
 local lobbyToCreate = {name = "new lobby", maxPlayers = 8}
@@ -616,6 +621,8 @@ newStateSwitch:addCase("hosting game",function()
     World:generateIDs()
 
     World:assign(LobbyPlayer:getIDs())
+
+    print(World:getAsgn())
 
     server:send("all",World:getAsgn())
 
