@@ -1,9 +1,5 @@
 local drawBall = {}
 
-local tick = 0
-
-local ind  = 0
-
 local ball       = love.graphics.newImage("Assets/ball.png")
 local blankSheet = love.graphics.newImage("Assets/blank.png")
 
@@ -27,16 +23,13 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale)
     --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
     --Rotates the sprite around the z axis by the yaw value.
     local function tryDraw()
+        print("drawing balls")
         love.graphics.setColor(colour)
         love.graphics.draw(ball,x,y,yaw,1,1,16,16)
         love.graphics.setColor(1,1,1)
         love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,1,1,16,16)
     end
-    if not pcall(tryDraw) then print("error drawing balls") end
-    tick = tick + 1
-    if tick % 4 == 0 then
-        ind  = ind  + 1
-    end
+    pcall(tryDraw)
 end
 
 return drawBall

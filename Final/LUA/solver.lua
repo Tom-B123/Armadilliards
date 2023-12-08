@@ -90,7 +90,7 @@ end
 
 --Drawing ball objects
 function Ball:draw()
-    drawBall:draw(self.x,self.y,self.yaw,self.pitch,{0,0,1},1)
+    drawBall:draw(self.x,self.y,self.yaw,self.pitch,self.colour,1)
 end
 
 --World table, stores and processes all balls
@@ -202,7 +202,6 @@ end
 --Draw every ball
 function World:draw()
     for i, ball in ipairs(self.balls) do
-        love.graphics.setColor(ball.colour)
         ball:draw()
     end
 end
