@@ -1,4 +1,5 @@
 require("util")
+local drawBall  = require("drawBall")
 
 local Ball = {}
 Ball.__index = Ball
@@ -9,25 +10,30 @@ function Ball:new(x,y)
     setmetatable(object,Ball)
     object.ID = ""
     object.playerID = nil
-    object.x = x
-    object.y = y
-    object.vx = 0
-    object.vy = 0
-    object.ax = 0
-    object.ay = 0
-    object.lx = x
-    object.ly = y
-    object.lvx = 0
-    object.lvy = 0
-    object.radius = 16
-    object.colour = {1,1,1}
+    object.x        = x
+    object.y        = y
+    object.vx       = 0
+    object.vy       = 0
+    object.ax       = 0
+    object.ay       = 0
+    object.lx       = x
+    object.ly       = y
+    object.lvx      = 0
+    object.lvy      = 0
+    object.radius   = 16
+    object.yaw      = 0
+    object.pitch    = 0
+    object.colour   = {1,1,1}
     return object
 end
 
 --Move a ball
 function Ball:move(x,y)
-    self.x = self.x + x
-    self.y = self.y + y
+    self.x          = self.x + x
+    self.y          = self.y + y
+    local magnitude = Util:findDistance(x,y)
+    self.pitch      = self.pitch + Util:pitchAngle(magnitude,self.radius)
+    self.yaw        = Util:yawAngle(self.vx,self.vy)
 end
 
 --Physics solving for ball objects
@@ -84,7 +90,7 @@ end
 
 --Drawing ball objects
 function Ball:draw()
-    love.graphics.circle("fill",self.x,self.y,self.radius)
+    drawBall:draw(self.x,self.y,self.yaw,self.pitch,{0,0,1},1)
 end
 
 --World table, stores and processes all balls

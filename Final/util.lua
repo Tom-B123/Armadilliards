@@ -115,6 +115,24 @@ function Util:findDistance(x,y)
     return (x*x + y*y)^0.5
 end
 
+function Util:pitchAngle(distance,radius)
+    local angle = distance / radius
+    return angle
+end
+
+function Util:yawAngle(x,y)
+    local ax,ay = math.abs(x),math.abs(y)
+    if x > 0 and y >= 0 then
+        return math.atan(ay/ax)
+    elseif x <= 0 and y > 0 then
+        return math.atan(ax/ay) + math.pi / 2
+    elseif x < 0 and y <= 0 then
+        return math.atan(ay/ax) + math.pi
+    elseif x >= 0 and y < 0 then
+        return math.atan(ax/ay) + math.pi * 3 / 2
+    end
+end
+
 local toBoolDict = {}
 
 toBoolDict["true"] = true

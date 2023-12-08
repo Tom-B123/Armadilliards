@@ -4,7 +4,6 @@ require("button")
 require("net")
 require("util")
 require("solver")
-local drawBall  = require("drawBall")
 
 local player = nil
 -- Default values for creating a lobby
@@ -681,7 +680,6 @@ end)
 
 drawStateSwitch:addCase("main menu",function()
     love.graphics.print("This is the main menu",300,100)
-    drawBall:draw(tick)
     drawButtons(1)
 end)
 
