@@ -32,7 +32,7 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale)
         love.graphics.setColor(1,1,1)
         love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,1,1,16,16)
     end
-    pcall(tryDraw)
+    if not pcall(tryDraw) then print("error drawing balls") end
     tick = tick + 1
     if tick % 4 == 0 then
         ind  = ind  + 1
