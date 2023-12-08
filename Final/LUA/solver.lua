@@ -1,6 +1,8 @@
 require("util")
 local drawBall  = require("drawBall")
 
+local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
+
 local Ball    = {}
 Ball.__index  = Ball
 
@@ -8,7 +10,7 @@ local colours = {}
 colours[1] = {0.1,0.1,0.1}
 colours[2] = {1,0,0}
 colours[3] = {0,1,0}
-colours[4] = {1,1,0}
+colours[4] = {0,0,1}
 --Create a new ball object
 function Ball:new(x,y)
     local object = {}
@@ -99,8 +101,13 @@ function Ball:edgeConstraint()
 end
 
 --Drawing ball objects
-function Ball:draw()
-    drawBall:draw(self.x,self.y,self.yaw,self.pitch,self.colour,1)
+function Ball:draw(offsetX,offsetY)
+    drawBall:draw(
+        self.x + offsetX,
+        self.y + offsetY,
+        self.yaw,self.pitch,
+        self.colour,1
+    )
 end
 
 function Ball:updateRoll()
@@ -110,9 +117,14 @@ function Ball:updateRoll()
 end
 
 --World table, stores and processes all balls
-World = {balls = {},playableBalls = {},ballIDDict = {}}
+World = {
+    balls         = {},
+    playableBalls = {},
+    ballIDDict    = {},
+    focus         = nil
+}
 
-
+--Clears all balls
 function World:clear()
     self.balls = {}
     self.playableBalls = {}
@@ -157,6 +169,17 @@ function World:assign(playerIDs)
             LobbyPlayer:setBallID(playerID,ball.ID)
         end
     end
+end
+
+--Follows a ball with the camera
+function World:setFocus(ball)
+    self.focus = ball
+end
+
+--Gets the offset for drawing objects
+function World:getOffset()
+    if not self.focus then return 0,0 end
+    return windowDims.x/2 - self.focus.x, windowDims.y/2 - self.focus.y
 end
 
 --Collisions with no optimisation
@@ -225,8 +248,9 @@ end
 
 --Draw every ball
 function World:draw()
+    local offsetX,offsetY = World:getOffset()
     for i, ball in ipairs(self.balls) do
-        ball:draw()
+        ball:draw(offsetX,offsetY)
     end
 end
 

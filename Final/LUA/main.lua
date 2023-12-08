@@ -606,7 +606,8 @@ newStateSwitch:addCase("hosting game",function()
 
     LobbyPlayer:setInLobby(player.ID,false)
 
-    World:newBall(50,50,true)
+    local playerBall = World:newBall(50,50,true)
+    World:setFocus(playerBall)
     World:newBall(150,50,true)
     World:newBall(50,150,true)
     World:newBall(150,150,true)
@@ -615,6 +616,8 @@ newStateSwitch:addCase("hosting game",function()
     World:generateIDs()
 
     World:assign(LobbyPlayer:getIDs())
+
+
 
     lState[1] = state[1]
 end)
@@ -1093,6 +1096,8 @@ netSwitch:addCase("asgn",function(args)
         local ballID   = splitData[i*2]
         if player.ID         == playerID then
             player.ballID     = ballID
+            local playerBall = World:getByID(ballID)
+            World:setFocus(playerBall)
         end
     end
 end)
