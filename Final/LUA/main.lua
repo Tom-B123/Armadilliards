@@ -617,7 +617,7 @@ newStateSwitch:addCase("hosting game",function()
 
     World:assign(LobbyPlayer:getIDs())
 
-
+    server:send("all",World:getAsgn())
 
     lState[1] = state[1]
 end)
@@ -1096,8 +1096,9 @@ netSwitch:addCase("asgn",function(args)
         local ballID   = splitData[i*2]
         if player.ID         == playerID then
             player.ballID     = ballID
-            local playerBall = World:getByID(ballID)
+            local playerBall  = World:getByID(ballID)
             World:setFocus(playerBall)
+            print("set focus")
         end
     end
 end)

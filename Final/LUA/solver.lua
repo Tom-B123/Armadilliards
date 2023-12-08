@@ -256,7 +256,7 @@ end
 
 --Create a string for assigning players to a ballID for taking player inputs
 function World:getAsgn()
-    local out = ""
+    local out = "asgn:"
     for i, ball in ipairs(self.balls) do
         if ball.playerID then
             out = out..ball.ID.."_"..ball.playerID
