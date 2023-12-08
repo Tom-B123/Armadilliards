@@ -16,11 +16,13 @@ for y = 0,3 do
     end
 end
 
-function drawBall:draw(r)
-    love.graphics.setColor(math.sin(ind/10),math.cos(ind/5),math.sin(ind/17))
-    love.graphics.draw(ball,100,100,0,2,2,16,16)
+function drawBall:draw(x,y,yaw,pitch,colour,scale)
+    if not scale then scale = 1 end
+    if not colour then colour = {1,1,1}
+    love.graphics.setColor(colour)
+    love.graphics.draw(ball,x,y,0,scale,scale,16,16)
     love.graphics.setColor(1,1,1)
-    love.graphics.draw(blankSheet,blankQuads[1+ind%32],100,100,0,2,2,16,16)
+    love.graphics.draw(blankSheet,blankQuads[1+ind%32],x,y,0,scale,scale,16,16)
     tick = tick + 1
     if tick % 4 == 0 then
         ind  = ind  + 1
