@@ -623,8 +623,10 @@ newStateSwitch:addCase("hosting game",function()
 
     World:assign(LobbyPlayer:getIDs())
 
-    print(World:getAsgn())
-
+    local gameState = World:getUpgm()
+    for i, ball in ipairs(gameState) do
+        server:send("all",ball)
+    end
     server:send("all",World:getAsgn())
 
     lState[1] = state[1]
