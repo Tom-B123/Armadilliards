@@ -1,9 +1,14 @@
 require("util")
 local drawBall  = require("drawBall")
 
-local Ball = {}
-Ball.__index = Ball
+local Ball    = {}
+Ball.__index  = Ball
 
+local colours = {}
+colours[1] = {0,0,1}
+colours[2] = {1,0,0}
+colours[3] = {0,1,0}
+colours[4] = {1,1,0}
 --Create a new ball object
 function Ball:new(x,y)
     local object = {}
@@ -23,7 +28,7 @@ function Ball:new(x,y)
     object.radius   = 16
     object.yaw      = 0
     object.pitch    = 0
-    object.colour   = {1,1,1}
+    object.colour   = colours[math.random(1,4)]
     return object
 end
 
@@ -31,9 +36,14 @@ end
 function Ball:move(x,y)
     self.x          = self.x + x
     self.y          = self.y + y
+    self:roll(x,y)
+end
+
+--Roll the ball
+function Ball:roll(x,y)
     local magnitude = Util:findDistance(x,y)
     self.pitch      = self.pitch + Util:pitchAngle(magnitude,self.radius)
-    self.yaw        = Util:yawAngle(self.vx,self.vy)
+    self.yaw        = Util:yawAngle(x,y)
 end
 
 --Physics solving for ball objects
@@ -90,8 +100,13 @@ end
 
 --Drawing ball objects
 function Ball:draw()
-    print(self.yaw,self.pitch)
     drawBall:draw(self.x,self.y,self.yaw,self.pitch,self.colour,1)
+end
+
+function Ball:updateRoll()
+    self:roll(self.x-self.lx,self.y-self.ly)
+    self.lx = self.x
+    self.ly = self.y
 end
 
 --World table, stores and processes all balls
@@ -103,6 +118,7 @@ function World:clear()
     self.playableBalls = {}
     self.ballIDDict = {}
 end
+
 --Assigns an ID to a ball, or calculates a new ID using the given salt
 function World:assignID(ball,ID,salt)
     if salt == nil then salt = 0 end
@@ -191,13 +207,20 @@ function World:expensiveCollisions(balls)
         end
     end
 end
+
 --Updates the position of every ball
-function World:update(dt)
+function World:update(dt,isClient)
     for i, ball in ipairs(self.balls) do
-        ball:edgeConstraint()
-        ball:verlet(dt)
+        if isClient then
+            ball:verlet(dt)
+        else
+            ball:edgeConstraint()
+            ball:verlet(dt)
+        end
     end
-    self:expensiveCollisions(self.balls)
+    if not isClient then
+        self:expensiveCollisions(self.balls)
+    end
 end
 
 --Draw every ball

@@ -276,6 +276,8 @@ stateSwitch:addCase("in game",function(dt)
 
     processReceived()
 
+    World:update(dt,true)
+
     local x,y = Util:processGameInputs()
 
     inputSum.x = inputSum.x + x
@@ -296,7 +298,7 @@ stateSwitch:addCase("hosting game",function(dt)
     server:send("all","no dat".."_\n")
     processReceived()
 
-    World:update(dt)
+    World:update(dt,false)
 
     local balls = World.balls
     if order == 1 and not editingText then
@@ -533,6 +535,8 @@ newStateSwitch:addCase("hosting lobby",function()
 
     clearButtons()
 
+    love.graphics.setBackgroundColor( 0,0,0 )
+
     if lState[1] ~= "in game"  then
         LobbyPlayer:clear()
         LobbyPlayer:new(player.ID)
@@ -567,8 +571,10 @@ end)
 
 newStateSwitch:addCase("in lobby",function()
     if not player then return end
-    
+
     clearButtons()
+
+    love.graphics.setBackgroundColor( 0,0,0 )
 
     newButton(1,"ready",{1,1,1},600,500,750,550,function()
         local ready = LobbyPlayer:getReady(player.ID)
@@ -595,7 +601,9 @@ end)
 newStateSwitch:addCase("hosting game",function()
     if not (server and player) then return end
     clearButtons()
-    
+
+    love.graphics.setBackgroundColor( 0,1,0 )
+
     LobbyPlayer:setInLobby(player.ID,false)
 
     World:newBall(50,50,true)
@@ -614,6 +622,8 @@ end)
 newStateSwitch:addCase("in game",function()
     if not player then return end
     clearButtons()
+
+    love.graphics.setBackgroundColor( 0,1,0 )
 
     lState[1] = state[1]
 end)
@@ -1128,9 +1138,7 @@ netSwitch:addCase("upgm",function(args)
             local x,y   = Util:HexToCoord(ascX,ascY)
             if ball then
                 ball.x  = x
-                ball.lx = x
                 ball.y  = y
-                ball.ly = y
             else
                 local nball = World:newBall(x,y,true)
                 World:assignID(nball,ID,0)
