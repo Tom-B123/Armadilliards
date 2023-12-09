@@ -1,3 +1,5 @@
+require("switch")
+
 Button = {}
 
 Button.__index = Button
@@ -34,7 +36,25 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     object.onClick    = nil
     object.params     = params
     object.mouseState = false
+    object:loadPresets()
     return object
+end
+
+local presetSwitch = Switch:new()
+function Button:loadPresets()
+    presetSwitch:addCase(1,function()
+        self:setFillColour({0,0,0})
+        self.onHover = function()
+            self.fillColour = {1,1,1}
+            self.textColour = {0,0,0}
+            self.scale = 4
+        end
+    end)
+end
+
+function Button:preset(preset)
+    if not presetSwitch:isCase(preset) then return end
+    presetSwitch:case(preset)
 end
 
 function Button:restoreDefaults()
