@@ -46,7 +46,7 @@ end
 
 --Opens the file, processes each line, then closes it
 function readMap:open(filename)
-    local file = love.filesystem.lines("Maps/testmap.txt")
+    local file = love.filesystem.lines("Maps/"..filename)
     if not file then
         print("invalid map name")
         return nil
