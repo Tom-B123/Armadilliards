@@ -4,6 +4,7 @@ require("button")
 require("net")
 require("util")
 require("solver")
+local ReadMap = require("readMap")
 
 local mobile = false
 if love.system.getOS() == 'iOS' or love.system.getOS() == 'Android' then
@@ -304,7 +305,7 @@ stateSwitch:addCase("in game",function(dt)
     processReceived()
 
     World:update(dt,true)
-    
+
     if order == 1 and not editingText then
         local x,y = Util:processGameInputs()
 
@@ -640,13 +641,12 @@ newStateSwitch:addCase("hosting game",function()
     love.graphics.setBackgroundColor( 0,0.2,0 )
 
     LobbyPlayer:setInLobby(player.ID,false)
+    
+    --Load the map file
+    ReadMap:open("testmap.txt")
 
-    local playerBall = World:newBall(50,50,true)
+    local playerBall = World.balls[1]
     World:setFocus(playerBall)
-    World:newBall(150,50,true)
-    World:newBall(50,150,true)
-    World:newBall(150,150,true)
-    World:newBall(300,75,false)
 
     World:generateIDs()
 

@@ -34,22 +34,29 @@ processSwitch:addCase(0,function(pos)
     World:newball(pos.x,pos.y,false)
 end)
 
---Player controlled ball
+-- --Player controlled ball
 processSwitch:addCase(1,function(pos)
     World:newball(pos.x,pos.y,true)
 end)
 
 local function process(object,x,y)
+    print(object,x,y)
     local pos = {x=x,y=y}
     processSwitch:case(object,pos)
 end
 
 --Opens the file, processes each line, then closes it
 function readMap:open(filename)
-    local filePath = getScriptPath().."\\Maps\\"..filename
+    print("reading file: "..filename)
+    local filePath = filename
+    print("using path: "..filePath)
     local file = io.open(filePath,"r")
-    if not file then return nil end
+    if not file then
+        print("invalid map name")
+        return nil
+    end
     for line in file:lines() do
+        print(line)
         local splitData = Util:split(line,":")
         local object    = splitData[1]
         local pos       = splitData[2]
@@ -60,3 +67,5 @@ function readMap:open(filename)
     end
     file:close()
 end
+
+return readMap
