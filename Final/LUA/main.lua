@@ -136,8 +136,8 @@ local function updateLobbyButtons()
     end
 end
 
-local function newButton(ord,text,colour,x1,y1,x2,y2,command,params)
-    local nButton = Button:new(text,colour,0,x1,y1,x2,y2,command,params)
+local function newButton(ord,text,x1,y1,x2,y2,command,params)
+    local nButton = Button:new(text,0,x1,y1,x2,y2,command,params)
     table.insert(buttons[ord],nButton)
     return nButton
 end
@@ -350,7 +350,7 @@ end)
 
 newStateSwitch:addCase("main menu",function()
     clearButtons()
-    newButton(1,"click to start",{1,1,1},300,300,500,350,function()
+    newButton(1,"click to start",300,300,500,350,function()
         state[1] = "gamemode select"
     end)
     lState[1] = state[1]
@@ -358,14 +358,14 @@ end)
 
 newStateSwitch:addCase("gamemode select",function()
     clearButtons()
-    newButton(1,"multiplayer",{1,1,1},300,100,500,150,function()
+    newButton(1,"multiplayer",300,100,500,150,function()
         state[1] = "connecting to server"
     end)
-    newButton(1,"settings",{1,1,1},300,300,500,350,function()
+    newButton(1,"settings",300,300,500,350,function()
         state[2] = "user settings"
         order    = 2
     end)
-    newButton(1,"back",{1,1,1},300,500,500,550,function()
+    newButton(1,"back",300,500,500,550,function()
         state[1] = "main menu"
     end)
     lState[1] = state[1]
@@ -390,10 +390,10 @@ end)
 newStateSwitch:addCase("connection error",function()
     clearButtons()
     print("connection error")
-    newButton(1,"retry",{1,1,1},300,375,500,425,function()
+    newButton(1,"retry",300,375,500,425,function()
         state[1] = "connecting to server"
     end)
-    newButton(1,"back",{1,1,1},300,450,500,500,function()
+    newButton(1,"back",300,450,500,500,function()
         state[1] = "gamemode select"
     end)
     lState[1]    = state[1]
@@ -401,24 +401,24 @@ end)
 
 newStateSwitch:addCase("user settings",function()
     clearButtons()
-    newButton(2,"configure settings",{1,1,1},300,300,500,350,function()
+    newButton(2,"configure settings",300,300,500,350,function()
         order     = 3
         state[3]  = "configure game settings"
         lState[3] = nil
     end)
-    newButton(2,"back",{1,1,1},300,375,500,425,function()
+    newButton(2,"back",300,375,500,425,function()
         state[2]  = nil
         lState[2] = nil
         order     = 1
     end)
-    newButton(2,"quit",{1,1,1},300,450,500,500,function()
+    newButton(2,"quit",300,450,500,500,function()
         love.event.quit()
     end)
     lState[2] = state[2]
 end)
 
 newStateSwitch:addCase("configure game settings",function()
-    newButton(3,"back",{1,1,1},300,375,500,425,function()
+    newButton(3,"back",300,375,500,425,function()
         -- arbitrary values so user settings can open above any menu
         state[3]  = nil
         lState[3] = nil
@@ -438,18 +438,18 @@ newStateSwitch:addCase("searching for lobby",function()
 
     JoinableLobby:clear()
     -- no text, the player name is drawn separatly above the button
-    local nameButton = newButton(1,"",{1,1,1},300,25,500,75,function()
+    local nameButton = newButton(1,"",300,25,500,75,function()
         state[2]  = "editing player name"
         lState[2] = nil
         order     = 2
     end)
     nameButton:preset("text editing")
-    newButton(1,"Create new lobby",{1,1,1},300,400,500,450,function()
+    newButton(1,"Create new lobby",300,400,500,450,function()
         lState[2] = nil
         state[2]  = "lobby creation"
         order     = 2
     end)
-    newButton(1,"back",{1,1,1},300,475,500,525,function()
+    newButton(1,"back",300,475,500,525,function()
         player:send("econ:"..player.ID.."_\n")
         toChangeState = "gamemode select"
         tempTick      = 30
@@ -481,18 +481,18 @@ end)
 newStateSwitch:addCase("lobby creation",function()
     if not player then return end
     clearButtons()
-    newButton(2,"back",{1,1,1},300,300,500,350,function()
+    newButton(2,"back",300,300,500,350,function()
         state[2]  = nil
         lState[2] = nil
         state[1]  = "searching for lobby"
         order     = 1
     end)
-    newButton(2,"Lobby settings",{1,1,1},300,375,500,425,function()
+    newButton(2,"Lobby settings",300,375,500,425,function()
         lState[3] = nil
         state[3]  = "lobby settings"
         order     = 3
     end)
-    newButton(2,"Create",{1,1,1},300,450,500,500,function()
+    newButton(2,"Create",300,450,500,500,function()
         local lobbyID = Util:calculateID(6)
         local IP      = Socket.dns.toip(Socket.dns.gethostname( ))
         local port    = 1000
@@ -512,16 +512,16 @@ end)
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
     -- no text, lobby name drawn above text
-    local nameButton = newButton(3,"",{1,1,1},300,300,500,350,function()
+    local nameButton = newButton(3,"",300,300,500,350,function()
         lState[4] = nil
         state[4]  = "editing lobby name"
         order     = 4
     end)
     nameButton:preset("text editing")
-    newButton(3,"max players",{1,1,1},300,375,500,425,function()
+    newButton(3,"max players",300,375,500,425,function()
         -- change number of max players (2,4,8?)
     end)
-    newButton(3,"back",{1,1,1},300,450,500,500,function()
+    newButton(3,"back",300,450,500,500,function()
         state[3]  = nil
         lState[3] = nil
         order     = 2
@@ -565,7 +565,7 @@ newStateSwitch:addCase("hosting lobby",function()
         LobbyPlayer:setTeam(player.ID,    "team 1")
     end
 
-    newButton(1,"start",{1,1,1},600,500,750,550,function()
+    newButton(1,"start",600,500,750,550,function()
         if playersAllReady() then
             server:send("all","start:".."_\n")
             state[1]  = "hosting game"
@@ -595,7 +595,7 @@ newStateSwitch:addCase("in lobby",function()
 
     love.graphics.setBackgroundColor( 0,0,0 )
 
-    newButton(1,"ready",{1,1,1},600,500,750,550,function()
+    newButton(1,"ready",600,500,750,550,function()
         local ready = LobbyPlayer:getReady(player.ID)
         LobbyPlayer:setReady(player.ID,not ready)
         player:send("updt:"..player.ID.."_ready_"..tostring(not ready).."_\n")
@@ -610,7 +610,7 @@ newStateSwitch:addCase("editing message",function()
     editingText  = ""
     editingIndex = 1
 
-    local send = newButton(2,"send",{1,1,1},450,400,550,420,function()
+    local send = newButton(2,"send",450,400,550,420,function()
         sendMessage()
     end)
     send:preset("confirm")
@@ -658,7 +658,7 @@ newStateSwitch:addCase("end screen",function()
     if not player then return end
     clearButtons()
 
-    newButton(2,"Return to lobby",{1,1,1},300,200,500,250,function()
+    newButton(2,"Return to lobby",300,200,500,250,function()
         -- Last state set to in game to stop Ids being dropped
         LobbyPlayer:setInLobby(player.ID,true)
         if server then
@@ -685,14 +685,14 @@ newStateSwitch:addCase("lobby pause screen",function()
     if not player then return end
     clearButtons()
 
-    newButton(2,"back",{1,1,1},300,200,500,250, function()
+    newButton(2,"back",300,200,500,250, function()
         state[2]  = nil
         lState[2] = nil
         order     = 1
     end)
 
     if server then
-        newButton(2,"close lobby",{1,1,1},300,275,500,325, function()
+        newButton(2,"close lobby",300,275,500,325, function()
             for i, ID in ipairs(LobbyPlayer:getIDs()) do
                 if ID ~= player.ID then server:send("all","kick:"..ID.."_\n") end
             end
@@ -704,7 +704,7 @@ newStateSwitch:addCase("lobby pause screen",function()
             order         = 1
         end)
     else
-        newButton(2,"exit lobby",{1,1,1},300,275,500,325, function()
+        newButton(2,"exit lobby",300,275,500,325, function()
             player:send("econ:"..player.ID.."_\n")
         end)
     end
@@ -936,7 +936,7 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setTeam(ID,"team 1")
 
         local y         = #LobbyPlayer:getIDs() * 20
-        local nButton   = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5)
+        local nButton   = newButton(1,"kick",450,y,500, y + 17.5)
 
         nButton.command = function()
             server:send("all","kick:"..ID.."_\n")
@@ -1092,7 +1092,7 @@ netSwitch:addCase("uplobs",function(args)
         JoinableLobby:setMaxPlayers(lobbyID,8)
 
         local y = #JoinableLobby.IDTable * 40
-        local nButton = Button:new("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,{1,1,1},0,100,100 + y,700,135 + y,function()
+        local nButton = Button:new("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,0,100,100 + y,700,135 + y,function()
             player:join(lobbyID)
         end)
         lobbyButtons:append(nButton)

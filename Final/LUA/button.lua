@@ -5,13 +5,13 @@ Button = {}
 Button.__index = Button
 
 --Create a new button object
-function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
+function Button:new(text,font,x1,y1,x2,y2,command,params)
     local object      = {}
     setmetatable(object,Button)
     object.defValues  = {
-        textColour    = colour,
-        outlineColour = colour,
-        fillColour    = colour,
+        textColour    = {1,1,1},
+        outlineColour = {1,1,1},
+        fillColour    = {1,1,1},
         text          = text,
         font          = font,
         x1            = x1,
@@ -20,9 +20,9 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
         y2            = y2,
         scale         = 0
     }
-    object.textColour    = colour
-    object.outlineColour = colour
-    object.fillColour    = colour
+    object.textColour    = {1,1,1}
+    object.outlineColour = {1,1,1}
+    object.fillColour    = {1,1,1}
     object.scale      = 0
     object.text       = text
     object.font       = font
