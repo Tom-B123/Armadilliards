@@ -6,6 +6,15 @@ Button.__index = Button
 function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     local object      = {}
     setmetatable(object,Button)
+    object.defValues  = {
+        text = text,
+        colour = colour,
+        font = font,
+        x1 = x1,
+        y1 = y1,
+        x2 = x2,
+        y2 = y2
+    }
     object.text       = text
     object.colour     = colour
     object.font       = font
@@ -15,10 +24,21 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     object.y2         = y2
     object.command    = command
     object.onHover    = nil
+    object.hoverTime  = 0
     object.onClick    = nil
     object.params     = params
     object.mouseState = false
     return object
+end
+
+function Button:restoreDefaults()
+    self.text = self.defValues.text
+    self.colour = self.defValues.colour
+    self.font = self.defValues.font
+    self.x1 = self.defValues.x1
+    self.y1 = self.defValues.y1
+    self.x2 = self.defValues.x2
+    self.y2 = self.defValues.y2
 end
 
 function Button:setCoords(x1,y1,x2,y2)
@@ -53,7 +73,13 @@ end
 
 --Update function, called every frame.
 function Button:update()
-    if self:isHovered() and self.onHover then self.onHover() end
+    if self:isHovered() and self.onHover then
+        self.onHover()
+        self.hoverTime = self.hoverTime + 1
+    elseif not self:isHovered() and self.hoverTime > 0 then
+        self:restoreDefaults()
+        self.hoverTime = 0
+    end
     if self:isHovered() and self:getClick() then
         if self.onClick then self.onClick() end
         self:execute()
