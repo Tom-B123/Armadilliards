@@ -37,19 +37,26 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     object.params     = params
     object.mouseState = false
     object:loadPresets()
-    object:preset(1)
+    object:preset("basic")
     return object
 end
 
 local presetSwitch = Switch:new()
 --Defines all presets
 function Button:loadPresets()
-    presetSwitch:addCase(1,function()
+    presetSwitch:addCase("basic",function()
         self:setFillColour({0,0,0})
         self.onHover = function()
             self.fillColour = {1,1,1}
             self.textColour = {0,0,0}
             self.scale = 4
+        end
+    end)
+    presetSwitch:addCase("text editing",function()
+        self:setFillColour({0.1,0.1,0.1})
+        self.onHover = function()
+            self.fillColour = {0.2,0.2,0.2}
+            self.scale = 2
         end
     end)
 end

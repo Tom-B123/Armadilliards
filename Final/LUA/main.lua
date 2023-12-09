@@ -343,7 +343,7 @@ end)
 
 newStateSwitch:addCase("main menu",function()
     clearButtons()
-    local button = newButton(1,"click to start",{1,1,1},300,300,500,350,function()
+    newButton(1,"click to start",{1,1,1},300,300,500,350,function()
         state[1] = "gamemode select"
     end)
     lState[1] = state[1]
@@ -431,11 +431,12 @@ newStateSwitch:addCase("searching for lobby",function()
 
     JoinableLobby:clear()
     -- no text, the player name is drawn separatly above the button
-    newButton(1,"",{1,1,1},300,25,500,75,function()
+    local nameButton = newButton(1,"",{1,1,1},300,25,500,75,function()
         state[2]  = "editing player name"
         lState[2] = nil
         order     = 2
     end)
+    nameButton:preset("text editing")
     newButton(1,"Create new lobby",{1,1,1},300,400,500,450,function()
         lState[2] = nil
         state[2]  = "lobby creation"
@@ -502,11 +503,12 @@ end)
 newStateSwitch:addCase("lobby settings",function()
     clearButtons()
     -- no text, lobby name drawn above text
-    newButton(3,"",{1,1,1},300,300,500,350,function()
+    local nameButton = newButton(3,"",{1,1,1},300,300,500,350,function()
         lState[4] = nil
         state[4]  = "editing lobby name"
         order     = 4
     end)
+    nameButton:preset("text editing")
     newButton(3,"max players",{1,1,1},300,375,500,425,function()
         -- change number of max players (2,4,8?)
     end)
@@ -702,11 +704,13 @@ end)
 -- ============================================================================================-- 
 
 drawStateSwitch:addCase("main menu",function()
+    love.graphics.setColor(1,1,1)
     love.graphics.print("This is the main menu",300,100)
     drawButtons(1)
 end)
 
 drawStateSwitch:addCase("gamemode select",function()
+    love.graphics.setColor(1,1,1)
     love.graphics.print("Leaderboard",300,50)
     drawButtons(1)
 end)
@@ -717,6 +721,7 @@ end)
 
 drawStateSwitch:addCase("connection error",function()
     drawButtons(1)
+    love.graphics.setColor(1,1,1)
     love.graphics.print("connection error",300,100)
 end)
 
@@ -749,8 +754,8 @@ drawStateSwitch:addCase("searching for lobby",function()
     love.graphics.rectangle("fill",0,375,800,225)
     drawButtons(1)
     
+    love.graphics.setColor(1,1,1)
     -- Drawing the player name onto the edit player name button
-    
     local playerNameText
     if editingText and getState(2) == "editing player name" then playerNameText = editingText
     else playerNameText = player.name end
@@ -776,6 +781,8 @@ drawStateSwitch:addCase("lobby settings",function()
     love.graphics.rectangle("fill",250,250,300,300)
     drawButtons(3)
 
+    love.graphics.setColor(1,1,1)
+    -- Drawing the lobby name onto the edit lobby name button
     local LobbyNameText
     if editingText and getState(4) == "editing lobby name" then LobbyNameText = editingText
     else LobbyNameText = lobbyToCreate.name end
@@ -809,12 +816,14 @@ drawStateSwitch:addCase("hosting lobby",function()
 end)
 
 drawStateSwitch:addCase("connecting to lobby",function( )
+    love.graphics.setColor(1,1,1)
     love.graphics.print("connecting to lobby...",100,100)
 end)
 
 drawStateSwitch:addCase("in lobby",function()
     drawMessages()
     drawButtons(1)
+    love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
         local name  = LobbyPlayer:getName(ID)
         local ready = LobbyPlayer:getReady(ID)
@@ -852,12 +861,10 @@ end)
 drawStateSwitch:addCase("end screen",function()
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",200,200,400,300)
-    love.graphics.setColor(1,1,1)
     drawButtons(2)
 end)
 
 drawStateSwitch:addCase("lobby pause screen",function()
-    love.graphics.setColor(1,1,1)
     drawButtons(2)
 end)
 
