@@ -32,40 +32,37 @@ local processSwitch = Switch:new()
 --Neutral ball
 processSwitch:addCase(0,function(pos)
     World:newball(pos.x,pos.y,false)
+    print("new neutral ball at:"..pos.x..","..pos.y)
 end)
 
 -- --Player controlled ball
 processSwitch:addCase(1,function(pos)
     World:newball(pos.x,pos.y,true)
+    print("new player ball at:"..pos.x..","..pos.y)
 end)
 
 local function process(object,x,y)
-    print(object,x,y)
     local pos = {x=x,y=y}
     processSwitch:case(object,pos)
+    print("passing type: "..object.." at: "..x..","..y)
 end
 
 --Opens the file, processes each line, then closes it
 function readMap:open(filename)
-    print("reading file: "..filename)
-    local filePath = filename
-    print("using path: "..filePath)
-    local file = io.open(filePath,"r")
+    local file = love.filesystem.lines("Maps/testmap.txt")
     if not file then
         print("invalid map name")
         return nil
     end
-    for line in file:lines() do
-        print(line)
+    for line in file do
         local splitData = Util:split(line,":")
-        local object    = splitData[1]
+        local object    = tonumber(splitData[1])
         local pos       = splitData[2]
         local posData   = Util:split(pos,",")
         local x         = posData[1]
         local y         = posData[2]
         process(object,x,y)
     end
-    file:close()
 end
 
 return readMap
