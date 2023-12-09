@@ -37,6 +37,7 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     object.params     = params
     object.mouseState = false
     object:loadPresets()
+    object:preset(1)
     return object
 end
 
