@@ -4,17 +4,19 @@ Button.__index = Button
 
 --Create a new button object
 function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
-    local object = {}
+    local object      = {}
     setmetatable(object,Button)
-    object.text = text
-    object.colour = colour
-    object.font = font
-    object.x1 = x1
-    object.y1 = y1
-    object.x2 = x2
-    object.y2 = y2
-    object.command = command
-    object.params = params
+    object.text       = text
+    object.colour     = colour
+    object.font       = font
+    object.x1         = x1
+    object.y1         = y1
+    object.x2         = x2
+    object.y2         = y2
+    object.command    = command
+    object.onHover    = nil
+    object.onClick    = nil
+    object.params     = params
     object.mouseState = false
     return object
 end
@@ -51,7 +53,9 @@ end
 
 --Update function, called every frame.
 function Button:update()
+    if self:isHovered() and self.onHover then self.onHover() end
     if self:isHovered() and self:getClick() then
+        if self.onClick then self.onClick() end
         self:execute()
     end
     self.mouseState = love.mouse.isDown(1)
