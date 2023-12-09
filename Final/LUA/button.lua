@@ -56,7 +56,6 @@ function Button:setOutlineColour(colour)
 end
 
 function Button:setFillColour(colour)
-    print("colour to",colour)
     self.fillColour = colour
     self.defValues.fillColour = colour
 end
@@ -125,7 +124,7 @@ function Button:draw()
 
     love.graphics.setColor(self.outlineColour)
     love.graphics.rectangle(
-        "fill",
+        "line",
         self.x1-self.scale,
         self.y1-self.scale,
         self.x2-self.x1+self.scale*2,
