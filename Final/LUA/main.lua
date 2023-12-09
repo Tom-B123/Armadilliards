@@ -643,7 +643,7 @@ newStateSwitch:addCase("hosting game",function()
     LobbyPlayer:setInLobby(player.ID,false)
     
     --Load the map file
-    ReadMap:open("testmap.txt")
+    ReadMap:open("triangle.txt")
 
     local playerBall = World.balls[1]
     World:setFocus(playerBall)
