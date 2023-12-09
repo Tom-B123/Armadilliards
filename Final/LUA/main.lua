@@ -610,7 +610,7 @@ newStateSwitch:addCase("hosting game",function()
     if not (server and player) then return end
     clearButtons()
 
-    love.graphics.setBackgroundColor( 0,0.4,0 )
+    love.graphics.setBackgroundColor( 0,0.2,0 )
 
     LobbyPlayer:setInLobby(player.ID,false)
 
@@ -638,7 +638,7 @@ newStateSwitch:addCase("in game",function()
     if not player then return end
     clearButtons()
 
-    love.graphics.setBackgroundColor( 0,0.4,0 )
+    love.graphics.setBackgroundColor( 0,0.2,0 )
 
     lState[1] = state[1]
 end)

@@ -83,8 +83,8 @@ function Ball:edgeConstraint()
         self.vx  = -self.vx
         self.lvx = -self.lvx
     end
-    if self.x + self.radius > 800 then
-        self.x   = 800 - self.radius
+    if self.x + self.radius > 4096 then
+        self.x   = 4096 - self.radius
         self.vx  = -self.vx
         self.lvx = -self.lvx
     end
@@ -93,8 +93,8 @@ function Ball:edgeConstraint()
         self.vy  = -self.vy
         self.lvy = -self.lvy
     end
-    if self.y + self.radius > 600 then
-        self.y   = 600 - self.radius
+    if self.y + self.radius > 4096 then
+        self.y   = 4096 - self.radius
         self.vy  = -self.vy
         self.lvy = -self.lvy
     end
@@ -262,6 +262,8 @@ end
 --Draw every ball
 function World:draw()
     local offsetX,offsetY = World:getOffset()
+    love.graphics.setColor( 0,0.4,0 )
+    love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
     for i, ball in ipairs(self.balls) do
         ball:draw(offsetX,offsetY)
     end
