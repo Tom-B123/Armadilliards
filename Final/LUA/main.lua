@@ -346,8 +346,10 @@ newStateSwitch:addCase("main menu",function()
     local button = newButton(1,"click to start",{1,1,1},300,300,500,350,function()
         state[1] = "gamemode select"
     end)
+    button:setFillColour({0,0,0})
     button.onHover = function()
-        button.colour = {0.5,0.5,0.5}
+        button.fillColour = {1,1,1}
+        button.textColour = {0,0,0}
     end
     lState[1] = state[1]
 end)

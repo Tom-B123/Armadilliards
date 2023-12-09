@@ -7,16 +7,20 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
     local object      = {}
     setmetatable(object,Button)
     object.defValues  = {
+        textColour    = colour,
+        outlineColour = colour,
+        fillColour    = colour,
         text = text,
-        colour = colour,
         font = font,
         x1 = x1,
         y1 = y1,
         x2 = x2,
         y2 = y2
     }
+    object.textColour    = colour
+    object.outlineColour = colour
+    object.fillColour    = colour
     object.text       = text
-    object.colour     = colour
     object.font       = font
     object.x1         = x1
     object.y1         = y1
@@ -33,12 +37,29 @@ end
 
 function Button:restoreDefaults()
     self.text = self.defValues.text
-    self.colour = self.defValues.colour
+    self.textColour    = self.defValues.textColour
+    self.outlineColour = self.defValues.outlineColour
+    self.fillColour    = self.defValues.fillColour
     self.font = self.defValues.font
     self.x1 = self.defValues.x1
     self.y1 = self.defValues.y1
     self.x2 = self.defValues.x2
     self.y2 = self.defValues.y2
+end
+
+function Button:setOutlineColour(colour)
+    self.outlineColour = colour
+    self.defValues.outlineColour = colour
+end
+
+function Button:setFillColour(colour)
+    self.fillColour = colour
+    self.defValues.fillColour = colour
+end
+
+function Button:setTextColour(colour)
+    self.textColour = colour
+    self.defValues.textColour = colour
 end
 
 function Button:setCoords(x1,y1,x2,y2)
@@ -88,9 +109,15 @@ function Button:update()
 end
 
 function Button:draw()
-    love.graphics.setColor(self.colour)
-    love.graphics.print(self.text,self.x1,self.y1)
+
+    love.graphics.setColor(self.fillColour)
+    love.graphics.rectangle("fill",self.x1,self.y1,self.x2-self.x1,self.y2-self.y1)
+
+    love.graphics.setColor(self.outlineColour)
     love.graphics.rectangle("line",self.x1,self.y1,self.x2-self.x1,self.y2-self.y1)
+
+    love.graphics.setColor(self.textColour)
+    love.graphics.print(self.text,self.x1,self.y1)
 end
 
 return Button
