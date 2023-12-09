@@ -830,14 +830,18 @@ drawStateSwitch:addCase("hosting lobby",function()
     love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
         local name  = LobbyPlayer:getName(ID)
-        local ready = LobbyPlayer:getReady(ID)
-        local lobby = LobbyPlayer:getInLobby(ID)
+        local ready = Util:toBool(LobbyPlayer:getReady(ID))
+        local readyString = "not ready"
+        if ready then readyString = "ready"end
+        local lobby = Util:toBool(LobbyPlayer:getInLobby(ID))
+        local inLobbyString = "in game"
+        if lobby then inLobbyString = "in lobby"end
         local team  = LobbyPlayer:getTeam(ID)
 
         if name and ready ~= nil and team then
             love.graphics.print(name,0,20*i)
-            love.graphics.print(tostring(ready),200,20*i)
-            love.graphics.print(tostring(lobby),300,20*i)
+            love.graphics.print(readyString,200,20*i)
+            love.graphics.print(inLobbyString,300,20*i)
             love.graphics.print(team,400,20*i)
         end
     end
@@ -854,14 +858,18 @@ drawStateSwitch:addCase("in lobby",function()
     love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
         local name  = LobbyPlayer:getName(ID)
-        local ready = LobbyPlayer:getReady(ID)
-        local lobby = LobbyPlayer:getInLobby(ID)
+        local ready = Util:toBool(LobbyPlayer:getReady(ID))
+        local readyString = "not ready"
+        if ready then readyString = "ready"end
+        local lobby = Util:toBool(LobbyPlayer:getInLobby(ID))
+        local inLobbyString = "in game"
+        if lobby then inLobbyString = "in lobby"end
         local team  = LobbyPlayer:getTeam(ID)
 
         if name and ready ~= nil and team then
             love.graphics.print(name,0,20*i)
-            love.graphics.print(tostring(ready),200,20*i)
-            love.graphics.print(tostring(lobby),300,20*i)
+            love.graphics.print(readyString,200,20*i)
+            love.graphics.print(inLobbyString,300,20*i)
             love.graphics.print(team,400,20*i)
         end
     end
@@ -880,13 +888,13 @@ drawStateSwitch:addCase("editing message",function()
 end)
 
 drawStateSwitch:addCase("in game",function()
-    drawMessages()
     World:draw()
+    drawMessages()
 end)
 
 drawStateSwitch:addCase("hosting game",function()
-    drawMessages()
     World:draw()
+    drawMessages()
 end)
 
 drawStateSwitch:addCase("end screen",function()
