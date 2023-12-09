@@ -42,6 +42,7 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
 end
 
 local presetSwitch = Switch:new()
+--Defines all presets
 function Button:loadPresets()
     presetSwitch:addCase(1,function()
         self:setFillColour({0,0,0})
@@ -53,11 +54,13 @@ function Button:loadPresets()
     end)
 end
 
+--Applies a preset to a button
 function Button:preset(preset)
     if not presetSwitch:isCase(preset) then return end
     presetSwitch:case(preset)
 end
 
+--Restores the default button graphics (when not hovered or clicked)
 function Button:restoreDefaults()
     self.text          = self.defValues.text
     self.textColour    = self.defValues.textColour
@@ -116,7 +119,7 @@ function Button:getClick()
     return not love.mouse.isDown(1) and self.mouseState
 end
 
---Update function, called every frame.
+--Checks for hover and click events
 function Button:update()
     if self:isHovered() and self.onHover then
         self.onHover()
@@ -132,6 +135,7 @@ function Button:update()
     self.mouseState = love.mouse.isDown(1)
 end
 
+--Draws buttons using their outline, fill and text colours
 function Button:draw()
 
     love.graphics.setColor(self.fillColour)
