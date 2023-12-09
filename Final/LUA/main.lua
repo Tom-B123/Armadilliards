@@ -1089,9 +1089,6 @@ end)
 netSwitch:addCase("uplobs",function(args)
     if not player or server then return end
 
-    lobbyButtons = List:new()
-    JoinableLobby:clear()
-
     local splitData   = Util:split(args,"_")
 
     local lobbyID     = splitData[1]
