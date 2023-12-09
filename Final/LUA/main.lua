@@ -264,10 +264,7 @@ stateSwitch:addCase("searching for lobby",function()
     if not player then return end
 
     if order == 1 then updateLobbyButtons() end
-    if tick % refreshRate == 0 then
-        lobbyButtons = List:new()
-        JoinableLobby:clear()
-    end
+
     if tick % 2 == 0 then
         player:send("no dat\n")
     end
@@ -1091,6 +1088,9 @@ end)
 -- Update lobby list
 netSwitch:addCase("uplobs",function(args)
     if not player or server then return end
+
+    lobbyButtons = List:new()
+    JoinableLobby:clear()
 
     local splitData   = Util:split(args,"_")
 
