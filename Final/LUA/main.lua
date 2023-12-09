@@ -112,10 +112,17 @@ local function drawButtons(ord)
 end
 
 local function drawLobbyButtons()
+    local firstY = 0
+    local lastY  = 0
     for i,button in lobbyButtons:iterator() do
-        button:setCoords(100,200+i*20 + lobbyScroll,700,220+i*20 + lobbyScroll)
+        if i == 1 then firstY = i*20 + lobbyScroll end
+        lastY = i*20 + lobbyScroll
+        button:setCoords(100,100+i*20 + lobbyScroll,700,120+i*20 + lobbyScroll)
         button:draw()
     end
+    if firstY > 20 then lobbyScrollVel = lobbyScrollVel - firstY end
+    if lastY < 0 then lobbyScrollVel = lobbyScrollVel - lastY end
+    print(firstY,lastY)
 end
 
 local function updateScroll(dt)
