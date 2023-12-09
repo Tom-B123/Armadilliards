@@ -16,6 +16,11 @@ function List:new()
     return object
 end
 
+function List:clear()
+    local nList = List:new()
+    self = nList
+end
+
 -- Returns the current head value
 function List:getVal()
     if self.head then

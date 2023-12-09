@@ -47,7 +47,7 @@ local maxOrder = 4
 -- Stores all buttons within tables, corresponding to their order.
 local buttons        = {}
 local lobbyButtons   = List:new()
-local kickButtons    = {}
+local kickButtons    = List:new()
 
 local lobbyScroll    = 0
 local lobbyScrollVel = 0
@@ -111,6 +111,17 @@ local function drawButtons(ord)
     end
 end
 
+local function updateScroll(dt)
+    lobbyScroll = lobbyScroll + lobbyScrollVel * dt
+    lobbyScrollVel = lobbyScrollVel * 0.9
+end
+
+local function updateLobbyButtons()
+    for i,button in lobbyButtons:iterator() do
+        button:update()
+    end
+end
+
 local function drawLobbyButtons()
     local firstY = 0
     local lastY  = 0
@@ -125,14 +136,17 @@ local function drawLobbyButtons()
     if lastY < 0 then lobbyScrollVel = lobbyScrollVel - lastY end
 end
 
-local function updateScroll(dt)
-    lobbyScroll = lobbyScroll + lobbyScrollVel * dt
-    lobbyScrollVel = lobbyScrollVel * 0.9
+local function updateKickButtons()
+    for i,button in kickButtons:iterator() do
+        button:update()
+    end
 end
 
-local function updateLobbyButtons()
-    for i,button in lobbyButtons:iterator() do
-        button:update()
+local function drawKickButtons()
+    local distance = 20
+    for i,button in kickButtons:iterator() do
+        button:setCoords(450,20 + i*distance,500,20 + distance * 0.9 + i*distance)
+        button:draw()
     end
 end
 
@@ -250,7 +264,10 @@ stateSwitch:addCase("searching for lobby",function()
     if not player then return end
 
     if order == 1 then updateLobbyButtons() end
-
+    if tick % refreshRate == 0 then
+        lobbyButtons = List:new()
+        JoinableLobby:clear()
+    end
     if tick % 2 == 0 then
         player:send("no dat\n")
     end
@@ -261,6 +278,7 @@ end)
 stateSwitch:addCase("hosting lobby",function()
     if not (server and player) then return end
     processReceived()
+    if order == 1 then updateKickButtons() end
     if tick % refreshRate == 0 then
         server:sendUpdateMessage()
         player:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
@@ -430,7 +448,6 @@ end)
 newStateSwitch:addCase("searching for lobby",function()
     if not player then return end
     clearButtons()
-
     if server then
         server:close()
         server = nil
@@ -464,14 +481,14 @@ newStateSwitch:addCase("editing player name",function()
     
     editingText  = player.name
     editingIndex = #editingText + 1
-    local cancel = newButton(2,"cancel",{1,0,0},300,80,398,105,function()
+    local cancel = newButton(2,"cancel",300,80,398,105,function()
         state[2]    = nil
         lState[2]   = nil
         order       = 1
         editingText = nil
     end)
     cancel:preset("cancel")
-    local confirm = newButton(2,"confirm",{0,1,0},402,80,500,105,function()
+    local confirm = newButton(2,"confirm",402,80,500,105,function()
         changePlayerName()
     end)
     confirm:preset("confirm")
@@ -535,14 +552,14 @@ newStateSwitch:addCase("editing lobby name",function()
     
     editingText  = lobbyToCreate.name
     editingIndex = #editingText + 1
-    local cancel = newButton(4,"cancel",{1,0,0},300,355,398,380,function()
+    local cancel = newButton(4,"cancel",300,355,398,380,function()
         state[4]    = nil
         lState[4]   = nil
         order       = 3
         editingText = nil
     end)
     cancel:preset("cancel")
-    local confirm = newButton(4,"confirm",{0,1,0},402,355,500,380,function()
+    local confirm = newButton(4,"confirm",402,355,500,380,function()
         changeLobbyName()
     end)
     confirm:preset("confirm")
@@ -809,8 +826,10 @@ drawStateSwitch:addCase("editing lobby name",function()
 end)
 
 drawStateSwitch:addCase("hosting lobby",function()
+    if not server then return end
     drawMessages()
     drawButtons(1)
+    drawKickButtons()
     love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
         local name  = LobbyPlayer:getName(ID)
@@ -901,7 +920,6 @@ netSwitch:addCase("kick",function(args)
     if not player or server then return end
     local splitData = Util:split(args,"_")
     local playerID  = splitData[1]
-    JoinableLobby:clear()
     player:send("econ:"..playerID.."_\n")
 end)
 
@@ -936,12 +954,15 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setTeam(ID,"team 1")
 
         local y         = #LobbyPlayer:getIDs() * 20
-        local nButton   = newButton(1,"kick",450,y,500, y + 17.5)
+        local nButton   = Button:new("kick",0,450,y,500, y + 17.5)
 
         nButton.command = function()
             server:send("all","kick:"..ID.."_\n")
             removeButton(1,nButton)
+            kickButtons:removeItem(nButton)
         end
+        nButton:preset("cancel")
+        kickButtons:append(nButton)
 
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
     end
