@@ -10,16 +10,18 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
         textColour    = colour,
         outlineColour = colour,
         fillColour    = colour,
-        text = text,
-        font = font,
-        x1 = x1,
-        y1 = y1,
-        x2 = x2,
-        y2 = y2
+        text          = text,
+        font          = font,
+        x1            = x1,
+        y1            = y1,
+        x2            = x2,
+        y2            = y2,
+        scale         = 0
     }
     object.textColour    = colour
     object.outlineColour = colour
     object.fillColour    = colour
+    object.scale      = 0
     object.text       = text
     object.font       = font
     object.x1         = x1
@@ -36,15 +38,16 @@ function Button:new(text,colour,font,x1,y1,x2,y2,command,params)
 end
 
 function Button:restoreDefaults()
-    self.text = self.defValues.text
+    self.text          = self.defValues.text
     self.textColour    = self.defValues.textColour
     self.outlineColour = self.defValues.outlineColour
     self.fillColour    = self.defValues.fillColour
-    self.font = self.defValues.font
-    self.x1 = self.defValues.x1
-    self.y1 = self.defValues.y1
-    self.x2 = self.defValues.x2
-    self.y2 = self.defValues.y2
+    self.font          = self.defValues.font
+    self.x1            = self.defValues.x1
+    self.y1            = self.defValues.y1
+    self.x2            = self.defValues.x2
+    self.y2            = self.defValues.y2
+    self.scale         = self.defValues.scale
 end
 
 function Button:setOutlineColour(colour)
@@ -53,6 +56,7 @@ function Button:setOutlineColour(colour)
 end
 
 function Button:setFillColour(colour)
+    print("colour to",colour)
     self.fillColour = colour
     self.defValues.fillColour = colour
 end
@@ -111,10 +115,22 @@ end
 function Button:draw()
 
     love.graphics.setColor(self.fillColour)
-    love.graphics.rectangle("fill",self.x1,self.y1,self.x2-self.x1,self.y2-self.y1)
+    love.graphics.rectangle(
+        "fill",
+        self.x1-self.scale,
+        self.y1-self.scale,
+        self.x2-self.x1+self.scale*2,
+        self.y2-self.y1+self.scale*2
+    )
 
     love.graphics.setColor(self.outlineColour)
-    love.graphics.rectangle("line",self.x1,self.y1,self.x2-self.x1,self.y2-self.y1)
+    love.graphics.rectangle(
+        "fill",
+        self.x1-self.scale,
+        self.y1-self.scale,
+        self.x2-self.x1+self.scale*2,
+        self.y2-self.y1+self.scale*2
+    )
 
     love.graphics.setColor(self.textColour)
     love.graphics.print(self.text,self.x1,self.y1)

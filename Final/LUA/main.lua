@@ -350,6 +350,7 @@ newStateSwitch:addCase("main menu",function()
     button.onHover = function()
         button.fillColour = {1,1,1}
         button.textColour = {0,0,0}
+        button.scale = 10
     end
     lState[1] = state[1]
 end)
