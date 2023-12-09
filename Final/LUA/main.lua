@@ -304,11 +304,13 @@ stateSwitch:addCase("in game",function(dt)
     processReceived()
 
     World:update(dt,true)
+    
+    if order == 1 and not editingText then
+        local x,y = Util:processGameInputs()
 
-    local x,y = Util:processGameInputs()
-
-    inputSum.x = inputSum.x + x
-    inputSum.y = inputSum.y + y
+        inputSum.x = inputSum.x + x
+        inputSum.y = inputSum.y + y
+    end
 
     if order == 1 and not editingText and tick % inputCooldown == 0 then
         

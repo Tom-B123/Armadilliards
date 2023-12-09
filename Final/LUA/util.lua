@@ -88,8 +88,10 @@ function Util:ascToNum(asc)
 end
 
 function Util:coordToHex(x,y)
-    if x > 4096 or y > 4096 then return end
-    if x < 0    or y < 0    then return end
+    if x > 4096 then x = 4096 end
+    if y > 4096 then y = 4096 end
+    if x < 0 then    x = 0 end
+    if y < 0 then    y = 0 end
     local hexX = self:numToHex(x*10)
     local hexY = self:numToHex(y*10)
     return "_"..hexX.."_"..hexY.."_\n"
