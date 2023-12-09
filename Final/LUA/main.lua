@@ -114,15 +114,15 @@ end
 local function drawLobbyButtons()
     local firstY = 0
     local lastY  = 0
+    local distance = 50
     for i,button in lobbyButtons:iterator() do
-        if i == 1 then firstY = i*20 + lobbyScroll end
-        lastY = i*20 + lobbyScroll
-        button:setCoords(100,100+i*20 + lobbyScroll,700,120+i*20 + lobbyScroll)
+        if i == 1 then firstY = i*distance + lobbyScroll end
+        lastY = i*distance + lobbyScroll
+        button:setCoords(100,100+i*distance + lobbyScroll,700,distance * 0.9 + 100+i*distance + lobbyScroll)
         button:draw()
     end
-    if firstY > 20 then lobbyScrollVel = lobbyScrollVel - firstY end
+    if firstY > distance then lobbyScrollVel = lobbyScrollVel - firstY end
     if lastY < 0 then lobbyScrollVel = lobbyScrollVel - lastY end
-    print(firstY,lastY)
 end
 
 local function updateScroll(dt)
@@ -249,7 +249,7 @@ end
 stateSwitch:addCase("searching for lobby",function()
     if not player then return end
 
-    updateLobbyButtons()
+    if order == 1 then updateLobbyButtons() end
 
     if tick % 2 == 0 then
         player:send("no dat\n")
