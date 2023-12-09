@@ -31,20 +31,17 @@ local processSwitch = Switch:new()
 
 --Neutral ball
 processSwitch:addCase(0,function(pos)
-    World:newball(pos.x,pos.y,false)
-    print("new neutral ball at:"..pos.x..","..pos.y)
+    World:newBall(pos.x,pos.y,false)
 end)
 
 -- --Player controlled ball
 processSwitch:addCase(1,function(pos)
-    World:newball(pos.x,pos.y,true)
-    print("new player ball at:"..pos.x..","..pos.y)
+    World:newBall(pos.x,pos.y,true)
 end)
 
 local function process(object,x,y)
     local pos = {x=x,y=y}
     processSwitch:case(object,pos)
-    print("passing type: "..object.." at: "..x..","..y)
 end
 
 --Opens the file, processes each line, then closes it
@@ -59,8 +56,8 @@ function readMap:open(filename)
         local object    = tonumber(splitData[1])
         local pos       = splitData[2]
         local posData   = Util:split(pos,",")
-        local x         = posData[1]
-        local y         = posData[2]
+        local x         = tonumber(posData[1])
+        local y         = tonumber(posData[2])
         process(object,x,y)
     end
 end
