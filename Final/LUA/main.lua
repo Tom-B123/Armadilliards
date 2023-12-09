@@ -464,15 +464,17 @@ newStateSwitch:addCase("editing player name",function()
     
     editingText  = player.name
     editingIndex = #editingText + 1
-    newButton(2,"cancel",{1,0,0},300,80,398,105,function()
+    local cancel = newButton(2,"cancel",{1,0,0},300,80,398,105,function()
         state[2]    = nil
         lState[2]   = nil
         order       = 1
         editingText = nil
     end)
-    newButton(2,"confirm",{0,1,0},402,80,500,105,function()
+    cancel:preset("cancel")
+    local confirm = newButton(2,"confirm",{0,1,0},402,80,500,105,function()
         changePlayerName()
     end)
+    confirm:preset("confirm")
     lState[2] = state[2]
 end)
 
@@ -533,15 +535,17 @@ newStateSwitch:addCase("editing lobby name",function()
     
     editingText  = lobbyToCreate.name
     editingIndex = #editingText + 1
-    newButton(4,"cancel",{1,0,0},300,355,398,380,function()
+    local cancel = newButton(4,"cancel",{1,0,0},300,355,398,380,function()
         state[4]    = nil
         lState[4]   = nil
         order       = 3
         editingText = nil
     end)
-    newButton(4,"confirm",{0,1,0},402,355,500,380,function()
+    cancel:preset("cancel")
+    local confirm = newButton(4,"confirm",{0,1,0},402,355,500,380,function()
         changeLobbyName()
     end)
+    confirm:preset("confirm")
     lState[4] = state[4]
 end)
 
@@ -606,10 +610,10 @@ newStateSwitch:addCase("editing message",function()
     editingText  = ""
     editingIndex = 1
 
-    newButton(2,"send",{1,1,1},450,400,500,450,function()
+    local send = newButton(2,"send",{1,1,1},450,400,550,420,function()
         sendMessage()
     end)
-
+    send:preset("confirm")
     lState[2] = state[2]
 end)
 

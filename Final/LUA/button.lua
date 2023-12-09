@@ -45,7 +45,7 @@ local presetSwitch = Switch:new()
 --Defines all presets
 function Button:loadPresets()
     presetSwitch:addCase("basic",function()
-        self:setFillColour({0,0,0})
+        self:setFillColour({0,0,0,0})
         self.onHover = function()
             self.fillColour = {1,1,1}
             self.textColour = {0,0,0}
@@ -56,6 +56,26 @@ function Button:loadPresets()
         self:setFillColour({0.1,0.1,0.1})
         self.onHover = function()
             self.fillColour = {0.2,0.2,0.2}
+            self.scale = 2
+        end
+    end)
+    presetSwitch:addCase("confirm",function()
+        self:setFillColour(   {0,0,0,0})
+        self:setOutlineColour({0,1,0})
+        self:setTextColour(   {0,1,0})
+        self.onHover = function()
+            self.fillColour = {0,1,0}
+            self.textColour = {0,0,0}
+            self.scale = 2
+        end
+    end)
+    presetSwitch:addCase("cancel",function()
+        self:setFillColour(   {0,0,0,0})
+        self:setOutlineColour({1,0,0})
+        self:setTextColour(   {1,0,0})
+        self.onHover = function()
+            self.fillColour = {1,0,0}
+            self.textColour = {0,0,0}
             self.scale = 2
         end
     end)
@@ -164,7 +184,9 @@ function Button:draw()
     )
 
     love.graphics.setColor(self.textColour)
-    love.graphics.print(self.text,self.x1,self.y1)
+    for i = 1,4 do
+        love.graphics.print(self.text,self.x1,self.y1)
+    end
 end
 
 return Button
