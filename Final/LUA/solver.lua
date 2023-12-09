@@ -121,6 +121,31 @@ function Ball:updateRoll()
     self.ly = self.y
 end
 
+local camera = {x=0,y=0,vx=0,vy=0,focus = nil}
+
+function camera:update(dt)
+    local centre = {
+        x = (self.x + self.focus.x) / 2,
+        y = (self.y + self.focus.y) / 2
+    }
+    --attraction force of camera to the ball
+    local forceMult = 10
+    --Elastic rope radius
+    self.vx = self.vx + (centre.x - self.x) * (forceMult)
+    self.vy = self.vy + (centre.y - self.y) * (forceMult)
+
+    self.x = self.x + self.vx * dt
+    self.y = self.y + self.vy * dt
+    --setting velocity to a low number prevents boucing of camera
+    self.vx = self.vx * 0.1
+    self.vy = self.vx * 0.1
+end
+
+--Gets the offset for drawing objects
+function camera:getOffset()
+    return windowDims.x/2 - self.x, windowDims.y/2 - self.y
+end
+
 --World table, stores and processes all balls
 World = {
     balls         = {},
@@ -128,6 +153,11 @@ World = {
     ballIDDict    = {},
     focus         = nil
 }
+
+--Follows a ball with the camera
+function World:setFocus(ball)
+    camera.focus = ball
+end
 
 --Clears all balls
 function World:clear()
@@ -184,17 +214,6 @@ function World:assign(playerID,ballID)
     end
 end
 
---Follows a ball with the camera
-function World:setFocus(ball)
-    self.focus = ball
-end
-
---Gets the offset for drawing objects
-function World:getOffset()
-    if not self.focus then return 0,0 end
-    return windowDims.x/2 - self.focus.x, windowDims.y/2 - self.focus.y
-end
-
 --Collisions with no optimisation
 function World:expensiveCollisions(balls)
     local bounce = 1
@@ -246,6 +265,7 @@ end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
+    camera:update(dt)
     for i, ball in ipairs(self.balls) do
         if isClient then
             ball:verlet(dt)
@@ -261,7 +281,7 @@ end
 
 --Draw every ball
 function World:draw()
-    local offsetX,offsetY = World:getOffset()
+    local offsetX,offsetY = camera:getOffset()
     love.graphics.setColor( 0,0.4,0 )
     love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
     for i, ball in ipairs(self.balls) do
