@@ -367,7 +367,7 @@ end)
 newStateSwitch:addCase("connecting to server",function()
     clearButtons()
     print("connecting to main")
-    local nPlayer = Player:tryConnect()
+    local nPlayer = Player:new()
     if not nPlayer then
         lState[1] = "connecting to server"
         state[1]  = "connection error"
@@ -800,6 +800,7 @@ end)
 drawStateSwitch:addCase("hosting lobby",function()
     drawMessages()
     drawButtons(1)
+    love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
         local name  = LobbyPlayer:getName(ID)
         local ready = LobbyPlayer:getReady(ID)
@@ -841,7 +842,10 @@ end)
 
 drawStateSwitch:addCase("editing message",function()
     drawButtons(2)
-    if editingText        then love.graphics.print(editingText,50,400) end
+    love.graphics.setColor(1,1,1)
+    if editingText then
+        love.graphics.print(editingText,50,400)
+    end
     if tick % 30 > 30 / 2 then
         love.graphics.setColor(0.4,0.4,0.4,0.7)
         love.graphics.rectangle("fill",50 - 2.5 + (editingIndex-1)*9,400,5,17.5)
@@ -919,7 +923,7 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setReady(ID,false)
         LobbyPlayer:setInLobby(ID,true)
         LobbyPlayer:setTeam(ID,"team 1")
-        
+
         local y         = #LobbyPlayer:getIDs() * 20
         local nButton   = newButton(1,"kick",{1,1,1},450,y,500, y + 17.5)
 
@@ -1015,15 +1019,17 @@ netSwitch:addCase("join",function(args)
     local port = splitData[3]
 
     if ID == player.ID then
-        player:send("econ:"..player.ID.."_\n")
-        toChangeState   = "connecting to lobby"
-        tempTick        = 30
-
         local nPlayer   = Player:new(IP,port)
-        nPlayer.name    = player.name
-        nPlayer.ID      = player.ID
+        if nPlayer then
+            player:send("econ:"..player.ID.."_\n")
+            toChangeState   = "connecting to lobby"
+            tempTick        = 30
 
-        toConnectPlayer = nPlayer
+            nPlayer.name    = player.name
+            nPlayer.ID      = player.ID
+
+            toConnectPlayer = nPlayer
+        end
     end
 end)
 

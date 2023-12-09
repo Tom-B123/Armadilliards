@@ -178,14 +178,14 @@ Player.__index = Player
 function Player:new(IP,port)
     local object = {}
     setmetatable(object,Player)
+    object.client = Player:tryConnect(IP,port)
+    if object.client == false then return nil end
     object.name = "new player"
     object.ID = ""
     object.ballID = ""
     object.IP = Socket.dns.toip(Socket.dns.gethostname( ))
     object.ready = false
     object.team = "team 1"
-    if IP and port then object.client = Client:new(IP,port)
-    else object.client = Client:new(mainIP,mainPort) end
     return object
 end
 
@@ -216,16 +216,16 @@ function Player:create(lobby)
     self:send("create:"..lobby.."_"..self.IP.."_"..self.name)
 end
 
-function Player:tryConnect()
+function Player:tryConnect(IP,port)
     local function nClient()
-        return self:new()
+        return Client:new(IP,port)
     end
     local success,client = pcall(nClient)
     if success then
-        print("successfully connected to main server")
+        print("successfully connected to server")
         return client
     else
-        print("error connecting to main server")
+        print("error connecting to server")
         return false
     end
 end
