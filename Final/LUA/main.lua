@@ -49,6 +49,7 @@ local maxOrder = 4
 local buttons        = {}
 local lobbyButtons   = List:new()
 local kickButtons    = List:new()
+local maps           = List:new()
 
 local lobbyScroll    = 0
 local lobbyScrollVel = 0
@@ -255,6 +256,21 @@ end
 local function inLobby()
     return (state[1] == "in lobby" or state[1] == "hosting lobby" or state[1] == "in game" or state[1] == "hosting game")
 end
+
+-- Updates the list of avialable maps
+local function updateMaps()
+    maps = List:new()
+    for map in ReadMap:get() do
+        maps:push(map)
+    end
+end
+
+local function getMap()
+    local splitData = Util:split(maps:getVal(),".")
+    return splitData[1]
+end
+
+updateMaps()
 
 -- ============================================================================================-- 
 -- ============================================================================================-- 
@@ -643,7 +659,7 @@ newStateSwitch:addCase("hosting game",function()
     LobbyPlayer:setInLobby(player.ID,false)
     
     --Load the map file
-    ReadMap:open("triangle.txt")
+    ReadMap:open(maps:getVal())
 
     local playerBall = World.balls[1]
     World:setFocus(playerBall)
@@ -847,6 +863,9 @@ drawStateSwitch:addCase("hosting lobby",function()
             love.graphics.print(team,400,20*i)
         end
     end
+
+    love.graphics.print("map: "..getMap(),50,400)
+
 end)
 
 drawStateSwitch:addCase("connecting to lobby",function( )
@@ -1255,6 +1274,10 @@ end
 
 -- Handle keyboard inputs
 function love.keypressed(key)
+    if order == 1 and state[1] == "hosting lobby" then
+        if key == "left" then maps:prev() end
+        if key == "right" then maps:next() end
+    end
     if editingText and player then
         if key == "escape"    then
             state[order]  = nil
