@@ -293,6 +293,7 @@ end
 --Updates the position of every ball
 function World:update(dt,isClient)
     checks = 0
+    grid:draw()
     self:populate()
     camera:update(dt)
     for i, ball in ipairs(self.balls) do

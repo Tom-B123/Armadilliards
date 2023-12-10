@@ -30,6 +30,16 @@ function Grid:new(size,resolution)
     return object
 end
 
+function Grid:draw()
+    for level = 1,self.levels do
+        for x = 1,2^(level-1) do
+            for y = 1,2^(level-1) do
+                print(x,y)
+            end
+        end
+    end
+end
+
 function Grid:reset()
     for level = 1,self.levels do
         local extraX = 2^(level-1)-1
