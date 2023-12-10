@@ -224,35 +224,46 @@ end
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs)
     local bounce = 1
+    local function collision(ID1,ID2)
+        checks = checks + 1
+        local ball1 = self:getByID(ID1)
+        local ball2 = self:getByID(ID2)
+        
+        local collisionAxis = {x=0,y=0}
+        collisionAxis.x = ball1.x - ball2.x
+        collisionAxis.y = ball1.y - ball2.y
+        local distance = Util:findDistance(collisionAxis.x,collisionAxis.y)
+        local diameter = ball1.radius + ball2.radius
+        --If they collide:
+        if distance < diameter then
+            local speed1 = Util:findDistance(ball1.vx,ball1.vy)
+            local speed2 = Util:findDistance(ball2.vx,ball2.vy)
+
+            local n = collisionAxis
+            n.x = n.x / distance
+            n.y = n.y / distance
+            local delta = diameter - distance
+            local offset1 = ball2.radius / ball1.radius
+            local offset2 = ball1.radius / ball2.radius
+            if offset1 > 2 then offset1 = 2 end
+            if offset2 > 2 then offset2 = 2 end
+            ball2.x = ball2.x - bounce * offset2 * delta * n.x
+            ball2.y = ball2.y - bounce * offset2 * delta * n.y
+            ball1.x = ball1.x + bounce * offset1 * delta * n.x
+            ball1.y = ball1.y + bounce * offset1 * delta * n.y
+        end
+    end
+    
+    local existingCheck = {}
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
-                checks = checks + 1
-                local ball1 = self:getByID(ID1)
-                local ball2 = self:getByID(ID2)
-                
-                local collisionAxis = {x=0,y=0}
-                collisionAxis.x = ball1.x - ball2.x
-                collisionAxis.y = ball1.y - ball2.y
-                local distance = Util:findDistance(collisionAxis.x,collisionAxis.y)
-                local diameter = ball1.radius + ball2.radius
-                --If they collide:
-                if distance < diameter then
-                    local speed1 = Util:findDistance(ball1.vx,ball1.vy)
-                    local speed2 = Util:findDistance(ball2.vx,ball2.vy)
-
-                    local n = collisionAxis
-                    n.x = n.x / distance
-                    n.y = n.y / distance
-                    local delta = diameter - distance
-                    local offset1 = ball2.radius / ball1.radius
-                    local offset2 = ball1.radius / ball2.radius
-                    if offset1 > 2 then offset1 = 2 end
-                    if offset2 > 2 then offset2 = 2 end
-                    ball2.x = ball2.x - bounce * offset2 * delta * n.x
-                    ball2.y = ball2.y - bounce * offset2 * delta * n.y
-                    ball1.x = ball1.x + bounce * offset1 * delta * n.x
-                    ball1.y = ball1.y + bounce * offset1 * delta * n.y
+                local sum = 0
+                sum = sum + tonumber(ID1) * 17
+                sum = sum + tonumber(ID2) * 17
+                if not existingCheck[sum] then
+                    collision(ID1,ID2)
+                    existingCheck[sum] = true
                 end
             end
         end
