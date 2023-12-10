@@ -1,4 +1,7 @@
 require("util")
+require("grid")
+local grid = Grid:new(4098,32)
+
 local drawBall  = require("drawBall")
 
 local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
@@ -230,21 +233,6 @@ function World:expensiveCollisions(balls)
                     local speed1 = Util:findDistance(ball1.vx,ball1.vy)
                     local speed2 = Util:findDistance(ball2.vx,ball2.vy)
 
-                    --Stuff with teams of neutral balls
-
-                    -- local team1 = ball1:getTeam()
-                    -- local team2 = ball2:getTeam()
-                    -- --Changing temporary teams
-                    -- if speed1 >= speed2 then
-                    --     if team1 and not team2 then
-                    --         ball2:setTeam(team1)
-                    --     end
-                    -- else
-                    --     if team2 and not team1 then
-                    --         ball1:setTeam(team2)
-                    --     end
-                    -- end
-
                     local n = collisionAxis
                     n.x = n.x / distance
                     n.y = n.y / distance
@@ -263,8 +251,17 @@ function World:expensiveCollisions(balls)
     end
 end
 
+--Populates the grid fro optimised collisons
+function World:populate()
+    grid:clear()
+    for i,ball in self.balls do
+        grid:populate(ball.x,ball.y,ball.ID)
+    end
+end
+
 --Updates the position of every ball
 function World:update(dt,isClient)
+    self:populate()
     camera:update(dt)
     for i, ball in ipairs(self.balls) do
         if isClient then

@@ -19,7 +19,7 @@ function Grid:new(size,resolution)
         for x = 1,2^(level-1) do
             object.grid[x + extraX] = {}
             for y = 1,2^(level-1) do
-                if level == object.levels then 
+                if level == object.levels then
                     object.grid[x + extraX][y] = {}
                 else
                     object.grid[x + extraX][y] = 0
@@ -28,6 +28,22 @@ function Grid:new(size,resolution)
         end
     end
     return object
+end
+
+function Grid:reset()
+    for level = 1,self.levels do
+        local extraX = 2^(level-1)-1
+        for x = 1,2^(level-1) do
+            self.grid[x + extraX] = {}
+            for y = 1,2^(level-1) do
+                if level == self.levels then
+                    self.grid[x + extraX][y] = {}
+                else
+                    self.grid[x + extraX][y] = 0
+                end
+            end
+        end
+    end
 end
 
 function Grid:lookup(x,y,level)
@@ -95,15 +111,3 @@ function Grid:populate(x,y,id)
         self:store(nx,ny,level,val)
     end
 end
-
-local grid = Grid:new(2048,32)
-print("start")
-for i = 1,2 do
-    grid:populate(math.random(1,2040),math.random(1,2040),math.random(1,2040))
-end
-print("populated")
-local found = grid:search()
-for i, pos in ipairs(found) do
-    print("x: "..pos[1].." y: "..pos[2])
-end
-print("total: "..#found)
