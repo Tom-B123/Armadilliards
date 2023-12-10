@@ -158,7 +158,9 @@ World = {
     balls         = {},
     playableBalls = {},
     ballIDDict    = {},
-    focus         = nil
+    focus         = nil,
+    debugChecks   = true,
+    debugGrid     = false
 }
 
 --Follows a ball with the camera
@@ -328,7 +330,6 @@ function World:update(dt,isClient)
     if not isClient then
         self:optimisedCollisions()
     end
-    if checks > 0 then print(checks) end
 end
 
 --Draw every ball
@@ -339,7 +340,8 @@ function World:draw()
     for i, ball in ipairs(self.balls) do
         ball:draw(offsetX,offsetY)
     end
-    grid:draw(offsetX,offsetY)
+    if self.debugGrid then grid:draw(offsetX,offsetY) end
+    if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
 end
 
 --Create a string for assigning players to a ballID for taking player inputs
