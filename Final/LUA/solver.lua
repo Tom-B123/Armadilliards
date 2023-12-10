@@ -1,5 +1,8 @@
 require("util")
 require("grid")
+
+local checks = 0
+
 local grid = Grid:new(4098,32)
 
 local drawBall  = require("drawBall")
@@ -224,6 +227,7 @@ function World:expensiveCollisions(ballIDs)
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
+                checks = checks + 1
                 local ball1 = self:getByID(ID1)
                 local ball2 = self:getByID(ID2)
                 
@@ -266,10 +270,12 @@ end
 --Optimised collisions to only check nearby balls
 function World:optimisedCollisions()
     local found = grid:search()
+    --Stores a dictionary of the sum of ball IDs. Should prevent double entry of IDs.
+    --The IDs are mutliplied by 17 to avoid collisions
+    local existingNeighbours = {}
     for i,searchBall in ipairs(found) do
         local searchX   = searchBall[1]
         local searchY   = searchBall[2]
-        -- print(searchX,searchY)
         local neighbors = {}
         for gridY = -1,1 do
             for gridX = -1,1 do
@@ -283,13 +289,21 @@ function World:optimisedCollisions()
             end
         end
         if #neighbors > 1 then
-            self:expensiveCollisions(neighbors)
+            local sum = 0
+            for j,ID in ipairs(neighbors) do
+                sum = sum + tonumber(ID) * 17
+            end
+            if not existingNeighbours[sum] then
+                self:expensiveCollisions(neighbors)
+                existingNeighbours[sum] = true
+            end
         end
     end
 end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
+    checks = 0
     self:populate()
     camera:update(dt)
     for i, ball in ipairs(self.balls) do
@@ -303,6 +317,7 @@ function World:update(dt,isClient)
     if not isClient then
         self:optimisedCollisions()
     end
+    if checks > 0 then print(checks) end
 end
 
 --Draw every ball
