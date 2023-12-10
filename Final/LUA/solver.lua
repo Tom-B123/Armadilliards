@@ -9,6 +9,8 @@ local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 local Ball    = {}
 Ball.__index  = Ball
 
+local checks = 0
+
 local colours = {}
 colours[1] = {0.1,0.1,0.1}
 colours[2] = {1,0,0}
@@ -218,11 +220,15 @@ function World:assign(playerID,ballID)
 end
 
 --Collisions with no optimisation
-function World:expensiveCollisions(balls)
+function World:expensiveCollisions(ballIDs)
     local bounce = 1
-    for i, ball1 in ipairs(balls) do
-        for j, ball2 in ipairs(balls) do
+    for i, ID1 in ipairs(ballIDs) do
+        for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
+                checks = checks + 1
+                local ball1 = self:getByID(ID1)
+                local ball2 = self:getByID(ID2)
+                
                 local collisionAxis = {x=0,y=0}
                 collisionAxis.x = ball1.x - ball2.x
                 collisionAxis.y = ball1.y - ball2.y
@@ -251,16 +257,42 @@ function World:expensiveCollisions(balls)
     end
 end
 
---Populates the grid fro optimised collisons
+--Populates the grid for optimised collisons
 function World:populate()
-    grid:clear()
-    for i,ball in self.balls do
+    grid:reset()
+    for i,ball in ipairs(self.balls) do
         grid:populate(ball.x,ball.y,ball.ID)
+    end
+end
+
+--Optimised collisions to only check nearby balls
+function World:optimisedCollisions()
+    local found = grid:search()
+    for i,searchBall in ipairs(found) do
+        local searchX   = searchBall[1]
+        local searchY   = searchBall[2]
+        -- print(searchX,searchY)
+        local neighbors = {}
+        for gridY = -1,1 do
+            for gridX = -1,1 do
+                local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
+                if type(cell) == "table" then
+                    for j,ball in ipairs(cell) do
+                        local ID = ball
+                        table.insert(neighbors,ID)
+                    end
+                end
+            end
+        end
+        if #neighbors > 1 then
+            self:expensiveCollisions(neighbors)
+        end
     end
 end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
+    checks = 0
     self:populate()
     camera:update(dt)
     for i, ball in ipairs(self.balls) do
@@ -272,8 +304,9 @@ function World:update(dt,isClient)
         end
     end
     if not isClient then
-        self:expensiveCollisions(self.balls)
+        self:optimisedCollisions()
     end
+    if checks > 0 then print(checks) end
 end
 
 --Draw every ball

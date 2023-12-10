@@ -73,7 +73,12 @@ function Grid:search()
         end
         --Terminate search at the finest detail.
         if level >= self.levels then
-            table.insert(out,{x,y})
+            local found = self:lookup(x,y,level)
+            if type(found) == "table" then
+                for i, ID in ipairs(found) do
+                    table.insert(out,{x,y,ID})
+                end
+            end
             return
         end
         --grid x and y
