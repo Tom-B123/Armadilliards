@@ -9,7 +9,6 @@ local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 local Ball    = {}
 Ball.__index  = Ball
 
-local checks = 0
 
 local colours = {}
 colours[1] = {0.1,0.1,0.1}
@@ -225,7 +224,6 @@ function World:expensiveCollisions(ballIDs)
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
-                checks = checks + 1
                 local ball1 = self:getByID(ID1)
                 local ball2 = self:getByID(ID2)
                 
@@ -292,8 +290,6 @@ end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
-    checks = 0
-    grid:draw()
     self:populate()
     camera:update(dt)
     for i, ball in ipairs(self.balls) do
@@ -307,7 +303,6 @@ function World:update(dt,isClient)
     if not isClient then
         self:optimisedCollisions()
     end
-    if checks > 0 then print(checks) end
 end
 
 --Draw every ball
@@ -318,6 +313,7 @@ function World:draw()
     for i, ball in ipairs(self.balls) do
         ball:draw(offsetX,offsetY)
     end
+    grid:draw(offsetX,offsetY)
 end
 
 --Create a string for assigning players to a ballID for taking player inputs

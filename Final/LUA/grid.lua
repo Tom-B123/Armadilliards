@@ -30,12 +30,14 @@ function Grid:new(size,resolution)
     return object
 end
 
-function Grid:draw()
-    for level = 1,self.levels do
-        for x = 1,2^(level-1) do
-            for y = 1,2^(level-1) do
-                print(x,y)
-            end
+function Grid:draw(offsetX,offsetY)
+    for level = 1,self.levels-1 do
+        if level == 1 then love.graphics.setColor(1,0,0,1)
+        else love.graphics.setColor(1,1,0,0.1) end
+        for i = 1,2^level do
+            local point = self.resolution * 2^(self.levels-1-level)
+            love.graphics.line(offsetX + (i-1)*point,offsetY,offsetX + (i-1)*point,offsetY + 4096)
+            love.graphics.line(offsetX ,offsetY+ (i-1)*point,offsetX + 4096,offsetY + (i-1)*point)
         end
     end
 end
