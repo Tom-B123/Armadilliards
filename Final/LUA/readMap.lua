@@ -4,27 +4,42 @@ require("util")
 
 local readMap = {}
 
---Get the path of this file, src: https://forum.cockos.com/showthread.php?s=01b3ea9e105506e782eb48031cb1f382&t=166043
-local function getScriptPath()
-    local info = debug.getinfo(1,'S');
-    local script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
-    return script_path
-end
+-- --Get the path of this file, src: https://forum.cockos.com/showthread.php?s=01b3ea9e105506e782eb48031cb1f382&t=166043 only works outside of love 2d
+-- local function getScriptPath()
+--     local info = debug.getinfo(1,'S');
+--     local script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
+--     return script_path
+-- end
 
---Return an iterable of all found files in "Maps"
+-- --Return an iterable of all found files in "Maps" Only works outside of love 2d
+-- function readMap:get()
+--     local dir = getScriptPath()
+--     local files = {}
+--     for file in io.popen('dir "'..dir..'\\Maps'..'" /b'):lines() do
+--         table.insert(files, file)
+--     end
+--     local ind = 0
+--     return function()
+--         ind = ind + 1
+--         if files[ind] then
+--             return files[ind]
+--         end
+--     end
+-- end
+
 function readMap:get()
-    local dir = getScriptPath()
-    local files = {}
-    for file in io.popen('dir "'..dir..'\\Maps'..'" /b'):lines() do
-        table.insert(files, file)
-    end
+    local files = love.filesystem.getDirectoryItems("Maps")
     local ind = 0
     return function()
-        ind = ind + 1
-        if files[ind] then
+        if ind <= #files then
+            ind = ind + 1
             return files[ind]
         end
     end
+end
+
+for file in readMap:get() do
+    print(file)
 end
 
 local processSwitch = Switch:new()
