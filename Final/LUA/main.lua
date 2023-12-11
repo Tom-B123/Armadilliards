@@ -56,6 +56,9 @@ local polyCoords     = {}
 local lobbyScroll    = 0
 local lobbyScrollVel = 0
 
+local offsetX = 0
+local offsetY = 0
+
 for i = 1,maxOrder do
     buttons[i] = {}
 end
@@ -321,6 +324,8 @@ stateSwitch:addCase("in game",function(dt)
     if not player then return end
 
     polyCoords = {}
+
+    offsetX,offsetY = World:getOffset()
 
     processReceived()
 
@@ -1248,8 +1253,8 @@ netSwitch:addCase("upgm",function(args)
             local ascY = splitData[1+i*2]
             if ascX and ascY then
                 local x,y  = Util:HexToCoord(ascX,ascY)
-                table.insert(coords,x)
-                table.insert(coords,y)
+                table.insert(coords,x + offsetX)
+                table.insert(coords,y + offsetY)
             end
         end
         table.insert(polyCoords,coords)

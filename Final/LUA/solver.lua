@@ -260,6 +260,10 @@ function camera:getOffset()
     return windowDims.x/2 - self.x, windowDims.y/2 - self.y
 end
 
+function World:getOffset()
+    return camera:getOffset()
+end
+
 --World table, stores and processes all balls
 World = {
     balls         = {},
