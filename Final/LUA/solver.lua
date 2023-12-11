@@ -38,6 +38,7 @@ function Ball:new(x,y)
     object.yaw      = 0
     object.pitch    = 0
     object.colour   = colours[1]
+    object.multi    = false
     return object
 end
 
@@ -109,8 +110,19 @@ end
 
 --Drawing ball objects
 function Ball:draw(offsetX,offsetY)
+    if self.multi then
+        if World.debugShapes then
+            love.graphics.circle(
+                "line",
+                self.x + offsetX,
+                self.y + offsetY,
+                self.radius
+            )
+        end
+        return
+    end
     local name = nil
-    if self.playerID then 
+    if self.playerID then
         name = LobbyPlayer:getName(self.playerID)
     end
     drawBall:draw(
@@ -161,7 +173,8 @@ World = {
     ropes         = {},
     focus         = nil,
     debugChecks   = false,
-    debugGrid     = false
+    debugGrid     = false,
+    debugShapes  = true
 }
 
 function World:updateRopes()
@@ -217,6 +230,7 @@ function World:clear()
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
+    self.focus         = nil
 end
 
 --Assigns an ID to a ball, or calculates a new ID using the given salt
@@ -252,7 +266,8 @@ function World:square(x,y,length)
     local count,circleSize = getDims(length)
     for circleX = 1,count do
         for circleY = 1,count do
-            local ball  = self:newBall(x + (circleX*circleSize),y + (circleY*circleSize),false)
+            local ball  = self:newBall(x + (circleX*circleSize),y + (circleY*circleSize))
+            ball.multi  = true
             ball.radius = circleSize/2
         end
     end
