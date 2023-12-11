@@ -154,7 +154,7 @@ function Shape:new(circles,sides,length)
     object.angle    = 0
     object.x        = 0
     object.y        = 0
-    object.intAngle = (sides-2)*180 / sides
+    object.intAngle = (sides-2)*math.pi / sides
     return object
 end
 
