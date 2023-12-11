@@ -572,8 +572,18 @@ function World:getUpgm()
     local out = {}
     for i, ball in ipairs(self.balls) do
         if not ball.multi then 
-            table.insert(out,"upgm:"..ball.ID..Util:coordToHex(ball.x,ball.y))
+            table.insert(out,"upgm:ball_"..ball.ID.."_"..Util:coordToHex(ball.x,ball.y).."_\n")
         end
+    end
+    for i,shape in ipairs(self.shapes) do
+        local verts = shape:getVerts()
+        local msg = "upgm:poly"
+        for j = 1, #verts/2 do
+            local x = verts[j*2-1]
+            local y = verts[j*2]
+            msg = msg.."_"..Util:coordToHex(x,y)
+        end
+        print(msg)
     end
     return out
 end

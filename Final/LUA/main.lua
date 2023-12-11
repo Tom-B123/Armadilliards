@@ -1203,30 +1203,32 @@ netSwitch:addCase("upgm",function(args)
     if not player then return end
 
     local splitData = Util:split(args,"_")
+    local objType   = splitData[1]
     -- Changes = {{ID1,x1,y1},{ID2,x2,y2},{ID3,x3,y3}}
     local changes   = {}
-
-    for i,msg in ipairs(splitData) do
-        local ind   = i - 1
-        if changes[math.floor(ind/3)+1] == nil then
-            changes[math.floor(ind/3)+1] = {}
+    if objType == "ball" then
+        for i,msg in ipairs(splitData) do
+            local ind   = i - 2
+            if changes[math.floor(ind/3)+1] == nil then
+                changes[math.floor(ind/3)+1] = {}
+            end
+            changes[math.floor(ind/3)+1][(ind%3) + 1] = msg
         end
-        changes[math.floor(ind/3)+1][(ind%3) + 1] = msg
-    end
 
-    for i, change in ipairs(changes) do
-        local ID        = change[1]
-        local ascX      = change[2]
-        local ascY      = change[3]
-        if ID and ascX and ascY then
-            local ball  = World:getByID(ID)
-            local x,y   = Util:HexToCoord(ascX,ascY)
-            if ball then
-                ball.x  = x
-                ball.y  = y
-            else
-                local nball = World:newBall(x,y,true)
-                World:assignID(nball,ID,0)
+        for i, change in ipairs(changes) do
+            local ID        = change[1]
+            local ascX      = change[2]
+            local ascY      = change[3]
+            if ID and ascX and ascY then
+                local ball  = World:getByID(ID)
+                local x,y   = Util:HexToCoord(ascX,ascY)
+                if ball then
+                    ball.x  = x
+                    ball.y  = y
+                else
+                    local nball = World:newBall(x,y,true)
+                    World:assignID(nball,ID,0)
+                end
             end
         end
     end
