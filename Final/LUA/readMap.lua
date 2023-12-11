@@ -18,18 +18,28 @@ end
 local processSwitch = Switch:new()
 
 --Neutral ball
-processSwitch:addCase(0,function(pos)
-    World:newBall(pos.x,pos.y,false)
+processSwitch:addCase(0,function(args)
+    local x = args[1]
+    local y = args[2]
+    World:newBall(x,y,false)
 end)
 
 -- --Player controlled ball
-processSwitch:addCase(1,function(pos)
-    World:newBall(pos.x,pos.y,true)
+processSwitch:addCase(1,function(args)
+    local x = args[1]
+    local y = args[2]
+    World:newBall(x,y,true)
 end)
 
-local function process(object,x,y)
-    local pos = {x=x,y=y}
-    processSwitch:case(object,pos)
+processSwitch:addCase(2,function(args)
+    local x      = args[1]
+    local y      = args[2]
+    local length = args[3]
+    World:square(x,y,length)
+end)
+
+local function process(object,args)
+    processSwitch:case(object,args)
 end
 
 --Opens the file, processes each line, then closes it
@@ -43,10 +53,12 @@ function readMap:open(filename)
         local splitData = Util:split(line,":")
         local object    = tonumber(splitData[1])
         local pos       = splitData[2]
-        local posData   = Util:split(pos,",")
-        local x         = tonumber(posData[1])
-        local y         = tonumber(posData[2])
-        process(object,x,y)
+        local objData   = Util:split(pos,",")
+        local args = {}
+        for i,arg in ipairs(objData) do
+            table.insert(args,tonumber(arg))
+        end
+        process(object,args)
     end
 end
 

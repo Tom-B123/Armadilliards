@@ -213,9 +213,10 @@ end
 
 --Clears all balls
 function World:clear()
-    self.balls = {}
+    self.balls         = {}
     self.playableBalls = {}
-    self.ballIDDict = {}
+    self.ballIDDict    = {}
+    self.ropes         = {}
 end
 
 --Assigns an ID to a ball, or calculates a new ID using the given salt
@@ -241,15 +242,20 @@ function World:newBall(x,y,playable)
 end
 
 function World:square(x,y,length)
-    if length < 1 then return end
-    local count = math.floor(length / 32)+1
-    if count <= 1 then count = 2
-    elseif length % 32 == 0 then count = count - 1 end
-    return count.." x "..length/count
-end
-
-for i = 1,100 do
-    print("i: "..i.." square of: "..World:square(0,0,i))
+    local function getDims(edge)
+        if edge < 1 then return end
+        local count = math.floor(edge / 32)+1
+        if count <= 1 then count = 2
+        elseif edge % 32 == 0 then count = count - 1 end
+        return count,edge/count
+    end
+    local count,circleSize = getDims(length)
+    for circleX = 1,count do
+        for circleY = 1,count do
+            local ball  = self:newBall(x + (circleX*circleSize),y + (circleY*circleSize),false)
+            ball.radius = circleSize
+        end
+    end
 end
 
 --Assigns IDs to every ball, passing in a salt value to avoid duplicate IDs
