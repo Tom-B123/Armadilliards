@@ -198,7 +198,11 @@ function World:updateRopes()
             x = (rope1.x + rope2.x) / 2,
             y = (rope1.y + rope2.y) / 2
         }
-        process({rope1,rope2},ropeCentre,ropeLength,0.5)
+        --manhattan distance is very cheap to calculate, so used to prevent exessive square root calculions when they aren't necessary
+        local manhattan = math.abs(rope2.x - rope1.x) + math.abs(rope2.y-rope1.y)
+        if manhattan >= ropeLength then
+            process({rope1,rope2},ropeCentre,ropeLength,0.5)
+        end
     end
 end
 
