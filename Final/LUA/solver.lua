@@ -162,7 +162,7 @@ end
 function Shape:calculateAngle()
     local circle1 = self.circles[1]
     local circle2 = self.circles[2]
-    return Util:yawAngle(circle1.x-circle2.x,circle1.y-circle2.y)
+    return Util:yawAngle(circle1.x-circle2.x,circle1.y-circle2.y)-math.pi/4
 end
 
 --Calculate the centre of the shape's circles (the average of all coords)
@@ -191,12 +191,11 @@ function Shape:draw(offsetX,offsetY)
         local ny = self.length * math.sin(self.angle+(self.intAngle*point))
         nx = nx + self.x + offsetX
         ny = ny + self.y + offsetY
-        print(self.angle+(self.intAngle*point))
         table.insert(coords,nx)
         table.insert(coords,ny)
     end
 
-    love.graphics.polygon("fill",coords)
+    love.graphics.polygon("line",coords)
 end
 
 local camera = {x=0,y=0,vx=0,vy=0,focus = nil}
@@ -341,7 +340,8 @@ function World:square(x,y,length)
             table.insert(circles,ball)
         end
     end
-    self:newShape(circles,4,length)
+    local squareLength = (circleSize^2 + circleSize^2)^0.5
+    self:newShape(circles,4,squareLength)
 end
 
 --Assigns IDs to every ball, passing in a salt value to avoid duplicate IDs
