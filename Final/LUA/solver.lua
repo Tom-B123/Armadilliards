@@ -145,16 +145,17 @@ Shape = {}
 Shape.__index = Shape
 
 --Make a new shape object, representing multiple bound circles
-function Shape:new(circles,sides,length)
+function Shape:new(circles,sides,length,circleRad)
     local object = {}
     setmetatable(object,Shape)
-    object.circles  = circles
-    object.sides    = sides
-    object.length   = length
-    object.angle    = 0
-    object.x        = 0
-    object.y        = 0
-    object.intAngle = (sides-2)*math.pi / sides
+    object.circles   = circles
+    object.sides     = sides
+    object.length    = length
+    object.circleRad = circleRad
+    object.angle     = 0
+    object.x         = 0
+    object.y         = 0
+    object.intAngle  = (sides-2)*math.pi / sides
     return object
 end
 
@@ -194,8 +195,18 @@ function Shape:draw(offsetX,offsetY)
         table.insert(coords,nx)
         table.insert(coords,ny)
     end
+    local fill = "fill"
+    if World.debugShapes then fill = "line" end
+    love.graphics.polygon(fill,coords)
+end
 
-    love.graphics.polygon("line",coords)
+function Shape:makeRopes()
+    local circles = self.circles
+    for i = 1,5 do
+        local ind1 = i%4+1
+        local ind2 = (i+1)%4+1
+        table.insert(World.ropes,{circles[ind1].ID,circles[ind2].ID,self.circleRad*2,0})
+    end
 end
 
 local camera = {x=0,y=0,vx=0,vy=0,focus = nil}
@@ -233,7 +244,7 @@ World = {
     focus         = nil,
     debugChecks   = false,
     debugGrid     = false,
-    debugShapes  = true
+    debugShapes   = true
 }
 
 function World:updateRopes()
@@ -261,11 +272,12 @@ function World:updateRopes()
         end
     end
     for i,rope in ipairs(self.ropes) do
-        local ID1 = rope[1]
-        local ID2 = rope[2]
-        local rope1 = self:getByID(ID1)
-        local rope2 = self:getByID(ID2)
+        local ID1        = rope[1]
+        local ID2        = rope[2]
+        local rope1      = self:getByID(ID1)
+        local rope2      = self:getByID(ID2)
         local ropeLength = rope[3]
+        local elasticity = rope[4]
         local ropeCentre = {
             x = (rope1.x + rope2.x) / 2,
             y = (rope1.y + rope2.y) / 2
@@ -273,7 +285,7 @@ function World:updateRopes()
         --manhattan distance is very cheap to calculate, so used to prevent exessive square root calculions when they aren't necessary
         local manhattan = math.abs(rope2.x - rope1.x) + math.abs(rope2.y-rope1.y)
         if manhattan >= ropeLength then
-            process({rope1,rope2},ropeCentre,ropeLength,0.5)
+            process({rope1,rope2},ropeCentre,ropeLength,elasticity)
         end
     end
 end
@@ -316,8 +328,8 @@ function World:newBall(x,y,playable)
 end
 
 --Creates a new shape out of a table of circles, side count and side length
-function World:newShape(circles,sides,length)
-    local nShape = Shape:new(circles,sides,length)
+function World:newShape(circles,sides,length,circleRad)
+    local nShape = Shape:new(circles,sides,length,circleRad)
     table.insert(self.shapes,nShape)
 end
 
@@ -340,8 +352,9 @@ function World:square(x,y,length)
             table.insert(circles,ball)
         end
     end
+    
     local squareLength = (circleSize^2 + circleSize^2)^0.5
-    self:newShape(circles,4,squareLength)
+    self:newShape(circles,4,squareLength,circleSize/2)
 end
 
 --Assigns IDs to every ball, passing in a salt value to avoid duplicate IDs
@@ -351,7 +364,9 @@ function World:generateIDs()
         local ID = self:assignID(ball,nil,i)
         table.insert(IDs,ID)
     end
-    table.insert(self.ropes,{IDs[1],IDs[2],200})
+    for i,shape in ipairs(self.shapes) do
+        shape:makeRopes()
+    end
 end
 
 --Assigns playerIDs to the ball
