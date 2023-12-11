@@ -253,7 +253,7 @@ function World:square(x,y,length)
     for circleX = 1,count do
         for circleY = 1,count do
             local ball  = self:newBall(x + (circleX*circleSize),y + (circleY*circleSize),false)
-            ball.radius = circleSize
+            ball.radius = circleSize/2
         end
     end
 end
@@ -380,21 +380,22 @@ end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
+    if isClient then
+        for i, ball in ipairs(self.balls) do
+            ball:verlet(dt)
+        end
+        return
+    end
     checks = 0
     self:populate()
     camera:update(dt)
     self:updateRopes()
+    
     for i, ball in ipairs(self.balls) do
-        if isClient then
-            ball:verlet(dt)
-        else
-            ball:edgeConstraint()
-            ball:verlet(dt)
-        end
+        ball:edgeConstraint()
+        ball:verlet(dt)
     end
-    if not isClient then
-        self:optimisedCollisions()
-    end
+    self:optimisedCollisions()
 end
 
 --Draw every ball
