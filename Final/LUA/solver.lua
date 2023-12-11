@@ -158,10 +158,15 @@ World = {
     balls         = {},
     playableBalls = {},
     ballIDDict    = {},
+    ropes         = {},
     focus         = nil,
     debugChecks   = true,
     debugGrid     = false
 }
+
+
+function World:updateRopes()
+end
 
 --Follows a ball with the camera
 function World:setFocus(ball)
