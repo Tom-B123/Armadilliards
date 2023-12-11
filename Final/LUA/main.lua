@@ -320,6 +320,8 @@ end)
 stateSwitch:addCase("in game",function(dt)
     if not player then return end
 
+    polyCoords = {}
+
     processReceived()
 
     World:update(dt,true)
@@ -1242,9 +1244,8 @@ netSwitch:addCase("upgm",function(args)
     elseif objType == "poly" then
         local coords = {}
         for i = 1,((#splitData)-1)/2 do
-            local ind = i + 1
-            local ascX = splitData[ind*2-1]
-            local ascY = splitData[ind*2]
+            local ascX = splitData[i*2]
+            local ascY = splitData[1+i*2]
             if ascX and ascY then
                 local x,y  = Util:HexToCoord(ascX,ascY)
                 table.insert(coords,x)
