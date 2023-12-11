@@ -244,7 +244,7 @@ World = {
     focus         = nil,
     debugChecks   = false,
     debugGrid     = false,
-    debugShapes   = true
+    debugShapes   = false
 }
 
 function World:updateRopes()
@@ -479,6 +479,16 @@ function World:optimisedCollisions()
     end
 end
 
+--Draw all ropes
+function World:drawRopes(offsetX,offsetY)
+    love.graphics.setColor(1,1,0)
+    for i, rope in ipairs(self.ropes) do
+        local ball1 = self:getByID(rope[1])
+        local ball2 = self:getByID(rope[2])
+        love.graphics.line(ball1.x + offsetX,ball1.y + offsetY,ball2.x + offsetX,ball2.y + offsetY)
+    end
+end
+
 --Updates the position of every ball
 function World:update(dt,isClient)
     if isClient then
@@ -507,6 +517,7 @@ function World:draw()
     local offsetX,offsetY = camera:getOffset()
     love.graphics.setColor( 0,0.4,0 )
     love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
+    self:drawRopes(offsetX,offsetY)
     for i, ball in ipairs(self.balls) do
         ball:draw(offsetX,offsetY)
     end
