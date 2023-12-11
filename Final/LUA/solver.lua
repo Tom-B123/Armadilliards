@@ -184,16 +184,26 @@ function Shape:update()
     self.angle    = self:calculateAngle()
 end
 
---Draw the shape based on the centre position and angle
-function Shape:draw(offsetX,offsetY)
+function Shape:getVerts()
     local coords = {}
     for point = 0,self.sides-1 do
         local nx = self.length * math.cos(self.angle+(self.intAngle*point))
         local ny = self.length * math.sin(self.angle+(self.intAngle*point))
-        nx = nx + self.x + offsetX
-        ny = ny + self.y + offsetY
+        nx = nx + self.x
+        ny = ny + self.y
         table.insert(coords,nx)
         table.insert(coords,ny)
+    end
+    return coords
+end
+
+--Draw the shape based on the centre position and angle
+function Shape:draw(offsetX,offsetY)
+    local coords = self:getVerts()
+    for i = 1,#coords do
+        local offset = offsetX
+        if i % 2 == 0 then offset = offsetY end
+        coords[i] = coords[i] + offset
     end
     local fill = "fill"
     if World.debugShapes then fill = "line" end
@@ -308,7 +318,6 @@ end
 --Follows a ball with the camera
 function World:setFocus(ball)
     camera.focus = ball
-    print("focus set to "..ball.ID)
 end
 
 --Clears all balls
@@ -319,7 +328,6 @@ function World:clear()
     self.ballIDDict    = {}
     self.ropes         = {}
     camera.focus       = nil
-    print("focus reset")
 end
 
 --Assigns an ID to a ball, or calculates a new ID using the given salt
