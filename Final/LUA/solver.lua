@@ -240,6 +240,18 @@ function World:newBall(x,y,playable)
     return nBall
 end
 
+function World:square(x,y,length)
+    if length < 1 then return end
+    local count = math.floor(length / 32)+1
+    if count <= 1 then count = 2
+    elseif length % 32 == 0 then count = count - 1 end
+    return count.." x "..length/count
+end
+
+for i = 1,100 do
+    print("i: "..i.." square of: "..World:square(0,0,i))
+end
+
 --Assigns IDs to every ball, passing in a salt value to avoid duplicate IDs
 function World:generateIDs()
     local IDs = {}
@@ -247,7 +259,7 @@ function World:generateIDs()
         local ID = self:assignID(ball,nil,i)
         table.insert(IDs,ID)
     end
-    table.insert(self.ropes,{IDs[1],IDs[2],100})
+    table.insert(self.ropes,{IDs[1],IDs[2],200})
 end
 
 --Assigns playerIDs to the ball
