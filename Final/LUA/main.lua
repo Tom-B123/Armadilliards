@@ -51,6 +51,8 @@ local lobbyButtons   = List:new()
 local kickButtons    = List:new()
 local maps           = List:new()
 
+local polyCoords     = {}
+
 local lobbyScroll    = 0
 local lobbyScrollVel = 0
 
@@ -910,6 +912,12 @@ end)
 
 drawStateSwitch:addCase("in game",function()
     World:draw()
+    love.graphics.setColor(1,1,1)
+    for i,poly in ipairs(polyCoords) do
+        if #poly % 2 == 0 then
+            love.graphics.polygon("fill",poly)
+        end
+    end
     drawMessages()
 end)
 
@@ -1231,6 +1239,19 @@ netSwitch:addCase("upgm",function(args)
                 end
             end
         end
+    elseif objType == "poly" then
+        local coords = {}
+        for i = 1,((#splitData)-1)/2 do
+            local ind = i + 1
+            local ascX = splitData[ind*2-1]
+            local ascY = splitData[ind*2]
+            if ascX and ascY then
+                local x,y  = Util:HexToCoord(ascX,ascY)
+                table.insert(coords,x)
+                table.insert(coords,y)
+            end
+        end
+        table.insert(polyCoords,coords)
     end
 end)
 

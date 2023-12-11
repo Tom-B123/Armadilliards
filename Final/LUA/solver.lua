@@ -184,13 +184,13 @@ function Shape:update()
     self.angle    = self:calculateAngle()
 end
 
-function Shape:getVerts()
+function Shape:getVerts(offsetX,offsetY)
     local coords = {}
     for point = 0,self.sides-1 do
         local nx = self.length * math.cos(self.angle+(self.intAngle*point))
         local ny = self.length * math.sin(self.angle+(self.intAngle*point))
-        nx = nx + self.x
-        ny = ny + self.y
+        nx = nx + self.x + offsetX
+        ny = ny + self.y + offsetY
         table.insert(coords,nx)
         table.insert(coords,ny)
     end
@@ -199,12 +199,7 @@ end
 
 --Draw the shape based on the centre position and angle
 function Shape:draw(offsetX,offsetY)
-    local coords = self:getVerts()
-    for i = 1,#coords do
-        local offset = offsetX
-        if i % 2 == 0 then offset = offsetY end
-        coords[i] = coords[i] + offset
-    end
+    local coords = self:getVerts(offsetX,offsetY)
     local fill = "fill"
     if World.debugShapes then fill = "line" end
     love.graphics.polygon(fill,coords)
@@ -569,6 +564,7 @@ end
 
 --Create a string for updating player's positions
 function World:getUpgm()
+    local offsetX,offsetY = camera:getOffset()
     local out = {}
     for i, ball in ipairs(self.balls) do
         if not ball.multi then 
@@ -576,14 +572,14 @@ function World:getUpgm()
         end
     end
     for i,shape in ipairs(self.shapes) do
-        local verts = shape:getVerts()
+        local verts = shape:getVerts(offsetX,offsetY)
         local msg = "upgm:poly"
         for j = 1, #verts/2 do
             local x = verts[j*2-1]
             local y = verts[j*2]
             msg = msg.."_"..Util:coordToHex(x,y)
         end
-        print(msg)
+        table.insert(out,msg)
     end
     return out
 end
