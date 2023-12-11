@@ -202,10 +202,26 @@ end
 
 function Shape:makeRopes()
     local circles = self.circles
-    for i = 1,5 do
-        local ind1 = i%4+1
-        local ind2 = (i+1)%4+1
-        table.insert(World.ropes,{circles[ind1].ID,circles[ind2].ID,self.circleRad*2,0})
+    local dims = (#circles) ^ 0.5
+    for y = 0,dims-1 do
+        for x = 1,dims-1 do
+            table.insert(World.ropes,{
+                circles[dims*y + x].ID,
+                circles[dims*y + x + 1].ID,
+                self.circleRad*2,
+                0
+            })
+        end
+    end
+    for y = 0,dims-2 do
+        for x = 1,dims do
+            table.insert(World.ropes,{
+                circles[dims*y + x].ID,
+                circles[dims*(y+1) + x].ID,
+                self.circleRad*2,
+                0
+            })
+        end
     end
 end
 
@@ -244,7 +260,7 @@ World = {
     focus         = nil,
     debugChecks   = false,
     debugGrid     = false,
-    debugShapes   = false
+    debugShapes   = true
 }
 
 function World:updateRopes()
@@ -344,8 +360,8 @@ function World:square(x,y,length)
     end
     local count,circleSize = getDims(length)
     local circles = {}
-    for circleX = 1,count do
-        for circleY = 1,count do
+    for circleY = 1,count do
+        for circleX = 1,count do
             local ball  = self:newBall(x + (circleX*circleSize),y + (circleY*circleSize))
             ball.multi  = true
             ball.radius = circleSize/2
