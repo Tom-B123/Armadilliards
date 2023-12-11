@@ -140,6 +140,63 @@ function Ball:updateRoll()
     self.ly = self.y
 end
 
+Shape = {}
+
+Shape.__index = Shape
+
+--Make a new shape object, representing multiple bound circles
+function Shape:new(circles,sides,length)
+    local object = {}
+    setmetatable(object,Shape)
+    object.circles  = circles
+    object.sides    = sides
+    object.length   = length
+    object.angle    = 0
+    object.x        = 0
+    object.y        = 0
+    object.intAngle = (sides-2)*180 / sides
+    return object
+end
+
+--Calculate the angle of the shape
+function Shape:calculateAngle()
+    local circle1 = self.circles[1]
+    local circle2 = self.circles[2]
+    return Util:yawAngle(circle1.x-circle2.x,circle1.y-circle2.y)
+end
+
+--Calculate the centre of the shape's circles (the average of all coords)
+function Shape:calculateCentre()
+    local sumX  = 0
+    local sumY  = 0
+    local count = #self.circles
+    for i,circle in ipairs(self.circles) do
+        sumX = sumX + circle.x
+        sumY = sumY + circle.y
+    end
+    return sumX / count, sumY / count
+end
+
+--Update the angle and centre position of the shape
+function Shape:update()
+    self.x,self.y = self:calculateCentre()
+    self.angle    = self:calculateAngle()
+end
+
+--Draw the shape based on the centre position and angle
+function Shape:draw()
+    local coords = {}
+    for point = 0,self.sides-1 do
+        local nx = self.length * math.cos(self.angle+(self.intAngle*point))
+        local ny = self.length * math.sin(self.angle+(self.intAngle*point))
+        nx = nx + self.x
+        ny = ny + self.y
+        table.insert(coords,nx)
+        table.insert(coords,ny)
+    end
+    love.graphics.polygon("fill",coords)
+end
+
 local camera = {x=0,y=0,vx=0,vy=0,focus = nil}
 
 function camera:update(dt)
@@ -168,6 +225,7 @@ end
 --World table, stores and processes all balls
 World = {
     balls         = {},
+    shapes        = {},
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
@@ -227,6 +285,7 @@ end
 --Clears all balls
 function World:clear()
     self.balls         = {}
+    self.shapes        = {}
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
@@ -255,6 +314,13 @@ function World:newBall(x,y,playable)
     return nBall
 end
 
+--Creates a new shape out of a table of circles, side count and side length
+function World:newShape(circles,sides,length)
+    local nShape = Shape:new(circles,sides,length)
+    table.insert(self.shapes,nShape)
+end
+
+--Create a new square object
 function World:square(x,y,length)
     local function getDims(edge)
         if edge < 1 then return end
@@ -264,13 +330,16 @@ function World:square(x,y,length)
         return count,edge/count
     end
     local count,circleSize = getDims(length)
+    local circles = {}
     for circleX = 1,count do
         for circleY = 1,count do
             local ball  = self:newBall(x + (circleX*circleSize),y + (circleY*circleSize))
             ball.multi  = true
             ball.radius = circleSize/2
+            table.insert(circles,ball)
         end
     end
+    self:newShape(circles,4,length)
 end
 
 --Assigns IDs to every ball, passing in a salt value to avoid duplicate IDs
@@ -410,6 +479,9 @@ function World:update(dt,isClient)
         ball:edgeConstraint()
         ball:verlet(dt)
     end
+    for i,shape in ipairs(self.shapes) do
+        shape:update()
+    end
     self:optimisedCollisions()
 end
 
@@ -420,6 +492,9 @@ function World:draw()
     love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
     for i, ball in ipairs(self.balls) do
         ball:draw(offsetX,offsetY)
+    end
+    for i,shape in ipairs(self.shapes) do
+        shape:draw()
     end
     if self.debugGrid then grid:draw(offsetX,offsetY) end
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
