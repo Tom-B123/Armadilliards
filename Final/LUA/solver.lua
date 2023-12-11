@@ -257,7 +257,6 @@ World = {
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
-    focus         = nil,
     debugChecks   = false,
     debugGrid     = false,
     debugShapes   = false
@@ -309,6 +308,7 @@ end
 --Follows a ball with the camera
 function World:setFocus(ball)
     camera.focus = ball
+    print("focus set to "..ball.ID)
 end
 
 --Clears all balls
@@ -318,7 +318,8 @@ function World:clear()
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
-    self.focus         = nil
+    camera.focus       = nil
+    print("focus reset")
 end
 
 --Assigns an ID to a ball, or calculates a new ID using the given salt
@@ -507,6 +508,7 @@ end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
+    camera:update(dt)
     if isClient then
         for i, ball in ipairs(self.balls) do
             ball:verlet(dt)
@@ -515,7 +517,6 @@ function World:update(dt,isClient)
     end
     checks = 0
     self:populate()
-    camera:update(dt)
     self:updateRopes()
     
     for i, ball in ipairs(self.balls) do
