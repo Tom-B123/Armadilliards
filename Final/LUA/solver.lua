@@ -162,8 +162,8 @@ end
 --Calculate the angle of the shape
 function Shape:calculateAngle()
     local circle1 = self.circles[1]
-    local circle2 = self.circles[2]
-    return Util:yawAngle(circle1.x-circle2.x,circle1.y-circle2.y)-math.pi/4
+    local circle2 = self.circles[#self.circles]
+    return Util:yawAngle(circle1.x-circle2.x,circle1.y-circle2.y)
 end
 
 --Calculate the centre of the shape's circles (the average of all coords)
@@ -260,7 +260,7 @@ World = {
     focus         = nil,
     debugChecks   = false,
     debugGrid     = false,
-    debugShapes   = true
+    debugShapes   = false
 }
 
 function World:updateRopes()
@@ -369,7 +369,7 @@ function World:square(x,y,length)
         end
     end
     
-    local squareLength = (circleSize^2 + circleSize^2)^0.5
+    local squareLength = ((length/2)^2 + (length/2)^2)^0.5
     self:newShape(circles,4,squareLength,circleSize/2)
 end
 
