@@ -184,16 +184,18 @@ function Shape:update()
 end
 
 --Draw the shape based on the centre position and angle
-function Shape:draw()
+function Shape:draw(offsetX,offsetY)
     local coords = {}
     for point = 0,self.sides-1 do
         local nx = self.length * math.cos(self.angle+(self.intAngle*point))
         local ny = self.length * math.sin(self.angle+(self.intAngle*point))
-        nx = nx + self.x
-        ny = ny + self.y
+        nx = nx + self.x + offsetX
+        ny = ny + self.y + offsetY
+        print(self.angle+(self.intAngle*point))
         table.insert(coords,nx)
         table.insert(coords,ny)
     end
+
     love.graphics.polygon("fill",coords)
 end
 
@@ -494,7 +496,7 @@ function World:draw()
         ball:draw(offsetX,offsetY)
     end
     for i,shape in ipairs(self.shapes) do
-        shape:draw()
+        shape:draw(offsetX,offsetY)
     end
     if self.debugGrid then grid:draw(offsetX,offsetY) end
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
