@@ -562,7 +562,9 @@ end
 function World:getUpgm()
     local out = {}
     for i, ball in ipairs(self.balls) do
-        table.insert(out,"upgm:"..ball.ID..Util:coordToHex(ball.x,ball.y))
+        if not ball.multi then 
+            table.insert(out,"upgm:"..ball.ID..Util:coordToHex(ball.x,ball.y))
+        end
     end
     return out
 end
