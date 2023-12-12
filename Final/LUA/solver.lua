@@ -511,7 +511,7 @@ function World:expensiveCollisions(ballIDs)
 
         local diameter = ball1.radius + ball2.radius
 
-        if manhattan > 2 * diameter then return end
+        -- if manhattan > 2 * diameter then return end
 
         checks = checks + 1
 
@@ -606,6 +606,14 @@ function World:drawRopes(offsetX,offsetY)
     end
 end
 
+function World:getBallIDs()
+    local out = {}
+    for i,ball in ipairs(self.balls) do
+        table.insert(out,ball.ID)
+    end
+    return out
+end
+
 --Updates the position of every ball
 function World:update(dt,isClient)
     camera:update(dt)
@@ -627,7 +635,7 @@ function World:update(dt,isClient)
     for i,shape in ipairs(self.shapes) do
         shape:update()
     end
-    self:optimisedCollisions()
+    self:expensiveCollisions(self:getBallIDs())
     tick = tick + 1
 end
 
