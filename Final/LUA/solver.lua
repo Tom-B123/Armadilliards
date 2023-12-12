@@ -1,13 +1,14 @@
 require("util")
 require("grid")
+local drawBall  = require("drawBall")
+require("lists")
 
-local tick = 0
-
-local checks = 0
+local tick      = 0
+local lastFrame = Socket.gettime() * 10000
+local checks    = 0
+local fpsList   = List:new()
 
 local grid = Grid:new(4098,32)
-
-local drawBall  = require("drawBall")
 
 local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 
@@ -282,10 +283,27 @@ World = {
     ropes         = {},
     showNames     = true,
     showHealth    = true,
+    showFPS       = true,
     debugChecks   = true,
     debugGrid     = false,
     debugShapes   = false
 }
+
+function World:updateFPS()
+    local resolution = 60
+    local curFrame = Socket.gettime()
+    local dif = curFrame - lastFrame
+    fpsList:append(1/dif)
+    local averageFPS = 0
+    local fpsLen = fpsList.length
+    if fpsLen > resolution then fpsList:pop() end
+    for i,fps in fpsList:iterator() do
+        averageFPS = averageFPS + fps
+    end
+    averageFPS = averageFPS / fpsLen
+    lastFrame = curFrame
+    return tostring(math.floor(averageFPS))
+end
 
 function World:getOffset()
     return camera:getOffset()
@@ -493,7 +511,7 @@ function World:expensiveCollisions(ballIDs)
 
         local diameter = ball1.radius + ball2.radius
 
-        if manhattan > 2*diameter then return end
+        if manhattan > 2 * diameter then return end
 
         checks = checks + 1
 
@@ -616,17 +634,22 @@ end
 --Draw every ball
 function World:draw()
     local offsetX,offsetY = camera:getOffset()
+
     love.graphics.setColor( 0,0.4,0 )
     love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
     self:drawRopes(offsetX,offsetY)
+
     for i, ball in ipairs(self.balls) do
         ball:draw(offsetX,offsetY)
     end
+
     for i,shape in ipairs(self.shapes) do
         shape:draw(offsetX,offsetY)
     end
+
     if self.debugGrid then grid:draw(offsetX,offsetY) end
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
+    if World.showFPS then love.graphics.print(World:updateFPS()) end
 end
 
 --Create a string for assigning players to a ballID for taking player inputs
