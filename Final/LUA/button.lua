@@ -44,7 +44,7 @@ function Button:new(text,font,x1,y1,x2,y2,command,params)
     object.mouseState     = false
 
     --Total time to transition from not hovered to hovered
-    object.transitionTime = 20
+    object.transitionTime = 5
     --Current frame of the transition
     object.transitionTick = 0
     --Direction, pos, zero or neg
@@ -74,8 +74,6 @@ function Button:updateStats()
     local dScale   = (self.targValues.scale - self.defValues.scale) / self.transitionTime
     --Delta values for transitioning values (change per tick)
     for i = 1,3 do
-        print("targ fill:" ..self.targValues.fillColour[i])
-        print("def fill:"..self.defValues.fillColour[i])
         dTColour[i] = (self.targValues.textColour[i]    - self.defValues.textColour[i])    / self.transitionTime
         dOColour[i] = (self.targValues.outlineColour[i] - self.defValues.outlineColour[i]) / self.transitionTime
         dFColour[i] = (self.targValues.fillColour[i]    - self.defValues.fillColour[i])    / self.transitionTime
@@ -84,9 +82,6 @@ function Button:updateStats()
         self.textColour[i]     = self.defValues.textColour[i] + (dTColour[i] * self.transitionTick)
         self.outlineColour[i]  = self.defValues.outlineColour[i] + (dOColour[i] * self.transitionTick)
         self.fillColour[i]     = self.defValues.fillColour[i] + (dFColour[i] * self.transitionTick)
-
-        print("i: "..self.outlineColour[i])
-        print("i: "..self.fillColour[i])
     end
 
     self.scale          = self.defValues.scale + dScale   * self.transitionTick
@@ -98,48 +93,87 @@ local presetSwitch = Switch:new()
 --Defines all presets
 function Button:loadPresets()
     presetSwitch:addCase("basic",function()
-        self.defValues.fillColour = {0,0,0}
-        self.defValues.outlineColour = {0,0,0}
-        self.defValues.textColour = {1,1,1}
+        self.defValues.fillColour    = {0,0,0}
+        self.defValues.outlineColour = {1,1,1}
+        self.defValues.textColour    = {1,1,1}
+
+        self.fillColour    = {0,0,0}
+        self.outlineColour = {1,1,1}
+        self.textColour    = {1,1,1}
+        
+        self.defValues.scale         = 0
         self.onHover = function()
             self.transitionDir = 1
         end
-        self.targValues       = {
-            textColour        = {0,0,0},
-            outlineColour     = {1,1,1},
-            fillColour        = {1,1,1},
-            scale             = 10
+        self.targValues        = {
+            fillColour         = {1,1,1},
+            outlineColour      = {1,1,1},
+            textColour         = {0,0,0},
+            scale              = 4
         }
     end)
 
     presetSwitch:addCase("text editing",function()
-        self:setFillColour({0.1,0.1,0.1})
+        self.defValues.fillColour    = {0.1,0.1,0.1}
+        self.defValues.outlineColour = {1,1,1}
+        self.defValues.textColour    = {0,0,0}
+
+        self.fillColour    = {0.1,0.1,0.1}
+        self.outlineColour = {1,1,1}
+        self.textColour    = {0,0,0}
+
+        self.defValues.scale         = 0
         self.onHover = function()
-            self.fillColour = {0.2,0.2,0.2}
-            self.scale = 2
+            self.transitionDir = 1
         end
+        self.targValues        = {
+            fillColour         = {0.2,0.2,0.2},
+            outlineColour      = {1,1,1},
+            textColour         = {0,0,0},
+            scale              = 4
+        }
     end)
 
     presetSwitch:addCase("confirm",function()
-        self:setFillColour(   {0,0,0,0})
-        self:setOutlineColour({0,1,0})
-        self:setTextColour(   {0,1,0})
+        self.defValues.fillColour    = {0,0,0}
+        self.defValues.outlineColour = {0,1,0}
+        self.defValues.textColour    = {0,1,0}
+
+        self.fillColour    = {0,0,0}
+        self.outlineColour = {0,1,0}
+        self.textColour    = {0,1,0}
+
+        self.defValues.scale         = 0
         self.onHover = function()
-            self.fillColour = {0,1,0}
-            self.textColour = {0,0,0}
-            self.scale = 2
+            self.transitionDir = 1
         end
+        self.targValues        = {
+            fillColour         = {0,1,0},
+            outlineColour      = {0,0,0},
+            textColour         = {0,0,0},
+            scale              = 2
+        }
     end)
 
     presetSwitch:addCase("cancel",function()
-        self:setFillColour(   {0,0,0,0})
-        self:setOutlineColour({1,0,0})
-        self:setTextColour(   {1,0,0})
+        self.defValues.fillColour    = {0,0,0}
+        self.defValues.outlineColour = {1,0,0}
+        self.defValues.textColour    = {1,0,0}
+
+        self.fillColour    = {0,0,0}
+        self.outlineColour = {1,0,0}
+        self.textColour    = {1,0,0}
+
+        self.defValues.scale         = 0
         self.onHover = function()
-            self.fillColour = {1,0,0}
-            self.textColour = {0,0,0}
-            self.scale = 2
+            self.transitionDir = 1
         end
+        self.targValues        = {
+            fillColour         = {1,0,0},
+            outlineColour      = {0,0,0},
+            textColour         = {0,0,0},
+            scale              = 2
+        }
     end)
 end
 
