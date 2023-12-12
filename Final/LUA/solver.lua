@@ -1,6 +1,8 @@
 require("util")
 require("grid")
 
+local tick = 0
+
 local checks = 0
 
 local grid = Grid:new(4098,32)
@@ -133,8 +135,8 @@ function Ball:draw(offsetX,offsetY)
     if self.playerID and World.showNames then
         name = LobbyPlayer:getName(self.playerID)
     end
-    if self.health > 0 and World.showHealth then
-        health = (self.health.."/100")
+    if self.health > 0 and World.showHealth and not self.multi then
+        health = math.floor(self.health).."/100"
     end
     drawBall:draw(
         self.x + offsetX,
@@ -337,6 +339,10 @@ function World:setFocus(ball)
     camera.focus = ball
 end
 
+--Used for i-frames to prevent many collisions with the same ball
+local damageCooldowns = {}
+local iTime           = 5
+
 --Clears all balls
 function World:clear()
     self.balls         = {}
@@ -345,6 +351,8 @@ function World:clear()
     self.ballIDDict    = {}
     self.ropes         = {}
     camera.focus       = nil
+    damageCooldowns    = {}
+    tick = 0
 end
 
 --Assigns an ID to a ball, or calculates a new ID using the given salt
@@ -430,12 +438,22 @@ function World:assign(playerID,ballID)
     end
 end
 
-local collisionCache = {}
+local collisionCache  = {}
 
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs)
     local bounce = 1
-    local function calculateDamage(ball1,ball2)
+    local function calculateDamage(ball1,ball2,hashSum)
+
+        --The tick of the last collision of ball1 and ball2
+        local lastTick = damageCooldowns[hashSum]
+        --If the balls have collided before, within 5 ticks, deal no damage
+        if lastTick and tick - lastTick <= iTime then
+            damageCooldowns[hashSum] = tick
+            return ball1.health,ball2.health
+        end
+        --Update the damageCooldowns
+        damageCooldowns[hashSum] = tick
 
         local dvx = ball1.vx - ball2.vx
         local dvy = ball1.vy - ball2.vy
@@ -446,6 +464,7 @@ function World:expensiveCollisions(ballIDs)
 
         local dSpeed = Util:findDistance(dvx,dvy)
         if dSpeed < 3 then return ball1.health,ball2.health end
+
 
         local speed1 = Util:findDistance(ball1.vx,ball1.vy)
         local speed2 = Util:findDistance(ball2.vx,ball2.vy)
@@ -466,7 +485,7 @@ function World:expensiveCollisions(ballIDs)
         end
     end
 
-    local function collision(ID1,ID2)
+    local function collision(ID1,ID2,hashSum)
         checks = checks + 1
         local ball1 = self:getByID(ID1)
         local ball2 = self:getByID(ID2)
@@ -480,7 +499,7 @@ function World:expensiveCollisions(ballIDs)
         if distance < diameter then
 
             --Calulate the damage caused
-            ball1.health, ball2.health = calculateDamage(ball1,ball2)
+            ball1.health, ball2.health = calculateDamage(ball1,ball2,hashSum)
 
             local n = collisionAxis
             n.x = n.x / distance
@@ -503,7 +522,7 @@ function World:expensiveCollisions(ballIDs)
                 sum = sum + tonumber(ID1) * 17
                 sum = sum + tonumber(ID2) * 17
                 if not collisionCache[sum] then
-                    collision(ID1,ID2)
+                    collision(ID1,ID2,sum)
                     collisionCache[sum] = true
                 end
             end
@@ -585,6 +604,7 @@ function World:update(dt,isClient)
         shape:update()
     end
     self:optimisedCollisions()
+    tick = tick + 1
 end
 
 --Draw every ball
