@@ -10,18 +10,18 @@ function Button:new(text,font,x1,y1,x2,y2,command,params)
     setmetatable(object,Button)
     object.defValues      = {
         textColour        = {1,1,1},
-        outlineColour     = {1,1,1},
-        fillColour        = {1,1,1},
+        outlineColour     = {0,0,0},
+        fillColour        = {0,0,0},
         text              = text,
         font              = font,
         x1                = x1,
         y1                = y1,
         x2                = x2,
         y2                = y2,
-        scale             = 4
+        scale             = 0
     }
     object.textColour     = {1,1,1}
-    object.outlineColour  = {1,1,1}
+    object.outlineColour  = {0,0,0}
     object.fillColour     = {0,0,0}
     object.scale          = 0
     object.targValues     = {
@@ -44,7 +44,7 @@ function Button:new(text,font,x1,y1,x2,y2,command,params)
     object.mouseState     = false
 
     --Total time to transition from not hovered to hovered
-    object.transitionTime = 5
+    object.transitionTime = 20
     --Current frame of the transition
     object.transitionTick = 0
     --Direction, pos, zero or neg
@@ -74,19 +74,22 @@ function Button:updateStats()
     local dScale   = (self.targValues.scale - self.defValues.scale) / self.transitionTime
     --Delta values for transitioning values (change per tick)
     for i = 1,3 do
-        dTColour[i] = math.abs(self.targValues.textColour[i]    - self.defValues.textColour[i])    / self.transitionTime
-        dOColour[i] = math.abs(self.targValues.outlineColour[i] - self.defValues.outlineColour[i]) / self.transitionTime
-        dFColour[i] = math.abs(self.targValues.fillColour[i]    - self.defValues.fillColour[i])    / self.transitionTime
-        
-        self.textColour[i]     = dTColour[i] * self.transitionTick
-        self.outlineColour[i]  = dOColour[i] * self.transitionTick
-        self.fillColour[i]     = dFColour[i] * self.transitionTick
-        print(
-            self.fillColour[i]
-        )
+        print("targ fill:" ..self.targValues.fillColour[i])
+        print("def fill:"..self.defValues.fillColour[i])
+        dTColour[i] = (self.targValues.textColour[i]    - self.defValues.textColour[i])    / self.transitionTime
+        dOColour[i] = (self.targValues.outlineColour[i] - self.defValues.outlineColour[i]) / self.transitionTime
+        dFColour[i] = (self.targValues.fillColour[i]    - self.defValues.fillColour[i])    / self.transitionTime
+         
+
+        self.textColour[i]     = self.defValues.textColour[i] + (dTColour[i] * self.transitionTick)
+        self.outlineColour[i]  = self.defValues.outlineColour[i] + (dOColour[i] * self.transitionTick)
+        self.fillColour[i]     = self.defValues.fillColour[i] + (dFColour[i] * self.transitionTick)
+
+        print("i: "..self.outlineColour[i])
+        print("i: "..self.fillColour[i])
     end
 
-    self.scale          = dScale   * self.transitionTick
+    self.scale          = self.defValues.scale + dScale   * self.transitionTick
 
     self.transitionTick = self.transitionTick + self.transitionDir
 end
@@ -95,7 +98,9 @@ local presetSwitch = Switch:new()
 --Defines all presets
 function Button:loadPresets()
     presetSwitch:addCase("basic",function()
-        self:setFillColour({0,0,0,0})
+        self.defValues.fillColour = {0,0,0}
+        self.defValues.outlineColour = {0,0,0}
+        self.defValues.textColour = {1,1,1}
         self.onHover = function()
             self.transitionDir = 1
         end
@@ -103,9 +108,10 @@ function Button:loadPresets()
             textColour        = {0,0,0},
             outlineColour     = {1,1,1},
             fillColour        = {1,1,1},
-            scale             = 4
+            scale             = 10
         }
     end)
+
     presetSwitch:addCase("text editing",function()
         self:setFillColour({0.1,0.1,0.1})
         self.onHover = function()
@@ -113,6 +119,7 @@ function Button:loadPresets()
             self.scale = 2
         end
     end)
+
     presetSwitch:addCase("confirm",function()
         self:setFillColour(   {0,0,0,0})
         self:setOutlineColour({0,1,0})
@@ -123,6 +130,7 @@ function Button:loadPresets()
             self.scale = 2
         end
     end)
+
     presetSwitch:addCase("cancel",function()
         self:setFillColour(   {0,0,0,0})
         self:setOutlineColour({1,0,0})
@@ -153,21 +161,6 @@ function Button:restoreDefaults()
     self.x2            = self.defValues.x2
     self.y2            = self.defValues.y2
     self.scale         = self.defValues.scale
-end
-
-function Button:setOutlineColour(colour)
-    self.outlineColour = colour
-    self.defValues.outlineColour = colour
-end
-
-function Button:setFillColour(colour)
-    self.fillColour = colour
-    self.defValues.fillColour = colour
-end
-
-function Button:setTextColour(colour)
-    self.textColour = colour
-    self.defValues.textColour = colour
 end
 
 function Button:setCoords(x1,y1,x2,y2)
