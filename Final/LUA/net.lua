@@ -2,7 +2,7 @@ Socket = require("socket")
 
 --500 = main port, 1000+ = lobby ports
 local mainIP = "192.168.1.110"
-mainIP = "10.111.173.61"
+mainIP = "10.111.173.84"
 local mainPort = 500
 
 --Server class, handles connections from clients and sending / receiving data

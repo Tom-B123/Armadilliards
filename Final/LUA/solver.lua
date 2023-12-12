@@ -267,7 +267,7 @@ World = {
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
-    debugChecks   = false,
+    debugChecks   = true,
     debugGrid     = false,
     debugShapes   = false
 }
@@ -417,6 +417,8 @@ function World:assign(playerID,ballID)
     end
 end
 
+local collisionCache = {}
+
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs)
     local bounce = 1
@@ -449,17 +451,15 @@ function World:expensiveCollisions(ballIDs)
             ball1.y = ball1.y + bounce * offset1 * delta * n.y
         end
     end
-    
-    local existingCheck = {}
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
                 local sum = 0
                 sum = sum + tonumber(ID1) * 17
                 sum = sum + tonumber(ID2) * 17
-                if not existingCheck[sum] then
+                if not collisionCache[sum] then
                     collision(ID1,ID2)
-                    existingCheck[sum] = true
+                    collisionCache[sum] = true
                 end
             end
         end
@@ -528,6 +528,7 @@ function World:update(dt,isClient)
         return
     end
     checks = 0
+    collisionCache = {}
     self:populate()
     self:updateRopes()
     
