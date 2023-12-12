@@ -39,7 +39,14 @@ function Ball:new(x,y)
     object.pitch    = 0
     object.colour   = colours[1]
     object.multi    = false
+    object.health   = 100
+    object.mass     = 10
     return object
+end
+
+function Ball:getWeight()
+    if self.health * self.mass < self.mass * 10 then return self.mass * 10 end
+    return self.health * self.mass
 end
 
 --Move a ball
@@ -121,16 +128,20 @@ function Ball:draw(offsetX,offsetY)
         end
         return
     end
-    local name = nil
-    if self.playerID then
+    local name   = nil
+    local health = nil
+    if self.playerID and World.showNames then
         name = LobbyPlayer:getName(self.playerID)
+    end
+    if self.health > 0 and World.showHealth then
+        health = (self.health.."/100")
     end
     drawBall:draw(
         self.x + offsetX,
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        name
+        name,health
     )
 end
 
@@ -267,6 +278,8 @@ World = {
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
+    showNames     = true,
+    showHealth    = true,
     debugChecks   = true,
     debugGrid     = false,
     debugShapes   = false
@@ -422,6 +435,37 @@ local collisionCache = {}
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs)
     local bounce = 1
+    local function calculateDamage(ball1,ball2)
+
+        local dvx = ball1.vx - ball2.vx
+        local dvy = ball1.vy - ball2.vy
+
+        --Using manhattan distance to check the speed isn't too low, without needing a sqrt
+        local manhattan = math.abs(dvx) + math.abs(dvy)
+        if manhattan < 3 then return ball1.health,ball2.health end
+
+        local dSpeed = Util:findDistance(dvx,dvy)
+        if dSpeed < 3 then return ball1.health,ball2.health end
+
+        local speed1 = Util:findDistance(ball1.vx,ball1.vy)
+        local speed2 = Util:findDistance(ball2.vx,ball2.vy)
+
+        --The faster ball (the aggressor) will take less damage and inflict more damage
+        local aggeressionMult = 1.5
+
+        --If the speeds are similar, there is no aggressor so both balls lose equal health
+        if math.abs(speed1 - speed2) < 0.3 then
+            return ball1.health - (dSpeed), ball2.health - (dSpeed)
+
+        --If the speeds are unequal, the faster ball receives and deals more damage
+        elseif speed1 > speed2 then
+            return ball1.health - (dSpeed / aggeressionMult), ball2.health - (dSpeed * aggeressionMult)
+
+        elseif speed2 > speed1 then
+            return ball1.health - (dSpeed * aggeressionMult), ball2.health - (dSpeed / aggeressionMult)
+        end
+    end
+
     local function collision(ID1,ID2)
         checks = checks + 1
         local ball1 = self:getByID(ID1)
@@ -434,8 +478,9 @@ function World:expensiveCollisions(ballIDs)
         local diameter = ball1.radius + ball2.radius
         --If they collide:
         if distance < diameter then
-            local speed1 = Util:findDistance(ball1.vx,ball1.vy)
-            local speed2 = Util:findDistance(ball2.vx,ball2.vy)
+
+            --Calulate the damage caused
+            ball1.health, ball2.health = calculateDamage(ball1,ball2)
 
             local n = collisionAxis
             n.x = n.x / distance

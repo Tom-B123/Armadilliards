@@ -12,7 +12,7 @@ for y = 0,3 do
     end
 end
 
-function drawBall:draw(x,y,yaw,pitch,colour,scale,name)
+function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
 
@@ -26,8 +26,11 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name)
         love.graphics.setColor(colour)
         love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
         love.graphics.setColor(1,1,1)
-        if name then 
+        if name then
             love.graphics.print(name,x - (4.5 * #name),y-32)
+        end
+        if health then
+            love.graphics.print(health,x - (4.5 * #health),y+10)
         end
         love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
     end
