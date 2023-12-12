@@ -6,39 +6,89 @@ Button.__index = Button
 
 --Create a new button object
 function Button:new(text,font,x1,y1,x2,y2,command,params)
-    local object      = {}
+    local object          = {}
     setmetatable(object,Button)
-    object.defValues  = {
-        textColour    = {1,1,1},
-        outlineColour = {1,1,1},
-        fillColour    = {1,1,1},
-        text          = text,
-        font          = font,
-        x1            = x1,
-        y1            = y1,
-        x2            = x2,
-        y2            = y2,
-        scale         = 0
+    object.defValues      = {
+        textColour        = {1,1,1},
+        outlineColour     = {1,1,1},
+        fillColour        = {1,1,1},
+        text              = text,
+        font              = font,
+        x1                = x1,
+        y1                = y1,
+        x2                = x2,
+        y2                = y2,
+        scale             = 4
     }
-    object.textColour    = {1,1,1}
-    object.outlineColour = {1,1,1}
-    object.fillColour    = {1,1,1}
-    object.scale      = 0
-    object.text       = text
-    object.font       = font
-    object.x1         = x1
-    object.y1         = y1
-    object.x2         = x2
-    object.y2         = y2
-    object.command    = command
-    object.onHover    = nil
-    object.hoverTime  = 0
-    object.onClick    = nil
-    object.params     = params
-    object.mouseState = false
+    object.textColour     = {1,1,1}
+    object.outlineColour  = {1,1,1}
+    object.fillColour     = {0,0,0}
+    object.scale          = 0
+    object.targValues     = {
+        textColour        = {0,0,0},
+        outlineColour     = {0,0,0},
+        fillColour        = {0,0,0},
+        scale             = 0
+    }
+    object.text           = text
+    object.font           = font
+    object.x1             = x1
+    object.y1             = y1
+    object.x2             = x2
+    object.y2             = y2
+    object.command        = command
+    object.onHover        = nil
+    object.hoverTime      = 0
+    object.onClick        = nil
+    object.params         = params
+    object.mouseState     = false
+
+    --Total time to transition from not hovered to hovered
+    object.transitionTime = 5
+    --Current frame of the transition
+    object.transitionTick = 0
+    --Direction, pos, zero or neg
+    object.transitionDir  = 0
+
     object:loadPresets()
     object:preset("basic")
     return object
+end
+
+function Button:updateStats()
+    if self.transitionDir == 0 then return end
+    if self.transitionDir < 0 and self.transitionTick < 0 then
+        self.transitionDir  = 0
+        self.transitionTick = 0
+        return
+    end
+    if self.transitionDir > 0 and self.transitionTick > self.transitionTime then
+        self.transitionDir  = 0
+        self.transitionTick = self.transitionTime
+        return
+    end
+
+    local dTColour = {}
+    local dOColour = {}
+    local dFColour = {}
+    local dScale   = (self.targValues.scale - self.defValues.scale) / self.transitionTime
+    --Delta values for transitioning values (change per tick)
+    for i = 1,3 do
+        dTColour[i] = math.abs(self.targValues.textColour[i]    - self.defValues.textColour[i])    / self.transitionTime
+        dOColour[i] = math.abs(self.targValues.outlineColour[i] - self.defValues.outlineColour[i]) / self.transitionTime
+        dFColour[i] = math.abs(self.targValues.fillColour[i]    - self.defValues.fillColour[i])    / self.transitionTime
+        
+        self.textColour[i]     = dTColour[i] * self.transitionTick
+        self.outlineColour[i]  = dOColour[i] * self.transitionTick
+        self.fillColour[i]     = dFColour[i] * self.transitionTick
+        print(
+            self.fillColour[i]
+        )
+    end
+
+    self.scale          = dScale   * self.transitionTick
+
+    self.transitionTick = self.transitionTick + self.transitionDir
 end
 
 local presetSwitch = Switch:new()
@@ -47,10 +97,14 @@ function Button:loadPresets()
     presetSwitch:addCase("basic",function()
         self:setFillColour({0,0,0,0})
         self.onHover = function()
-            self.fillColour = {1,1,1}
-            self.textColour = {0,0,0}
-            self.scale = 4
+            self.transitionDir = 1
         end
+        self.targValues       = {
+            textColour        = {0,0,0},
+            outlineColour     = {1,1,1},
+            fillColour        = {1,1,1},
+            scale             = 4
+        }
     end)
     presetSwitch:addCase("text editing",function()
         self:setFillColour({0.1,0.1,0.1})
@@ -148,11 +202,12 @@ end
 
 --Checks for hover and click events
 function Button:update()
+    self:updateStats()
     if self:isHovered() and self.onHover then
         self.onHover()
         self.hoverTime = self.hoverTime + 1
     elseif not self:isHovered() and self.hoverTime > 0 then
-        self:restoreDefaults()
+        self.transitionDir = -1
         self.hoverTime = 0
     end
     if self:isHovered() and self:getClick() then
