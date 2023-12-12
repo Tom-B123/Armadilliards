@@ -486,34 +486,40 @@ function World:expensiveCollisions(ballIDs)
     end
 
     local function collision(ID1,ID2,hashSum)
-        checks = checks + 1
         local ball1 = self:getByID(ID1)
         local ball2 = self:getByID(ID2)
         
+        local manhattan = math.abs(ball1.x-ball2.x) + math.abs(ball1.y-ball2.y)
+
+        local diameter = ball1.radius + ball2.radius
+
+        if manhattan > 2*diameter then return end
+
+        checks = checks + 1
+
         local collisionAxis = {x=0,y=0}
         collisionAxis.x = ball1.x - ball2.x
         collisionAxis.y = ball1.y - ball2.y
+
         local distance = Util:findDistance(collisionAxis.x,collisionAxis.y)
-        local diameter = ball1.radius + ball2.radius
         --If they collide:
-        if distance < diameter then
+        if distance > diameter then return end
 
-            --Calulate the damage caused
-            ball1.health, ball2.health = calculateDamage(ball1,ball2,hashSum)
+        --Calulate the damage caused
+        ball1.health, ball2.health = calculateDamage(ball1,ball2,hashSum)
 
-            local n = collisionAxis
-            n.x = n.x / distance
-            n.y = n.y / distance
-            local delta = diameter - distance
-            local offset1 = ball2.radius / ball1.radius
-            local offset2 = ball1.radius / ball2.radius
-            if offset1 > 2 then offset1 = 2 end
-            if offset2 > 2 then offset2 = 2 end
-            ball2.x = ball2.x - bounce * offset2 * delta * n.x
-            ball2.y = ball2.y - bounce * offset2 * delta * n.y
-            ball1.x = ball1.x + bounce * offset1 * delta * n.x
-            ball1.y = ball1.y + bounce * offset1 * delta * n.y
-        end
+        local n = collisionAxis
+        n.x = n.x / distance
+        n.y = n.y / distance
+        local delta = diameter - distance
+        local offset1 = ball2.radius / ball1.radius
+        local offset2 = ball1.radius / ball2.radius
+        if offset1 > 2 then offset1 = 2 end
+        if offset2 > 2 then offset2 = 2 end
+        ball2.x = ball2.x - bounce * offset2 * delta * n.x
+        ball2.y = ball2.y - bounce * offset2 * delta * n.y
+        ball1.x = ball1.x + bounce * offset1 * delta * n.x
+        ball1.y = ball1.y + bounce * offset1 * delta * n.y
     end
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
