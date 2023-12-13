@@ -1277,8 +1277,8 @@ netSwitch:addCase("damg",function(args)
     local ball      = World:getByID(ballID)
     if ball then ball.health = health end
     if force and centreX and centreY then
-        World:newParticle(centreX,centreY,math.floor(force)*1.5 / 2,force/2)
-        World:newParticle(centreX,centreY,math.floor(force) / 2    ,1)
+        World:newParticle("spark",centreX,centreY,math.floor(force)*1.5 / 2,force/2)
+        World:newParticle("spark",centreX,centreY,math.floor(force) / 2    ,1)
     end
 end)
 

@@ -563,8 +563,20 @@ function World:expensiveCollisions(ballIDs)
 
         local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
 
-        self:newParticle(centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
-        self:newParticle(centre[1],centre[2],math.floor(dSpeed)    ,1)
+        if nHealth1 <= 0 then
+            for i = 1,15 do
+                self:newParticle("rainbow",ball1.x,ball1.y,5,i)
+            end
+        end
+        if nHealth2 <= 0 then
+            for i = 1,15 do
+                self:newParticle("rainbow",ball2.x,ball2.y,5,i)
+            end
+        end
+        if nHealth1 > 0 and nHealth2 > 0 then
+            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
+            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
+        end
 
         table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
         table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
@@ -625,9 +637,12 @@ function World:expensiveCollisions(ballIDs)
     end
 end
 
-function World:newParticle(x,y,count,speed)
+function World:newParticle(style,x,y,count,speed)
     for i = 1,count do
-        local nParticle = Particle:new(x,y,{1,0.5,0},5,math.random(0,628)/100,100 * speed)
+        local colour = {1,1,1}
+        if style == "spark" then colour = {1,0.5,0} end
+        if style == "rainbow" then colour = {math.random(2,10)/10,math.random(2,10)/20,math.random(2,10)/10} end
+        local nParticle = Particle:new(x,y,colour,5,math.random(0,628)/100,100 * speed)
         table.insert(self.particles,nParticle)
     end
 end
