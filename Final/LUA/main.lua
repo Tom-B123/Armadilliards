@@ -369,7 +369,8 @@ stateSwitch:addCase("hosting game",function(dt)
         server:sendUpdateMessage()
     end
     if tick % 1 == 0 then
-        for ball in World:getUpgm() do
+        local gameState = World:getUpgm()
+        for i, ball in ipairs(gameState) do
             server:send("all",ball)
         end
     end
@@ -680,7 +681,8 @@ newStateSwitch:addCase("hosting game",function()
 
     World:assignAll(LobbyPlayer:getIDs())
 
-    for ball in World:getUpgm() do
+    local gameState = World:getUpgm()
+    for i, ball in ipairs(gameState) do
         server:send("all",ball)
     end
     server:send("all",World:getAsgn())

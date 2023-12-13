@@ -719,26 +719,21 @@ end
 
 --Create a string for updating player's positions
 function World:getUpgm()
-    local ind = 0
-    local obj = "ball"
-    return function()
-        if self.balls[ind+1] and obj == "ball" then
-            local ball = self.balls[ind+1]
-            ind = ind + 1
-            if not ball.multi then
-                return "upgm:ball_"..ball.ID.."_"..Util:coordToHex(ball.x,ball.y).."_\n"
-            end
+    local out = {}
+    for i, ball in ipairs(self.balls) do
+        if not ball.multi then 
+            table.insert(out,"upgm:ball_"..ball.ID.."_"..Util:coordToHex(ball.x,ball.y).."_\n")
         end
     end
-    -- for i,shape in ipairs(self.shapes) do
-    --     local verts = shape:getVerts()
-    --     local msg = "upgm:poly"
-    --     for j = 1, #verts/2 do
-    --         local x = verts[j*2-1]
-    --         local y = verts[j*2]
-    --         msg = msg.."_"..Util:coordToHex(x,y)
-    --     end
-    --     table.insert(out,msg)
-    -- end
-    -- return out
+    for i,shape in ipairs(self.shapes) do
+        local verts = shape:getVerts()
+        local msg = "upgm:poly"
+        for j = 1, #verts/2 do
+            local x = verts[j*2-1]
+            local y = verts[j*2]
+            msg = msg.."_"..Util:coordToHex(x,y)
+        end
+        table.insert(out,msg)
+    end
+    return out
 end
