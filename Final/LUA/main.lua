@@ -361,8 +361,10 @@ stateSwitch:addCase("hosting game",function(dt)
 
     local balls = World.balls
     if order == 1 and not editingText then
-        local nx,ny = Util:processGameInputs()
+        local nx,ny,a,b = Util:processGameInputs()
         applyMove(balls[1],nx,ny)
+        if a == -1 then print("ability 1") end
+        if b == -1 then print("ability 2") end
     end
 
     if tick % refreshRate == 0 then

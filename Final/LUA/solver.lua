@@ -178,6 +178,15 @@ function Ball:tryRespawn()
     end
 end
 
+function Ball:dash(angle,speed)
+    local vx = speed * math.cos(angle)
+    local vy = speed * math.sin(angle)
+    self.vx  = vx
+    self.lvx = vx
+    self.vy  = vy
+    self.lvy = vy
+end
+
 Shape = {}
 
 Shape.__index = Shape
@@ -361,7 +370,9 @@ World = {
 }
 
 function World:drawRespawnTime()
-    if timeToRespawn > 0 then love.graphics.print("respawning in "..(timeToRespawn).." seconds",0,400) end
+    timeToRespawn = -1
+    if World.focus.death then timeToRespawn = math.floor((World.respawnTime - tick + World.focus.death) / 60) + 1 end
+    if timeToRespawn > -1 then love.graphics.print("respawning in "..(timeToRespawn).." seconds",0,400) end
 end
 
 function World:updateFPS()

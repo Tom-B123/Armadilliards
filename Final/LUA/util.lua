@@ -103,14 +103,29 @@ function Util:HexToCoord(hexX,hexY)
     return numX,numY
 end
 
+local a = 0
+local b = 0
+
 function Util:processGameInputs()
     local x = 0
     local y = 0
+    
+    --a and b are set to -1 for 1 tick
+    if a < 0 then a = 0 end
+    if b < 0 then b = 0 end
+
     if love.keyboard.isDown("w") then y = y - 1 end
     if love.keyboard.isDown("a") then x = x - 1 end
     if love.keyboard.isDown("s") then y = y + 1 end
     if love.keyboard.isDown("d") then x = x + 1 end
-    return x,y
+
+    --a and b incriment while they are held, then set to -1 for 1 tick.
+    if love.mouse.isDown(1)      then a = a + 1
+    else a = -1 end
+    if love.mouse.isDown(2)      then b = b + 1
+    else b = -1 end
+    
+    return x,y,a,b
 end
 
 function Util:findDistance(x,y)
