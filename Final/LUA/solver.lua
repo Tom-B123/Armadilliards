@@ -669,11 +669,17 @@ function World:update(dt,isClient)
     end
     self:optimisedCollisions()
 
-    for message in ipairs(damageMessages) do
-        print(message)
-    end
-
     tick = tick + 1
+end
+
+function World:getDamg()
+    local ind = 0
+    return function()
+        if damageMessages[ind+1] then
+            ind = ind + 1
+            return damageMessages[ind]
+        end
+    end
 end
 
 --Draw every ball
@@ -713,21 +719,26 @@ end
 
 --Create a string for updating player's positions
 function World:getUpgm()
-    local out = {}
-    for i, ball in ipairs(self.balls) do
-        if not ball.multi then 
-            table.insert(out,"upgm:ball_"..ball.ID.."_"..Util:coordToHex(ball.x,ball.y).."_\n")
+    local ind = 0
+    local obj = "ball"
+    return function()
+        if self.balls[ind+1] and obj == "ball" then
+            local ball = self.balls[ind+1]
+            ind = ind + 1
+            if not ball.multi then
+                return "upgm:ball_"..ball.ID.."_"..Util:coordToHex(ball.x,ball.y).."_\n"
+            end
         end
     end
-    for i,shape in ipairs(self.shapes) do
-        local verts = shape:getVerts()
-        local msg = "upgm:poly"
-        for j = 1, #verts/2 do
-            local x = verts[j*2-1]
-            local y = verts[j*2]
-            msg = msg.."_"..Util:coordToHex(x,y)
-        end
-        table.insert(out,msg)
-    end
-    return out
+    -- for i,shape in ipairs(self.shapes) do
+    --     local verts = shape:getVerts()
+    --     local msg = "upgm:poly"
+    --     for j = 1, #verts/2 do
+    --         local x = verts[j*2-1]
+    --         local y = verts[j*2]
+    --         msg = msg.."_"..Util:coordToHex(x,y)
+    --     end
+    --     table.insert(out,msg)
+    -- end
+    -- return out
 end

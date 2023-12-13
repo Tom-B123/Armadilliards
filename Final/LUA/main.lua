@@ -355,6 +355,10 @@ stateSwitch:addCase("hosting game",function(dt)
 
     World:update(dt,false)
 
+    for msg in World:getDamg() do
+        print(msg)
+    end
+
     local balls = World.balls
     if order == 1 and not editingText then
         local nx,ny = Util:processGameInputs()
@@ -365,8 +369,7 @@ stateSwitch:addCase("hosting game",function(dt)
         server:sendUpdateMessage()
     end
     if tick % 1 == 0 then
-        local gameState = World:getUpgm()
-        for i, ball in ipairs(gameState) do
+        for ball in World:getUpgm() do
             server:send("all",ball)
         end
     end
@@ -677,8 +680,7 @@ newStateSwitch:addCase("hosting game",function()
 
     World:assignAll(LobbyPlayer:getIDs())
 
-    local gameState = World:getUpgm()
-    for i, ball in ipairs(gameState) do
+    for ball in World:getUpgm() do
         server:send("all",ball)
     end
     server:send("all",World:getAsgn())
