@@ -146,3 +146,12 @@ function Util:toBool(string)
     if type(string) == "boolean" then return string end
     return toBoolDict[string]
 end
+
+function Util:hashIDs(IDs)
+    local sum = 0
+    for i,ID in ipairs(IDs) do
+        local numID = tonumber(ID)
+        sum = sum + (numID * numID)
+    end
+    return sum
+end

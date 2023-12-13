@@ -3,10 +3,11 @@ require("grid")
 local drawBall  = require("drawBall")
 require("lists")
 
-local tick        = 0
-local lastFrame   = Socket.gettime() * 10000
-local checks      = 0
-local fpsList     = List:new()
+local tick          = 0
+local lastFrame     = Socket.gettime() * 10000
+local checks        = 0
+local fpsList       = List:new()
+local timeToRespawn = 0
 
 local grid = Grid:new(4098,32)
 
@@ -359,6 +360,10 @@ World = {
     maxHealth     = 20
 }
 
+function World:drawRespawnTime()
+    if timeToRespawn > 0 then love.graphics.print("respawning in "..(timeToRespawn).." seconds",0,400) end
+end
+
 function World:updateFPS()
     local resolution = 60
     local curFrame = Socket.gettime()
@@ -666,9 +671,7 @@ function World:expensiveCollisions(ballIDs)
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
-                local sum = 0
-                sum = sum + tonumber(ID1) * 17
-                sum = sum + tonumber(ID2) * 17
+                local sum = Util:hashIDs({ID1,ID2})
                 if not collisionCache[sum] then
                     collision(ID1,ID2,sum)
                     collisionCache[sum] = true
@@ -734,10 +737,8 @@ function World:optimisedCollisions()
             end
         end
         if #neighbors > 1 then
-            local sum = 0
-            for j,ID in ipairs(neighbors) do
-                sum = sum + tonumber(ID) * 17
-            end
+            local sum = Util:hashIDs(neighbors)
+
             if not existingNeighbours[sum] then
                 self:expensiveCollisions(neighbors)
                 existingNeighbours[sum] = true
@@ -822,6 +823,8 @@ function World:draw()
     for i,shape in ipairs(self.shapes) do
         shape:draw(offsetX,offsetY)
     end
+
+    self:drawRespawnTime()
 
     if self.debugGrid then grid:draw(offsetX,offsetY) end
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
