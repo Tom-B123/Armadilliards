@@ -359,11 +359,16 @@ stateSwitch:addCase("hosting game",function(dt)
         server:send("all",damage)
     end
 
-    local balls = World.balls
     if order == 1 and not editingText then
+        local ball = World.focus
         local nx,ny,a,b = Util:processGameInputs()
-        applyMove(balls[1],nx,ny)
-        if a == -1 then print("ability 1") end
+        applyMove(ball,nx,ny)
+        if a == -1 then
+            local mx,my = love.mouse.getPosition()
+            local sx,sy = love.graphics.getDimensions()
+            local angle = Util:yawAngle(mx-(sx/2),my-(sy/2))
+            ball:dash(angle,10)
+        end
         if b == -1 then print("ability 2") end
     end
 
