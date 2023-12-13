@@ -611,8 +611,8 @@ function World:expensiveCollisions(ballIDs)
 
         local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
 
-        ball1.health = nHealth1
-        ball2.health = nHealth2
+        if not ball1.multi then ball1.health = nHealth1 end
+        if not ball2.multi then ball2.health = nHealth2 end
 
         self:updateDeath({ball1,ball2})
 
