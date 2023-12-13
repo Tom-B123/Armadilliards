@@ -355,8 +355,8 @@ stateSwitch:addCase("hosting game",function(dt)
 
     World:update(dt,false)
 
-    for msg in World:getDamg() do
-        print(msg)
+    for damage in World:getDamg() do
+        server:send("all",damage)
     end
 
     local balls = World.balls
@@ -368,6 +368,7 @@ stateSwitch:addCase("hosting game",function(dt)
     if tick % refreshRate == 0 then
         server:sendUpdateMessage()
     end
+
     if tick % 1 == 0 then
         local gameState = World:getUpgm()
         for i, ball in ipairs(gameState) do
@@ -1263,6 +1264,15 @@ netSwitch:addCase("upgm",function(args)
         end
         table.insert(polyCoords,coords)
     end
+end)
+
+netSwitch:addCase("damg",function(args)
+    if not player then return end
+    local splitData = Util:split(args,"_")
+    local ballID    = splitData[1]
+    local health    = tonumber(splitData[2])
+    local ball      = World:getByID(ballID)
+    if ball then ball.health = health end
 end)
 
 -- End game and display the end screen
