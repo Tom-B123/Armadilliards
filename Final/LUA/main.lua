@@ -1271,6 +1271,7 @@ netSwitch:addCase("damg",function(args)
     local splitData = Util:split(args,"_")
     local ballID    = splitData[1]
     local health    = tonumber(splitData[2])
+    local force     = tonumber(splitData[3])
     local ball      = World:getByID(ballID)
     if ball then ball.health = health end
 end)

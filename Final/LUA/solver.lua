@@ -512,22 +512,25 @@ function World:expensiveCollisions(ballIDs)
         local speed2 = Util:findDistance(ball2.vx,ball2.vy)
 
         --The faster ball (the aggressor) will take less damage and inflict more damage
+        local dampening       = 2
         local aggeressionMult = 1.5
         local nHealth1,nHealth2
         --If the speeds are similar, there is no aggressor so both balls lose equal health
         if math.abs(speed1 - speed2) < 0.3 then
-            nHealth1,nHealth2 = ball1.health - (dSpeed), ball2.health - (dSpeed)
+            nHealth1 = ball1.health - (dSpeed * dSpeed / 10)
+            nHealth2 = ball2.health - (dSpeed * dSpeed / 10)
 
         --If the speeds are unequal, the faster ball receives and deals more damage
         elseif speed1 > speed2 then
-            nHealth1,nHealth2 = ball1.health - (dSpeed / aggeressionMult), ball2.health - (dSpeed * aggeressionMult)
-
+            nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)
+            nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult)
         elseif speed2 > speed1 then
-            nHealth1,nHealth2 = ball1.health - (dSpeed * aggeressionMult), ball2.health - (dSpeed / aggeressionMult)
+            nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult)
+            nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
         end
 
-        table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1)
-        table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2)
+        table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed)
+        table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed)
 
         return nHealth1,nHealth2
 
