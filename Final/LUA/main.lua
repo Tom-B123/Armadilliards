@@ -1272,8 +1272,14 @@ netSwitch:addCase("damg",function(args)
     local ballID    = splitData[1]
     local health    = tonumber(splitData[2])
     local force     = tonumber(splitData[3])
+    local centreX   = tonumber(splitData[4])
+    local centreY   = tonumber(splitData[5])
     local ball      = World:getByID(ballID)
     if ball then ball.health = health end
+    if force and centreX and centreY then
+        World:newParticle(centreX,centreY,math.floor(force)*1.5 / 2,force/2)
+        World:newParticle(centreX,centreY,math.floor(force) / 2    ,1)
+    end
 end)
 
 -- End game and display the end screen

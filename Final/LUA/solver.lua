@@ -254,13 +254,13 @@ Particle.__index = Particle
 function Particle:new(x,y,colour,size,angle,speed)
     local object = {}
     setmetatable(object,Particle)
-    object.maxLife = 20
-    object.life    = 20
+    object.maxLife = 30 + math.random(-5,5)
+    object.life    = 60 + math.random(-10,10)
     object.x       = x
     object.y       = y
     object.vx      = speed * math.cos(angle)
     object.vy      = speed * math.sin(angle)
-    object.size    = size
+    object.size    = size + math.random(-10,10)/10
     object.colour  = colour
     return object
 end
@@ -563,10 +563,11 @@ function World:expensiveCollisions(ballIDs)
 
         local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
 
-        self:newParticle(centre[1],centre[2],math.floor(dSpeed))
+        self:newParticle(centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
+        self:newParticle(centre[1],centre[2],math.floor(dSpeed)    ,1)
 
-        table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed)
-        table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed)
+        table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
+        table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
 
         return nHealth1,nHealth2
 
@@ -624,9 +625,9 @@ function World:expensiveCollisions(ballIDs)
     end
 end
 
-function World:newParticle(x,y,count)
+function World:newParticle(x,y,count,speed)
     for i = 1,count do
-        local nParticle = Particle:new(x,y,{1,0.5,0},5,math.random(0,628)/100,100)
+        local nParticle = Particle:new(x,y,{1,0.5,0},5,math.random(0,628)/100,100 * speed)
         table.insert(self.particles,nParticle)
     end
 end
@@ -709,6 +710,7 @@ end
 --Updates the position of every ball
 function World:update(dt,isClient)
     camera:update(dt)
+    self:updateParticles(dt)
     if isClient then
         for i, ball in ipairs(self.balls) do
             ball:verlet(dt)
@@ -729,8 +731,6 @@ function World:update(dt,isClient)
         shape:update()
     end
     self:optimisedCollisions()
-
-    self:updateParticles(dt)
 
     tick = tick + 1
 end
