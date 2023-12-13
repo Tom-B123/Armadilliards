@@ -141,7 +141,7 @@ function Ball:draw(offsetX,offsetY)
         name = LobbyPlayer:getName(self.playerID)
     end
     if self.health > 0 and World.showHealth and not self.multi then
-        health = math.floor(self.health).."/100"
+        health = math.floor(self.health).."/"..World.maxHealth
     end
     drawBall:draw(
         self.x + offsetX,
