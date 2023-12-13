@@ -12,6 +12,8 @@ local grid = Grid:new(4098,32)
 
 local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 
+local camera = {x=0,y=0,vx=0,vy=0,focus = nil,focusInd = -1}
+
 local Ball    = {}
 Ball.__index  = Ball
 
@@ -170,6 +172,7 @@ function Ball:tryRespawn()
         self.lvx    = 0
         self.lvy    = 0
         self.health = World.maxHealth
+        camera.focus = World.focus
         self.death  = nil
     end
 end
@@ -300,8 +303,6 @@ function Particle:draw(offsetX,offsetY)
     love.graphics.circle("fill",offsetX + self.x,offsetY + self.y,self.size)
 end
 
-local camera = {x=0,y=0,vx=0,vy=0,focus = nil,focusInd = -1}
-
 function camera:update(dt)
     self:updateFocus()
 
@@ -338,6 +339,7 @@ function camera:updateFocus()
 end
 
 --World table, stores and processes all balls
+--World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
 World = {
     ballsList     = List:new(),
     balls         = {},
@@ -346,6 +348,7 @@ World = {
     ballIDDict    = {},
     ropes         = {},
     particles     = {},
+    focus         = nil,
     showNames     = true,
     showHealth    = true,
     showFPS       = true,
@@ -374,6 +377,20 @@ end
 
 function World:getOffset()
     return camera:getOffset()
+end
+
+function World:updateDeath(balls)
+    for i, ball in ipairs(balls) do
+        local health = ball.health
+        if health <= 0 then
+            for i = 1,15 do
+                self:newParticle("rainbow",ball.x,ball.y,5,i)
+            end
+            
+            ball.death = tick
+        end
+    end
+    
 end
 
 function World:updateRopes()
@@ -426,6 +443,7 @@ function World:setFocus(ball)
         if sBall == ball then ind = i end
     end
     if ind > -1 then
+        World.focus     = ball
         camera.focus    = ball
         camera.focusInd = ind
     end
@@ -553,8 +571,9 @@ function World:expensiveCollisions(ballIDs)
         --If the balls have collided before, within 5 ticks, deal no damage
         if lastTick and tick - lastTick <= iTime then
             damageCooldowns[hashSum] = tick
-            return ball1.health,ball2.health
+            return
         end
+        
         --Update the damageCooldowns
         damageCooldowns[hashSum] = tick
 
@@ -563,10 +582,10 @@ function World:expensiveCollisions(ballIDs)
 
         --Using manhattan distance to check the speed isn't too low, without needing a sqrt
         local manhattan = math.abs(dvx) + math.abs(dvy)
-        if manhattan < 3 then return ball1.health,ball2.health end
+        if manhattan < 3 then return end
 
         local dSpeed = Util:findDistance(dvx,dvy)
-        if dSpeed < 3 then return ball1.health,ball2.health end
+        if dSpeed < 3 then return end
 
 
         local speed1 = Util:findDistance(ball1.vx,ball1.vy)
@@ -592,18 +611,11 @@ function World:expensiveCollisions(ballIDs)
 
         local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
 
-        if nHealth1 <= 0 then
-            for i = 1,15 do
-                self:newParticle("rainbow",ball1.x,ball1.y,5,i)
-            end
-            ball1.death = tick
-        end
-        if nHealth2 <= 0 then
-            for i = 1,15 do
-                self:newParticle("rainbow",ball2.x,ball2.y,5,i)
-            end
-            ball2.death = tick
-        end
+        ball1.health = nHealth1
+        ball2.health = nHealth2
+
+        self:updateDeath({ball1,ball2})
+
         if nHealth1 > 0 and nHealth2 > 0 then
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
@@ -611,8 +623,6 @@ function World:expensiveCollisions(ballIDs)
 
         table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
         table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
-
-        return nHealth1,nHealth2
 
     end
 
@@ -638,7 +648,7 @@ function World:expensiveCollisions(ballIDs)
         if distance > diameter then return end
 
         --Calulate the damage caused
-        ball1.health, ball2.health = calculateDamage(ball1,ball2,hashSum)
+        calculateDamage(ball1,ball2,hashSum)
 
         local n = collisionAxis
         n.x = n.x / distance
@@ -760,6 +770,7 @@ function World:update(dt,isClient)
     self:updateParticles(dt)
     self:updateRespawns()
     if isClient then
+        self:updateDeath(self.balls)
         for i, ball in ipairs(self.balls) do
             ball:verlet(dt)
         end
