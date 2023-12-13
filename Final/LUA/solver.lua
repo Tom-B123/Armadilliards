@@ -251,16 +251,19 @@ end
 local camera = {x=0,y=0,vx=0,vy=0,focus = nil,focusInd = -1}
 
 function camera:update(dt)
-    if self.focus.health <= 0 then self:shiftFocus() end
-    local centre = {
-        x = (self.x + self.focus.x) / 2,
-        y = (self.y + self.focus.y) / 2
-    }
-    --attraction force of camera to the ball
-    local forceMult = 10
-    --Elastic rope radius
-    self.vx = self.vx + (centre.x - self.x) * (forceMult)
-    self.vy = self.vy + (centre.y - self.y) * (forceMult)
+    self:updateFocus()
+
+    if self.focus then
+        local centre = {
+            x = (self.x + self.focus.x) / 2,
+            y = (self.y + self.focus.y) / 2
+        }
+        --attraction force of camera to the ball
+        local forceMult = 10
+        --Elastic rope radius
+        self.vx = self.vx + (centre.x - self.x) * (forceMult)
+        self.vy = self.vy + (centre.y - self.y) * (forceMult)
+    end
 
     self.x = self.x + self.vx * dt
     self.y = self.y + self.vy * dt
@@ -274,14 +277,17 @@ function camera:getOffset()
     return windowDims.x/2 - self.x, windowDims.y/2 - self.y
 end
 
-function camera:shiftFocus()
-    self.focusInd = self.focusInd + 1
-    if self.focusInd > #World.balls then self.focusInd = 1 end
-    self.focus = World.balls[self.focusInd]
+function camera:updateFocus()
+    if self.focus == nil then return end
+    if self.focus.health <= 0 then
+        World.ballsList:removeItem(self.focus)
+        self.focus = World.ballsList:getVal()
+    end
 end
 
 --World table, stores and processes all balls
 World = {
+    ballsList     = List:new(),
     balls         = {},
     shapes        = {},
     playableBalls = {},
@@ -404,7 +410,10 @@ end
 function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
     table.insert(self.balls,nBall)
-    if playable then table.insert(self.playableBalls,nBall) end
+    if playable then 
+        table.insert(self.playableBalls,nBall)
+        self.ballsList:push(nBall)
+    end
     return nBall
 end
 
