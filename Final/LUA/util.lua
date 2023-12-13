@@ -121,10 +121,10 @@ function Util:processGameInputs()
 
     --a and b incriment while they are held, then set to -1 for 1 tick.
     if love.mouse.isDown(1)      then a = a + 1
-    else a = -1 end
+    elseif a > 0 then a = -1 end
     if love.mouse.isDown(2)      then b = b + 1
-    else b = -1 end
-    
+    elseif b > 0 then b = -1 end
+
     return x,y,a,b
 end
 
