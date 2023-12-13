@@ -332,8 +332,8 @@ end
 
 function camera:updateFocus()
     if self.focus == nil then return end
-    if self.focus.health <= 0 then
-        World.ballsList:removeItem(self.focus)
+    if self.focus.death then
+        World.ballsList:next()
         self.focus = World.ballsList:getVal()
     end
 end
@@ -355,8 +355,8 @@ World = {
     debugChecks   = true,
     debugGrid     = false,
     debugShapes   = false,
-    respawnTime   = 600,
-    maxHealth     = 100
+    respawnTime   = 60,
+    maxHealth     = 20
 }
 
 function World:updateFPS()
@@ -386,8 +386,8 @@ function World:updateDeath(balls)
             for i = 1,15 do
                 self:newParticle("rainbow",ball.x,ball.y,5,i)
             end
-            
-            ball.death = tick
+            ball.health = self.maxHealth
+            ball.death  = tick
         end
     end
     
