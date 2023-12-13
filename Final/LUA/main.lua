@@ -56,9 +56,6 @@ local polyCoords     = {}
 local lobbyScroll    = 0
 local lobbyScrollVel = 0
 
-local offsetX = 0
-local offsetY = 0
-
 for i = 1,maxOrder do
     buttons[i] = {}
 end
@@ -325,7 +322,7 @@ stateSwitch:addCase("in game",function(dt)
 
     polyCoords = {}
 
-    offsetX,offsetY = World:getOffset()
+    local offsetX,offsetY = World:getOffset()
 
     processReceived()
 
@@ -365,8 +362,9 @@ stateSwitch:addCase("hosting game",function(dt)
         applyMove(ball,nx,ny)
         if a == -1 then
             local mx,my = love.mouse.getPosition()
-            local sx,sy = love.graphics.getDimensions()
-            local angle = Util:yawAngle(mx-(sx/2),my-(sy/2))
+            local offsetX,offsetY = World:getOffset()
+            local bx,by = offsetX+ball.x,offsetY+ball.y
+            local angle = Util:yawAngle(mx-bx,my-by)
             ball:dash(angle,10)
         end
         if b == -1 then print("ability 2") end
@@ -1260,6 +1258,7 @@ netSwitch:addCase("upgm",function(args)
         end
     elseif objType == "poly" then
         local coords = {}
+        local offsetX,offsetY = World:getOffset()
         for i = 1,((#splitData)-1)/2 do
             local ascX = splitData[i*2]
             local ascY = splitData[1+i*2]
