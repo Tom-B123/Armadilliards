@@ -365,7 +365,7 @@ stateSwitch:addCase("hosting game",function(dt)
             local offsetX,offsetY = World:getOffset()
             local bx,by = offsetX+ball.x,offsetY+ball.y
             local angle = Util:yawAngle(mx-bx,my-by)
-            ball:dash(angle,10)
+            ball:dash(angle,20)
         end
         if b == -1 then print("ability 2") end
     end
