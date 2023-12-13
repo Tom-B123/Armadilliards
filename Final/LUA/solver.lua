@@ -380,6 +380,8 @@ end
 local damageCooldowns = {}
 local iTime           = 5
 
+local damageMessages  = {}
+
 --Clears all balls
 function World:clear()
     self.balls         = {}
@@ -389,7 +391,7 @@ function World:clear()
     self.ropes         = {}
     camera.focus       = nil
     damageCooldowns    = {}
-    tick = 0
+    tick               = 0
 end
 
 --Assigns an ID to a ball, or calculates a new ID using the given salt
@@ -511,18 +513,24 @@ function World:expensiveCollisions(ballIDs)
 
         --The faster ball (the aggressor) will take less damage and inflict more damage
         local aggeressionMult = 1.5
-
+        local nHealth1,nHealth2
         --If the speeds are similar, there is no aggressor so both balls lose equal health
         if math.abs(speed1 - speed2) < 0.3 then
-            return ball1.health - (dSpeed), ball2.health - (dSpeed)
+            nHealth1,nHealth2 = ball1.health - (dSpeed), ball2.health - (dSpeed)
 
         --If the speeds are unequal, the faster ball receives and deals more damage
         elseif speed1 > speed2 then
-            return ball1.health - (dSpeed / aggeressionMult), ball2.health - (dSpeed * aggeressionMult)
+            nHealth1,nHealth2 = ball1.health - (dSpeed / aggeressionMult), ball2.health - (dSpeed * aggeressionMult)
 
         elseif speed2 > speed1 then
-            return ball1.health - (dSpeed * aggeressionMult), ball2.health - (dSpeed / aggeressionMult)
+            nHealth1,nHealth2 = ball1.health - (dSpeed * aggeressionMult), ball2.health - (dSpeed / aggeressionMult)
         end
+
+        table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1)
+        table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2)
+
+        return nHealth1,nHealth2
+
     end
 
     local function collision(ID1,ID2,hashSum)
@@ -648,6 +656,7 @@ function World:update(dt,isClient)
     end
     checks = 0
     collisionCache = {}
+    damageMessages = {}
     self:populate()
     self:updateRopes()
     
@@ -659,6 +668,11 @@ function World:update(dt,isClient)
         shape:update()
     end
     self:optimisedCollisions()
+
+    for message in ipairs(damageMessages) do
+        print(message)
+    end
+
     tick = tick + 1
 end
 
