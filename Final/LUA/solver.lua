@@ -15,7 +15,6 @@ local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 local Ball    = {}
 Ball.__index  = Ball
 
-
 local colours = {}
 colours[1] = {0.1,0.1,0.1}
 colours[2] = {1,0,0}
@@ -249,9 +248,10 @@ function Shape:makeRopes()
     end
 end
 
-local camera = {x=0,y=0,vx=0,vy=0,focus = nil}
+local camera = {x=0,y=0,vx=0,vy=0,focus = nil,focusInd = -1}
 
 function camera:update(dt)
+    if self.focus.health <= 0 then self:shiftFocus() end
     local centre = {
         x = (self.x + self.focus.x) / 2,
         y = (self.y + self.focus.y) / 2
@@ -272,6 +272,12 @@ end
 --Gets the offset for drawing objects
 function camera:getOffset()
     return windowDims.x/2 - self.x, windowDims.y/2 - self.y
+end
+
+function camera:shiftFocus()
+    self.focusInd = self.focusInd + 1
+    if self.focusInd > #World.balls then self.focusInd = 1 end
+    self.focus = World.balls[self.focusInd]
 end
 
 --World table, stores and processes all balls
@@ -354,7 +360,14 @@ end
 
 --Follows a ball with the camera
 function World:setFocus(ball)
-    camera.focus = ball
+    local ind = -1
+    for i,sBall in ipairs(self.balls) do
+        if sBall == ball then ind = i end
+    end
+    if ind > -1 then
+        camera.focus    = ball
+        camera.focusInd = ind
+    end
 end
 
 --Used for i-frames to prevent many collisions with the same ball
@@ -511,7 +524,8 @@ function World:expensiveCollisions(ballIDs)
 
         local diameter = ball1.radius + ball2.radius
 
-        -- if manhattan > 2 * diameter then return end
+        --Using manhattan distance to skip unnessesary checks
+        if manhattan > 2 * diameter then return end
 
         checks = checks + 1
 
@@ -635,7 +649,7 @@ function World:update(dt,isClient)
     for i,shape in ipairs(self.shapes) do
         shape:update()
     end
-    self:expensiveCollisions(self:getBallIDs())
+    self:optimisedCollisions()
     tick = tick + 1
 end
 
