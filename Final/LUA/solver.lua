@@ -3,10 +3,10 @@ require("grid")
 local drawBall  = require("drawBall")
 require("lists")
 
-local tick      = 0
-local lastFrame = Socket.gettime() * 10000
-local checks    = 0
-local fpsList   = List:new()
+local tick        = 0
+local lastFrame   = Socket.gettime() * 10000
+local checks      = 0
+local fpsList     = List:new()
 
 local grid = Grid:new(4098,32)
 
@@ -28,6 +28,8 @@ function Ball:new(x,y)
     object.playerID = nil
     object.x        = x
     object.y        = y
+    object.initX    = x
+    object.initY    = y
     object.vx       = 0
     object.vy       = 0
     object.ax       = 0
@@ -41,8 +43,9 @@ function Ball:new(x,y)
     object.pitch    = 0
     object.colour   = colours[1]
     object.multi    = false
-    object.health   = 100
+    object.health   = World.maxHealth
     object.mass     = 10
+    object.death    = nil
     return object
 end
 
@@ -119,7 +122,7 @@ end
 
 --Drawing ball objects
 function Ball:draw(offsetX,offsetY)
-    if self.multi then
+    if self.multi or self.death then
         if World.debugShapes then
             love.graphics.circle(
                 "line",
@@ -151,6 +154,24 @@ function Ball:updateRoll()
     self:roll(self.x-self.lx,self.y-self.ly)
     self.lx = self.x
     self.ly = self.y
+end
+
+function Ball:tryRespawn()
+    if self.death == nil then return end
+    if tick - self.death >= World.respawnTime then
+        local iX    = self.initX
+        local iY    = self.initY
+        self.x      = iX
+        self.y      = iY
+        self.lx     = iX
+        self.ly     = iY
+        self.vx     = 0
+        self.vy     = 0
+        self.lvx    = 0
+        self.lvy    = 0
+        self.health = World.maxHealth
+        self.death  = nil
+    end
 end
 
 Shape = {}
@@ -330,7 +351,9 @@ World = {
     showFPS       = true,
     debugChecks   = true,
     debugGrid     = false,
-    debugShapes   = false
+    debugShapes   = false,
+    respawnTime   = 600,
+    maxHealth     = 100
 }
 
 function World:updateFPS()
@@ -424,6 +447,12 @@ function World:clear()
     camera.focus       = nil
     damageCooldowns    = {}
     tick               = 0
+end
+
+function World:updateRespawns()
+    for i,ball in ipairs(self.balls) do
+        if ball.death then ball:tryRespawn() end
+    end
 end
 
 --Assigns an ID to a ball, or calculates a new ID using the given salt
@@ -567,11 +596,13 @@ function World:expensiveCollisions(ballIDs)
             for i = 1,15 do
                 self:newParticle("rainbow",ball1.x,ball1.y,5,i)
             end
+            ball1.death = tick
         end
         if nHealth2 <= 0 then
             for i = 1,15 do
                 self:newParticle("rainbow",ball2.x,ball2.y,5,i)
             end
+            ball2.death = tick
         end
         if nHealth1 > 0 and nHealth2 > 0 then
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
@@ -684,9 +715,10 @@ function World:optimisedCollisions()
             for gridX = -1,1 do
                 local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
                 if type(cell) == "table" then
-                    for j,ball in ipairs(cell) do
-                        local ID = ball
-                        table.insert(neighbors,ID)
+                    for j,ID in ipairs(cell) do
+                        if not self:getByID(ID).death then
+                            table.insert(neighbors,ID)
+                        end
                     end
                 end
             end
@@ -726,6 +758,7 @@ end
 function World:update(dt,isClient)
     camera:update(dt)
     self:updateParticles(dt)
+    self:updateRespawns()
     if isClient then
         for i, ball in ipairs(self.balls) do
             ball:verlet(dt)
