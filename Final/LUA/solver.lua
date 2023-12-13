@@ -774,6 +774,7 @@ function World:update(dt,isClient)
         for i, ball in ipairs(self.balls) do
             ball:verlet(dt)
         end
+        tick = tick + 1
         return
     end
     checks = 0
