@@ -248,6 +248,37 @@ function Shape:makeRopes()
     end
 end
 
+local Particle = {}
+Particle.__index = Particle
+
+function Particle:new(x,y,colour,size,angle,speed)
+    local object = {}
+    setmetatable(object,Particle)
+    object.maxLife = 20
+    object.life    = 20
+    object.x       = x
+    object.y       = y
+    object.vx      = speed * math.cos(angle)
+    object.vy      = speed * math.sin(angle)
+    object.size    = size
+    object.colour  = colour
+    return object
+end
+
+function Particle:update(dt)
+    self.x = self.x + self.vx * dt
+    self.y = self.y + self.vy * dt
+    self.vx = self.vx * 0.9
+    self.vy = self.vy * 0.9
+    self.life = self.life - 1
+end
+
+function Particle:draw(offsetX,offsetY)
+    local c = self.colour
+    love.graphics.setColor(c[1],c[2],c[3],self.life / self.maxLife)
+    love.graphics.circle("fill",offsetX + self.x,offsetY + self.y,self.size)
+end
+
 local camera = {x=0,y=0,vx=0,vy=0,focus = nil,focusInd = -1}
 
 function camera:update(dt)
@@ -293,6 +324,7 @@ World = {
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
+    particles     = {},
     showNames     = true,
     showHealth    = true,
     showFPS       = true,
@@ -529,6 +561,10 @@ function World:expensiveCollisions(ballIDs)
             nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
         end
 
+        local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
+
+        self:newParticle(centre[1],centre[2],math.floor(dSpeed))
+
         table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed)
         table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed)
 
@@ -585,6 +621,28 @@ function World:expensiveCollisions(ballIDs)
                 end
             end
         end
+    end
+end
+
+function World:newParticle(x,y,count)
+    for i = 1,count do
+        local nParticle = Particle:new(x,y,{1,0.5,0},5,math.random(0,628)/100,100)
+        table.insert(self.particles,nParticle)
+    end
+end
+
+function World:updateParticles(dt)
+    for i,particle in ipairs(self.particles) do
+        particle:update(dt)
+        if particle.life <= 0 then
+            particle = nil
+        end
+    end
+end
+
+function World:drawParticles(offsetX,offsetY)
+    for i,particle in ipairs(self.particles) do
+        particle:draw(offsetX,offsetY)
     end
 end
 
@@ -672,6 +730,8 @@ function World:update(dt,isClient)
     end
     self:optimisedCollisions()
 
+    self:updateParticles(dt)
+
     tick = tick + 1
 end
 
@@ -692,6 +752,8 @@ function World:draw()
     love.graphics.setColor( 0,0.4,0 )
     love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
     self:drawRopes(offsetX,offsetY)
+
+    self:drawParticles(offsetX,offsetY)
 
     for i, ball in ipairs(self.balls) do
         ball:draw(offsetX,offsetY)
