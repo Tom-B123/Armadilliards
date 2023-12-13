@@ -53,8 +53,8 @@ function Ball:new(x,y)
 end
 
 function Ball:getWeight()
-    if self.health * self.mass < self.mass * 10 then return self.mass * 10 end
-    return self.health * self.mass
+    local healthFraction = math.max(self.health / World.maxHealth,0.1)
+    return healthFraction * self.mass
 end
 
 --Move a ball
@@ -658,11 +658,16 @@ function World:expensiveCollisions(ballIDs)
         local n = collisionAxis
         n.x = n.x / distance
         n.y = n.y / distance
+
+        local weight1 = ball1:getWeight()
+        local weight2 = ball2:getWeight()
+
+        local deltaWeight = weight1 / weight2
+
         local delta = diameter - distance
-        local offset1 = ball2.radius / ball1.radius
-        local offset2 = ball1.radius / ball2.radius
-        if offset1 > 2 then offset1 = 2 end
-        if offset2 > 2 then offset2 = 2 end
+        local offset1 = 10 / deltaWeight * ball2.radius / ball1.radius
+        local offset2 = 10 * deltaWeight * ball1.radius / ball2.radius
+
         ball2.x = ball2.x - bounce * offset2 * delta * n.x
         ball2.y = ball2.y - bounce * offset2 * delta * n.y
         ball1.x = ball1.x + bounce * offset1 * delta * n.x
