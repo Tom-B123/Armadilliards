@@ -62,7 +62,7 @@ end
 
 -- Stores player inputs to send to the host all at once when cooldown = 0
 local inputCooldown = 4
-local inputSum = {x=0,y=0}
+local inputSum = {x=0,y=0,aHeld = 0,bHeld = 0,abilities = {}}
 
 -- To run every frame a state is active.
 local stateSwitch     = Switch:new()
@@ -322,8 +322,6 @@ stateSwitch:addCase("in game",function(dt)
 
     polyCoords = {}
 
-    local offsetX,offsetY = World:getOffset()
-
     processReceived()
 
     World:update(dt,true)
@@ -333,18 +331,30 @@ stateSwitch:addCase("in game",function(dt)
 
         inputSum.x = inputSum.x + x
         inputSum.y = inputSum.y + y
-        inputSum.a = a
-        inputSum.b = b
-        print(inputSum.a,inputSum.b)
+        inputSum.aHeld = tonumber(a > 0)
+        if a == -1 then
+            local ball = World.focus
+            local mx,my = love.mouse.getPosition()
+            local offsetX,offsetY = World:getOffset()
+            local bx,by = offsetX+ball.x,offsetY+ball.y
+            local angle = Util:yawAngle(mx-bx,my-by)
+            table.insert(inputSum.abilities,"plin:dash_"..ball.ID.."_"..angle.."_"..(20).."_\n")
+        end
+        inputSum.bHeld = tonumber(b > 0)
+        if b == -1 then  end
     end
 
     if order == 1 and not editingText and tick % inputCooldown == 0 then
         
         local inX = inputSum.x
         local inY = inputSum.y
-        player:send("plin:"..player.ID.."_"..inX.."_"..inY.."_\n")
+        player:send("plin:move_"..player.ID.."_"..inX.."_"..inY.."_\n")
+        for i,msg in ipairs(inputSum.abilities) do
+            player:send(msg)
+        end
         inputSum.x = 0
         inputSum.y = 0
+        inputSum.abilities = {}
     end
 end)
 
@@ -1221,14 +1231,26 @@ netSwitch:addCase("plin",function(args)
 
     local splitData = Util:split(args,"_")
 
-    local ID        = splitData[1]
-    local x         = splitData[2]
-    local y         = splitData[3]
+    local command   = splitData[1]
+    local ID        = splitData[2]
+    if command == "move" then
+        local x         = splitData[3]
+        local y         = splitData[4]
 
-    local ballID    = LobbyPlayer:getBallID(ID)
-    local ball      = World:getByID(ballID)
+        local ballID    = LobbyPlayer:getBallID(ID)
+        local ball      = World:getByID(ballID)
 
-    applyMove(ball,x,y)
+        applyMove(ball,x,y)
+    end
+    if command == "dash" then
+        local angle     = splitData[3]
+        local force     = splitData[4]
+
+        local ball      = World:getByID(ID)
+
+        ball:dash(angle,force)
+    end
+
 end)
 
 -- Update gamestate
