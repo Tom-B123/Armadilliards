@@ -411,11 +411,13 @@ World = {
     showNames     = true,
     showHealth    = true,
     showFPS       = true,
-    debugChecks   = true,
-    debugGrid     = false,
+    debugChecks   = false,
+    debugGrid     = true,
     debugShapes   = false,
-    respawnTime   = 60,
-    maxHealth     = 20
+    respawnTime   = 240,
+    maxHealth     = 20,
+    particleLimit = 1000,
+    particleCount = 0
 }
 
 function World:drawRespawnTime()
@@ -782,6 +784,8 @@ end
 
 function World:newParticle(style,x,y,count,speed)
     for i = 1,count do
+        if self.particleCount > self.particleLimit then return end
+        self.particleCount = self.particleCount + 1
         local colour = {1,1,1}
         if style == "spark" then colour = {1,0.5,0} end
         if style == "rainbow" then colour = {math.random(2,10)/10,math.random(2,10)/20,math.random(2,10)/10} end
@@ -795,6 +799,7 @@ function World:updateParticles(dt)
         particle:update(dt)
         if particle.life <= 0 then
             particle = nil
+            self.particleCount = self.particleCount - 1
         end
     end
 end
@@ -924,6 +929,9 @@ function World:draw()
 
     love.graphics.setColor( 0,0.4,0 )
     love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
+
+    if self.debugGrid then grid:draw(offsetX,offsetY) end
+
     self:drawRopes(offsetX,offsetY)
 
     self:drawParticles(offsetX,offsetY)
@@ -938,7 +946,7 @@ function World:draw()
 
     self:drawRespawnTime()
 
-    if self.debugGrid then grid:draw(offsetX,offsetY) end
+   
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
     if World.showFPS then love.graphics.print(World:updateFPS()) end
 end
