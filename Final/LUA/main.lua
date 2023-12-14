@@ -374,6 +374,10 @@ stateSwitch:addCase("hosting game",function(dt)
     for damage in World:getDamg() do
         server:send("all",damage)
     end
+    
+    for rope in World:getRope() do
+        server:send("all",rope)
+    end
 
     if order == 1 and not editingText then
         local ball = World.focus
@@ -1333,6 +1337,7 @@ end)
 
 netSwitch:addCase("nrope",function(args)
     if not player then return end
+    print(args)
     local splitData = Util:split(args,"_")
     local ID1    = splitData[1]
     local ID2    = splitData[2]

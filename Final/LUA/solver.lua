@@ -896,12 +896,24 @@ function World:update(dt,isClient)
     tick = tick + 1
 end
 
+--Iterator for damage messages
 function World:getDamg()
     local ind = 0
     return function()
         if damageMessages[ind+1] then
             ind = ind + 1
             return damageMessages[ind]
+        end
+    end
+end
+
+--Iterator for rope messages
+function World:getRope()
+    local ind = 0
+    return function()
+        if ropeMessages[ind+1] then
+            ind = ind + 1
+            return ropeMessages[ind]
         end
     end
 end
