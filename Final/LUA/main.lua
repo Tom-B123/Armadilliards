@@ -1331,6 +1331,15 @@ netSwitch:addCase("damg",function(args)
     end
 end)
 
+netSwitch:addCase("nrope",function(args)
+    if not player then return end
+    local splitData = Util:split(args,"_")
+    local ID1    = splitData[1]
+    local ID2    = splitData[2]
+
+    World:newRope(ID1,ID2,0,0)
+end)
+
 -- End game and display the end screen
 netSwitch:addCase("endgm",function(args)
     local splitData   = Util:split(args,"_")

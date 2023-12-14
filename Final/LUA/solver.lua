@@ -15,6 +15,9 @@ local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 
 local camera = {x=0,y=0,vx=0,vy=0,focus = nil,focusInd = -1}
 
+local damageMessages  = {}
+local ropeMessages    = {}
+
 local Ball    = {}
 Ball.__index  = Ball
 
@@ -212,8 +215,6 @@ function Ball:rope(rx,ry)
         local manhattan = math.abs(ball.x - x) + math.abs(ball.y - y)
         if manhattan > 2*ball.radius then return false end
 
-        local radius    = ball.radius
-
         return Util:findDistance(ball.x-x,ball.y-y) <= ball.radius
     end
     --Confine to within the game area
@@ -230,6 +231,7 @@ function Ball:rope(rx,ry)
     for i,ID in ipairs(neighbors) do
         if isClicked(ID,rx,ry) then
             World:newRope(self.ID,ID,100,1)
+            table.insert(ropeMessages,"nrope:"..self.ID.."_"..ID.."_\n")
         end
     end
 end
@@ -543,8 +545,6 @@ end
 --Used for i-frames to prevent many collisions with the same ball
 local damageCooldowns = {}
 local iTime           = 5
-
-local damageMessages  = {}
 
 --Clears all balls
 function World:clear()
