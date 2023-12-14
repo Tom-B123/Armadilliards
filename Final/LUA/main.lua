@@ -329,10 +329,13 @@ stateSwitch:addCase("in game",function(dt)
     World:update(dt,true)
 
     if order == 1 and not editingText then
-        local x,y = Util:processGameInputs()
+        local x,y,a,b = Util:processGameInputs()
 
         inputSum.x = inputSum.x + x
         inputSum.y = inputSum.y + y
+        inputSum.a = a
+        inputSum.b = b
+        print(inputSum.a,inputSum.b)
     end
 
     if order == 1 and not editingText and tick % inputCooldown == 0 then
@@ -371,7 +374,7 @@ stateSwitch:addCase("hosting game",function(dt)
             local mx,my = love.mouse.getPosition()
             local offsetX,offsetY = World:getOffset()
             local rx,ry = mx - offsetX, my - offsetY
-            print(World:rope(rx,ry))
+            World:rope(rx,ry)
         end
     end
 

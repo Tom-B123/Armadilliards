@@ -355,6 +355,7 @@ World = {
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
+    ropedBalls    = {},
     particles     = {},
     focus         = nil,
     showNames     = true,
@@ -402,17 +403,38 @@ function World:updateDeath(balls)
             end
             ball.health = self.maxHealth
             ball.death  = tick
+            self:removeRopes(ball.ID)
         end
     end
     
 end
 
+--Create a new entry in the ropes dictionary using the 2 connected IDs
 function World:newRope(ID1,ID2,length,elasticity)
+    if ID1 == ID2 then return end
+    --Create an ID for the rope unique to the two connected balls. creating a new rope with the same ID will alter the existing rope connection
     local hashedID       = Util:hashIDs({ID1,ID2})
     local nRope          = {ID1,ID2,length,elasticity}
 
     self.ropes[hashedID] = nRope
+
+    self.ropedBalls[ID1] = true
+    self.ropedBalls[ID2] = true
+
     return nRope
+end
+
+--Removes all ropes connected to a ballID
+function World:removeRopes(ID)
+    if not self.ropedBalls[ID] then return end
+    local hashedID
+    for ballID,val in pairs(self.ropedBalls) do
+        --Loop through every ball that is roped, if that ID combined with the removing ball's ID exists, they must be roped. Remove all
+        --rope connections found
+        hashedID = Util:hashIDs({ID,ballID})
+        if self.ropes[hashedID] then self.ropes[hashedID] = nil end
+    end
+    self.ropedBalls[ID] = nil
 end
 
 --Rope a ball at the given position
