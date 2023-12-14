@@ -341,7 +341,12 @@ stateSwitch:addCase("in game",function(dt)
             table.insert(inputSum.abilities,"plin:dash_"..ball.ID.."_"..angle.."_"..(20).."_\n")
         end
         inputSum.bHeld = tonumber(b > 0)
-        if b == -1 then  end
+        if b == -1 then
+            local mx,my = love.mouse.getPosition()
+            local offsetX,offsetY = World:getOffset()
+            local rx,ry = mx - offsetX, my - offsetY
+            table.insert(inputSum.abilities,"plin:rope"..rx.."_"..ry.."_\n")
+        end
     end
 
     if order == 1 and not editingText and tick % inputCooldown == 0 then
@@ -384,7 +389,7 @@ stateSwitch:addCase("hosting game",function(dt)
             local mx,my = love.mouse.getPosition()
             local offsetX,offsetY = World:getOffset()
             local rx,ry = mx - offsetX, my - offsetY
-            World:rope(rx,ry)
+           ball:rope(rx,ry)
         end
     end
 
@@ -1250,7 +1255,14 @@ netSwitch:addCase("plin",function(args)
 
         ball:dash(angle,force)
     end
+    if command == "rope" then
+        local rx     = splitData[3]
+        local ry     = splitData[4]
 
+        local ball   = World:getByID(ID)
+
+        ball:rope(rx,ry)
+    end
 end)
 
 -- Update gamestate

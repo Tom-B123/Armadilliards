@@ -187,6 +187,54 @@ function Ball:dash(angle,speed)
     self.lvy = vy
 end
 
+--Rope a ball at the given position
+function Ball:rope(rx,ry)
+    print("roping at: "..rx..","..ry)
+    local function getNeighbours(searchX,searchY)
+        local neighbors = {}
+        for gridY = -1,1 do
+            for gridX = -1,1 do
+                local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
+                if type(cell) == "table" then
+                    for j,ID in ipairs(cell) do
+                        if not World:getByID(ID).death then
+                            table.insert(neighbors,ID)
+                        end
+                    end
+                end
+            end
+        end
+        return neighbors
+    end
+
+    local function isClicked(ID,x,y)
+        local ball      = World:getByID(ID)
+
+        local manhattan = math.abs(ball.x - x) + math.abs(ball.y - y)
+        if manhattan > 2*ball.radius then return false end
+
+        local radius    = ball.radius
+
+        return Util:findDistance(ball.x-x,ball.y-y) <= ball.radius
+    end
+    --Confine to within the game area
+    rx = math.max(rx,0)
+    rx = math.min(rx,4096)
+    ry = math.max(ry,0)
+    ry = math.min(ry,4096)
+
+    local searchX = math.floor(rx/32)
+    local searchY = math.floor(ry/32)
+
+    local neighbors = getNeighbours(searchX,searchY)
+
+    for i,ID in ipairs(neighbors) do
+        if isClicked(ID,rx,ry) then
+            World:newRope(self.ID,ID,100,1)
+        end
+    end
+end
+
 Shape = {}
 
 Shape.__index = Shape
@@ -435,53 +483,6 @@ function World:removeRopes(ID)
         if self.ropes[hashedID] then self.ropes[hashedID] = nil end
     end
     self.ropedBalls[ID] = nil
-end
-
---Rope a ball at the given position
-function World:rope(rx,ry)
-    local function getNeighbours(searchX,searchY)
-        local neighbors = {}
-        for gridY = -1,1 do
-            for gridX = -1,1 do
-                local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
-                if type(cell) == "table" then
-                    for j,ID in ipairs(cell) do
-                        if not self:getByID(ID).death then
-                            table.insert(neighbors,ID)
-                        end
-                    end
-                end
-            end
-        end
-        return neighbors
-    end
-
-    local function isClicked(ID,x,y)
-        local ball      = World:getByID(ID)
-
-        local manhattan = math.abs(ball.x - x) + math.abs(ball.y - y)
-        if manhattan > 2*ball.radius then return false end
-
-        local radius    = ball.radius
-
-        return Util:findDistance(ball.x-x,ball.y-y) <= ball.radius
-    end
-    --Confine to within the game area
-    rx = math.max(rx,0)
-    rx = math.min(rx,4096)
-    ry = math.max(ry,0)
-    ry = math.min(ry,4096)
-
-    local searchX = math.floor(rx/32)
-    local searchY = math.floor(ry/32)
-
-    local neighbors = getNeighbours(searchX,searchY)
-
-    for i,ID in ipairs(neighbors) do
-        if isClicked(ID,rx,ry) then
-            self:newRope(World.focus.ID,ID,100,1)
-        end
-    end
 end
 
 function World:updateRopes()
