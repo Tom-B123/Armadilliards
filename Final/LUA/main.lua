@@ -367,7 +367,12 @@ stateSwitch:addCase("hosting game",function(dt)
             local angle = Util:yawAngle(mx-bx,my-by)
             ball:dash(angle,20)
         end
-        if b == -1 then print("ability 2") end
+        if b == -1 then
+            local mx,my = love.mouse.getPosition()
+            local offsetX,offsetY = World:getOffset()
+            local rx,ry = mx - offsetX, my - offsetY
+            World:rope(rx,ry)
+        end
     end
 
     if tick % refreshRate == 0 then

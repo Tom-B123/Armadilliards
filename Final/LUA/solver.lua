@@ -409,6 +409,10 @@ function World:updateDeath(balls)
     
 end
 
+function World:rope(rx,ry)
+    print("rope: "..rx..","..ry)
+end
+
 function World:updateRopes()
     local function process(balls,centre,length,elasticity)
         for i = 1,2 do
