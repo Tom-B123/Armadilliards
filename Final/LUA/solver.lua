@@ -9,6 +9,7 @@ local checks        = 0
 local fpsList       = List:new()
 local timeToRespawn = 0
 
+
 local grid = Grid:new(4098,32)
 
 local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
@@ -707,10 +708,8 @@ function World:expensiveCollisions(ballIDs)
 
         self:updateDeath({ball1,ball2})
 
-        if nHealth1 > 0 and nHealth2 > 0 then
-            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
-            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
-        end
+        self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
+        self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
 
         table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
         table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
@@ -881,6 +880,7 @@ function World:update(dt,isClient)
     checks = 0
     collisionCache = {}
     damageMessages = {}
+    ropeMessages   = {}
     self:populate()
     self:updateRopes()
     

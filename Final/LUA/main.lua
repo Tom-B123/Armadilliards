@@ -369,14 +369,14 @@ stateSwitch:addCase("hosting game",function(dt)
     server:send("all","no dat".."_\n")
     processReceived()
 
+    for rope in World:getRope() do
+        server:send("all",rope)
+    end
+
     World:update(dt,false)
 
     for damage in World:getDamg() do
         server:send("all",damage)
-    end
-    
-    for rope in World:getRope() do
-        server:send("all",rope)
     end
 
     if order == 1 and not editingText then
