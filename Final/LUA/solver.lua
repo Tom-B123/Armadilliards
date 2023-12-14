@@ -415,7 +415,7 @@ World = {
     debugGrid     = true,
     debugShapes   = false,
     respawnTime   = 240,
-    maxHealth     = 20,
+    maxHealth     = 1,
     particleLimit = 1000,
     particleCount = 0
 }
