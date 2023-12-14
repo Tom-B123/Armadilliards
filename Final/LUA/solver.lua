@@ -262,22 +262,20 @@ function Shape:makeRopes()
     local dims = (#circles) ^ 0.5
     for y = 0,dims-1 do
         for x = 1,dims-1 do
-            table.insert(World.ropes,{
+            World:newRope(
                 circles[dims*y + x].ID,
                 circles[dims*y + x + 1].ID,
-                self.circleRad*2,
-                0
-            })
+                self.circleRad*2,0
+            )
         end
     end
     for y = 0,dims-2 do
         for x = 1,dims do
-            table.insert(World.ropes,{
+            World:newRope(
                 circles[dims*y + x].ID,
                 circles[dims*(y+1) + x].ID,
-                self.circleRad*2,
-                0
-            })
+                self.circleRad*2,0
+            )
         end
     end
 end
@@ -409,8 +407,59 @@ function World:updateDeath(balls)
     
 end
 
+function World:newRope(ID1,ID2,length,elasticity)
+    local hashedID       = Util:hashIDs({ID1,ID2})
+    local nRope          = {ID1,ID2,length,elasticity}
+
+    self.ropes[hashedID] = nRope
+    return nRope
+end
+
+--Rope a ball at the given position
 function World:rope(rx,ry)
-    print("rope: "..rx..","..ry)
+    local function getNeighbours(searchX,searchY)
+        local neighbors = {}
+        for gridY = -1,1 do
+            for gridX = -1,1 do
+                local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
+                if type(cell) == "table" then
+                    for j,ID in ipairs(cell) do
+                        if not self:getByID(ID).death then
+                            table.insert(neighbors,ID)
+                        end
+                    end
+                end
+            end
+        end
+        return neighbors
+    end
+
+    local function isClicked(ID,x,y)
+        local ball      = World:getByID(ID)
+
+        local manhattan = math.abs(ball.x - x) + math.abs(ball.y - y)
+        if manhattan > 2*ball.radius then return false end
+
+        local radius    = ball.radius
+
+        return Util:findDistance(ball.x-x,ball.y-y) <= ball.radius
+    end
+    --Confine to within the game area
+    rx = math.max(rx,0)
+    rx = math.min(rx,4096)
+    ry = math.max(ry,0)
+    ry = math.min(ry,4096)
+
+    local searchX = math.floor(rx/32)
+    local searchY = math.floor(ry/32)
+
+    local neighbors = getNeighbours(searchX,searchY)
+
+    for i,ID in ipairs(neighbors) do
+        if isClicked(ID,rx,ry) then
+            self:newRope(World.focus.ID,ID,100,1)
+        end
+    end
 end
 
 function World:updateRopes()
@@ -437,7 +486,7 @@ function World:updateRopes()
             end
         end
     end
-    for i,rope in ipairs(self.ropes) do
+    for hashedID,rope in pairs(self.ropes) do
         local ID1        = rope[1]
         local ID2        = rope[2]
         local rope1      = self:getByID(ID1)
@@ -779,7 +828,7 @@ end
 --Draw all ropes
 function World:drawRopes(offsetX,offsetY)
     love.graphics.setColor(1,1,0)
-    for i, rope in ipairs(self.ropes) do
+    for hashedID, rope in pairs(self.ropes) do
         local ball1 = self:getByID(rope[1])
         local ball2 = self:getByID(rope[2])
         love.graphics.line(ball1.x + offsetX,ball1.y + offsetY,ball2.x + offsetX,ball2.y + offsetY)
