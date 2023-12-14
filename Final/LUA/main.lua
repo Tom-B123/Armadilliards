@@ -342,10 +342,11 @@ stateSwitch:addCase("in game",function(dt)
         end
         inputSum.bHeld = tonumber(b > 0)
         if b == -1 then
+            local ball = World.focus
             local mx,my = love.mouse.getPosition()
             local offsetX,offsetY = World:getOffset()
             local rx,ry = mx - offsetX, my - offsetY
-            table.insert(inputSum.abilities,"plin:rope"..rx.."_"..ry.."_\n")
+            table.insert(inputSum.abilities,"plin:rope_"..ball.ID.."_"..rx.."_"..ry.."_\n")
         end
     end
 
@@ -389,7 +390,7 @@ stateSwitch:addCase("hosting game",function(dt)
             local mx,my = love.mouse.getPosition()
             local offsetX,offsetY = World:getOffset()
             local rx,ry = mx - offsetX, my - offsetY
-           ball:rope(rx,ry)
+            ball:rope(rx,ry)
         end
     end
 

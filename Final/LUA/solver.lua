@@ -189,7 +189,6 @@ end
 
 --Rope a ball at the given position
 function Ball:rope(rx,ry)
-    print("roping at: "..rx..","..ry)
     local function getNeighbours(searchX,searchY)
         local neighbors = {}
         for gridY = -1,1 do
