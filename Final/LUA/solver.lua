@@ -468,6 +468,25 @@ function World:newRope(ID1,ID2,length,elasticity)
     local hashedID       = Util:hashIDs({ID1,ID2})
     local nRope          = {ID1,ID2,length,elasticity}
 
+    
+    local function isSameRope(rope1,rope2)
+        if not(rope1 and rope2) then return false end
+        for i = 1,#rope1 do
+            if rope1[i] ~= rope2[i] then
+                return false
+            end
+        end
+        return true
+    end
+
+    --delete the rope if the same rope already exists
+    if isSameRope(self.ropes[hashedID],nRope) then
+        self.ropes[hashedID] = nil
+        self.ropedBalls[ID1] = false
+        self.ropedBalls[ID2] = false
+        return
+    end
+
     self.ropes[hashedID] = nRope
 
     self.ropedBalls[ID1] = true
