@@ -143,7 +143,8 @@ function Util:withinDistance(x,y,checkDistance)
 
     local distance = Util:findDistance(x, y)
     
-    return distance > checkDistance
+    if distance > checkDistance then return distance end
+    return false
 end
 
 function Util:pitchAngle(distance,radius)

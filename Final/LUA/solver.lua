@@ -417,7 +417,7 @@ World = {
     debugShapes   = false,
     respawnTime   = 240,
     maxHealth     = 50,
-    particleLimit = 1000,
+    particleLimit = 200,
     particleCount = 0
 }
 
@@ -472,7 +472,8 @@ function World:withinRopeDistance(hashedID)
     local ball1 = self:getByID(ID1)
     local ball2 = self:getByID(ID2)
 
-    return Util:withinDistance(ball2.x - ball1.x,ball2.y-ball1.y,ropeLength - ball1.radius)
+    local distance = Util:withinDistance(ball2.x - ball1.x,ball2.y-ball1.y,ropeLength - ball1.radius)
+    return distance
 end
 
 --Create a new entry in the ropes dictionary using the 2 connected IDs
@@ -524,7 +525,7 @@ function World:removeRopes(ID)
 end
 
 function World:updateRopes()
-    local function process(balls,centre,length,elasticity)
+    local function process(balls,centre,length,elasticity,distance)
         for i = 1,2 do
             local ball = balls[i]
             local toObj = {x=0,y=0}
@@ -533,8 +534,8 @@ function World:updateRopes()
             
             if elasticity == 0 then
                 local new = {}
-                new[1] = toObj.x / 64
-                new[2] = toObj.y / 64
+                new[1] = toObj.x / distance
+                new[2] = toObj.y / distance
                 ball.x = centre.x + new[1] * (length - ball.radius)
                 ball.y = centre.y + new[2] * (length - ball.radius)
             else
@@ -556,7 +557,8 @@ function World:updateRopes()
             y = (rope1.y + rope2.y) / 2
         }
         --manhattan distance is very cheap to calculate, so used to prevent exessive square root calculions when they aren't necessary
-        if self:withinRopeDistance(hashedID) then process({rope1,rope2},ropeCentre,ropeLength,elasticity) end
+        local distance = self:withinRopeDistance(hashedID)
+        if distance then process({rope1,rope2},ropeCentre,ropeLength,elasticity,distance) end
     end
 end
 
@@ -738,12 +740,16 @@ function World:expensiveCollisions(ballIDs)
 
         self:updateDeath({ball1,ball2})
 
-        self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
-        self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
-
-        table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
-        table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
-
+        if not (ball1.multi and ball2.multi) then
+            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
+            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
+        end
+        if not ball1.multi then
+            table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
+        end
+        if not ball2.multi then
+            table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
+        end
     end
 
     local function collision(ID1,ID2,hashSum)
