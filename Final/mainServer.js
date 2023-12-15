@@ -164,6 +164,9 @@ function netSwitch(message,client) {
             const playerID = splitData[0];
             // remove playerID from player IDs
             closeClient(client);
+
+            console.log("Client disconnected. Current count: " + clients.size);
+
             break;
         }
 
@@ -254,9 +257,9 @@ const server = net.createServer((socket) => {
 
     socket.setTimeout(0);
 
-    console.log("Client connected");
-
     clients.add(socket);
+
+    console.log("Client connected. Current count: " + clients.size);
 
     socket.on("update lobbies", () => {
         for (i in updateQueue) {
@@ -288,7 +291,7 @@ const server = net.createServer((socket) => {
     });
 
     socket.on("end", () => {
-        console.log("Client disconnected");
+        console.log("Client disconnected. Current count: " + clients.size);
         clients.delete(socket)
     });
 
