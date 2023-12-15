@@ -472,7 +472,7 @@ function World:withinRopeDistance(hashedID)
     local ball1 = self:getByID(ID1)
     local ball2 = self:getByID(ID2)
 
-    local distance = Util:withinDistance(ball2.x - ball1.x,ball2.y-ball1.y,ropeLength - ball1.radius)
+    local distance = Util:withinDistance(ball1,ball2,ropeLength)
     return distance
 end
 
@@ -525,23 +525,35 @@ function World:removeRopes(ID)
 end
 
 function World:updateRopes()
-    local function process(balls,centre,length,elasticity,distance)
+    local function process(balls,centre,length,elasticity)
+        local centre = {
+            x = (balls[1].x + balls[2].x) / 2,
+            y = (balls[1].y + balls[2].y) / 2
+        }
         for i = 1,2 do
             local ball = balls[i]
             local toObj = {x=0,y=0}
             toObj.x = ball.x - centre.x
             toObj.y = ball.y - centre.y
+        
+            -- local manhattan = Util:manhattanDistance(toObj.x,toObj.y)
+        
+            -- if manhattan <= checkDistance then return false end
+        
+            local distance = Util:findDistance(toObj.x, toObj.y)
             
-            if elasticity == 0 then
-                local new = {}
-                new[1] = toObj.x / distance
-                new[2] = toObj.y / distance
-                ball.x = centre.x + new[1] * (length - ball.radius)
-                ball.y = centre.y + new[2] * (length - ball.radius)
-            else
-                local forceMult = elasticity * i^2
-                ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
-                ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
+            if distance > length - ball.radius then
+                if elasticity == 0 then
+                    local new = {}
+                    new[1] = toObj.x / distance
+                    new[2] = toObj.y / distance
+                    ball.x = centre.x + new[1] * (length - ball.radius)
+                    ball.y = centre.y + new[2] * (length - ball.radius)
+                else
+                    local forceMult = elasticity * i^2
+                    ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
+                    ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
+                end
             end
         end
     end
@@ -557,8 +569,7 @@ function World:updateRopes()
             y = (rope1.y + rope2.y) / 2
         }
         --manhattan distance is very cheap to calculate, so used to prevent exessive square root calculions when they aren't necessary
-        local distance = self:withinRopeDistance(hashedID)
-        if distance then process({rope1,rope2},ropeCentre,ropeLength,elasticity,distance) end
+        process({rope1,rope2},ropeCentre,ropeLength,elasticity)
     end
 end
 
