@@ -525,24 +525,27 @@ function World:removeRopes(ID)
 end
 
 function World:updateRopes()
+    local function findDistance(ball,centre,length)
+        local toObj = {x=0,y=0}
+        toObj.x = ball.x - centre.x
+        toObj.y = ball.y - centre.y
+        
+        local manhattan = Util:manhattanDistance(toObj.x,toObj.y)
+        
+        if manhattan <= length - ball.radius then return nil end
+        local distance = Util:findDistance(toObj.x, toObj.y)
+        if distance  <= length - ball.radius then return nil end
+        return distance
+    end
     local function process(balls,centre,length,elasticity)
-        local centre = {
-            x = (balls[1].x + balls[2].x) / 2,
-            y = (balls[1].y + balls[2].y) / 2
-        }
         for i = 1,2 do
             local ball = balls[i]
             local toObj = {x=0,y=0}
             toObj.x = ball.x - centre.x
             toObj.y = ball.y - centre.y
-        
-            -- local manhattan = Util:manhattanDistance(toObj.x,toObj.y)
-        
-            -- if manhattan <= checkDistance then return false end
-        
-            local distance = Util:findDistance(toObj.x, toObj.y)
             
-            if distance > length - ball.radius then
+            local distance = findDistance(ball,centre,length)
+            if distance then
                 if elasticity == 0 then
                     local new = {}
                     new[1] = toObj.x / distance
