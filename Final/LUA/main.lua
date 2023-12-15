@@ -15,7 +15,7 @@ local player = nil
 -- Default values for creating a lobby
 local lobbyToCreate = {name = "new lobby", maxPlayers = 8}
 
-local toRemoveIDs     = {}
+local toRemoveIDs     = List:new()
 local toConnectMain   = false
 local toClosePlayer   = false
 local toConnectPlayer = nil
@@ -894,7 +894,6 @@ drawStateSwitch:addCase("hosting lobby",function()
     drawKickButtons()
     love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
-        print(ID)
         local name  = LobbyPlayer:getName(ID)
         local ready = Util:toBool(LobbyPlayer:getReady(ID))
         local readyString = "not ready"
@@ -1074,7 +1073,7 @@ netSwitch:addCase("econ",function(args)
         local splitData = Util:split(args,"_")
         local ID        = splitData[1]
         server:send("all","econ:"..ID.."_".."false".."_\n")
-        table.insert(toRemoveIDs,ID)
+        toRemoveIDs:push(ID)
         local button = KickButton:get(ID)
         kickButtons:removeItem(button)
         KickButton:remove(ID)
@@ -1101,7 +1100,7 @@ netSwitch:addCase("econ",function(args)
 
             clearMessages()
         else
-            table.insert(toRemoveIDs,playerID)
+            toRemoveIDs:push(playerID)
         end
     end
 end)
@@ -1535,6 +1534,7 @@ function love.update(dt)
     end
 
     for i,ID in ipairs(toRemoveIDs) do
+        print("RemovingID: "..ID)
         LobbyPlayer:removeID(ID)
     end
 
