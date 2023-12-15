@@ -1533,11 +1533,12 @@ function love.update(dt)
         order         = 1
     end
 
-    for i,ID in ipairs(toRemoveIDs) do
+    while toRemoveIDs:getVal() do
+        local ID = toRemoveIDs:pop()
         print("RemovingID: "..ID)
         LobbyPlayer:removeID(ID)
     end
-
+    
     tick = tick + 1
     if tempTick > 0    then tempTick = tempTick - 1 end
 end
