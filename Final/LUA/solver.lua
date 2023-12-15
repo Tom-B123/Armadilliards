@@ -131,7 +131,7 @@ end
 --Drawing ball objects
 function Ball:draw(offsetX,offsetY)
     local debugBall = false
-    if World.debugShapes and (self.multi or self.death) then debugBall = true end
+    if (self.multi or self.death) then debugBall = true end
     local name   = nil
     local health = nil
     if self.playerID and World.showNames then
@@ -140,14 +140,16 @@ function Ball:draw(offsetX,offsetY)
     if self.health > 0 and World.showHealth and not self.multi then
         health = math.floor(self.health).."/"..World.maxHealth
     end
-    drawBall:draw(
-        self.x + offsetX,
-        self.y + offsetY,
-        self.yaw,self.pitch,
-        self.colour,1,
-        name,health,World.debugChecks,
-        debugBall,self.radius
-    )
+    if debugBall and World.debugShapes or not debugBall then
+        drawBall:draw(
+            self.x + offsetX,
+            self.y + offsetY,
+            self.yaw,self.pitch,
+            self.colour,1,
+            name,health,World.debugChecks,
+            debugBall,self.radius
+        )
+    end
 end
 
 function Ball:updateRoll()
@@ -429,9 +431,9 @@ World = {
     showNames     = true,
     showHealth    = true,
     showFPS       = true,
-    debugChecks   = true,
+    debugChecks   = false,
     debugGrid     = true,
-    debugShapes   = true,
+    debugShapes   = false,
     respawnTime   = 240,
     maxHealth     = 50,
     particleLimit = 200,

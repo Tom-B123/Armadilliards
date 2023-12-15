@@ -42,6 +42,8 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,deb
         else
             love.graphics.setColor(colour)
             love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
+            love.graphics.setColor(1,1,1)
+            love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
         end
         love.graphics.setColor(1,1,1)
         if name then
@@ -50,9 +52,6 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,deb
         if health then
             love.graphics.print(health,x - (4.5 * #health),y+10)
         end
-        love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
-
-        
     end
     pcall(tryDraw)
 end
