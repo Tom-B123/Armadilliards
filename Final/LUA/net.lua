@@ -449,6 +449,10 @@ function KickButton:new(ID,button)
     self.buttonsDict[ID] = button
 end
 
+function KickButton:get(ID)
+    return self.buttonsDict[ID]
+end
+
 function KickButton:remove(ID)
     self.buttonsDict[ID] = nil
 end

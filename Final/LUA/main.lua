@@ -1037,12 +1037,10 @@ netSwitch:addCase("ncon",function(args)
 
         nButton.command = function()
             server:send("all","kick:"..ID.."_\n")
-            removeButton(1,nButton)
-            kickButtons:removeItem(nButton)
         end
         nButton:preset("cancel")
         kickButtons:append(nButton)
-
+        KickButton:new(ID,nButton)
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
     end
 
@@ -1076,6 +1074,9 @@ netSwitch:addCase("econ",function(args)
         local ID        = splitData[1]
         server:send("all","econ:"..ID.."_".."false".."_\n")
         table.insert(toRemoveIDs,ID)
+        local button = KickButton:get(ID)
+        kickButtons:removeItem(button)
+        KickButton:remove(ID)
     elseif player then
         local splitData = Util:split(args,"_")
         local playerID  = splitData[1]
