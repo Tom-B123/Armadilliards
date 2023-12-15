@@ -136,6 +136,16 @@ function Util:manhattanDistance(x,y)
     return math.abs(x) + math.abs(y)
 end
 
+function Util:withinDistance(x,y,checkDistance)
+    local manhattan = Util:manhattanDistance(x,y)
+
+    if manhattan <= checkDistance then return false end
+
+    local distance = Util:findDistance(x, y)
+    
+    return distance > checkDistance
+end
+
 function Util:pitchAngle(distance,radius)
     local angle = distance / radius
     return angle
