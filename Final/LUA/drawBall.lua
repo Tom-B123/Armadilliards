@@ -12,7 +12,9 @@ for y = 0,3 do
     end
 end
 
-function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health)
+local root2 = 2^0.5
+
+function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
 
@@ -23,6 +25,13 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health)
     --Sets the sprite centre to be offset by 16px in x and y, representing the centre of the 32x32 images.
     --Rotates the sprite around the z axis by the yaw value.
     local function tryDraw()
+        if showCollisions then
+            love.graphics.setColor(1,0,0,0.5)
+            love.graphics.polygon("fill",x + 32*root2,y,x,y + 32*root2,x - 32*root2,y,x,y - 32*root2)
+            --Euclidian distance
+            love.graphics.setColor(0,0,1,0.5)
+            love.graphics.circle("fill",x,y,32)
+        end
         love.graphics.setColor(colour)
         love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
         love.graphics.setColor(1,1,1)
@@ -33,6 +42,8 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health)
             love.graphics.print(health,x - (4.5 * #health),y+10)
         end
         love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
+
+        
     end
     pcall(tryDraw)
 end

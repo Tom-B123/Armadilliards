@@ -3,11 +3,12 @@ require("grid")
 local drawBall  = require("drawBall")
 require("lists")
 
-local tick          = 0
-local lastFrame     = Socket.gettime() * 10000
-local checks        = 0
-local fpsList       = List:new()
-local timeToRespawn = 0
+local tick            = 0
+local lastFrame       = Socket.gettime() * 10000
+local checks          = 0
+local manhattanChecks = 0
+local fpsList         = List:new()
+local timeToRespawn   = 0
 
 
 local grid = Grid:new(4098,32)
@@ -153,7 +154,7 @@ function Ball:draw(offsetX,offsetY)
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        name,health
+        name,health,World.debugChecks
     )
 end
 
@@ -213,7 +214,7 @@ function Ball:rope(rx,ry)
     local function isClicked(ID,x,y)
         local ball      = World:getByID(ID)
 
-        local manhattan = math.abs(ball.x - x) + math.abs(ball.y - y)
+        local manhattan = Util:manhattanDistance(ball.x - x,ball.y - y)
         if manhattan > 2*ball.radius then return false end
 
         return Util:findDistance(ball.x-x,ball.y-y) <= ball.radius
@@ -486,6 +487,7 @@ function World:newRope(ID1,ID2,length,elasticity)
         return
     end
 
+
     self.ropes[hashedID] = nRope
 
     self.ropedBalls[ID1] = true
@@ -543,7 +545,7 @@ function World:updateRopes()
             y = (rope1.y + rope2.y) / 2
         }
         --manhattan distance is very cheap to calculate, so used to prevent exessive square root calculions when they aren't necessary
-        local manhattan = math.abs(rope2.x - rope1.x) + math.abs(rope2.y-rope1.y)
+        local manhattan = Util:manhattanDistance(rope2.x - rope1.x,rope2.y-rope1.y)
         if manhattan >= ropeLength then
             process({rope1,rope2},ropeCentre,ropeLength,elasticity)
         end
@@ -693,7 +695,7 @@ function World:expensiveCollisions(ballIDs)
         local dvy = ball1.vy - ball2.vy
 
         --Using manhattan distance to check the speed isn't too low, without needing a sqrt
-        local manhattan = math.abs(dvx) + math.abs(dvy)
+        local manhattan = Util:manhattanDistance(dvx,dvy)
         if manhattan < 3 then return end
 
         local dSpeed = Util:findDistance(dvx,dvy)
@@ -740,14 +742,15 @@ function World:expensiveCollisions(ballIDs)
         local ball1 = self:getByID(ID1)
         local ball2 = self:getByID(ID2)
         
-        local manhattan = math.abs(ball1.x-ball2.x) + math.abs(ball1.y-ball2.y)
+        local manhattan = Util:manhattanDistance(ball1.x-ball2.x,ball1.y-ball2.y)
 
         local diameter = ball1.radius + ball2.radius
 
+        
         --Using manhattan distance to skip unnessesary checks
-        if manhattan > 2 * diameter then return end
-
-        checks = checks + 1
+        if manhattan > (2^0.5) * diameter then return end
+        
+        manhattanChecks = manhattanChecks + 1
 
         local collisionAxis = {x=0,y=0}
         collisionAxis.x = ball1.x - ball2.x
@@ -756,6 +759,8 @@ function World:expensiveCollisions(ballIDs)
         local distance = Util:findDistance(collisionAxis.x,collisionAxis.y)
         --If they collide:
         if distance > diameter then return end
+
+        checks = checks + 1
 
         --Calulate the damage caused
         calculateDamage(ball1,ball2,hashSum)
@@ -901,6 +906,7 @@ function World:update(dt,isClient)
         return
     end
     checks = 0
+    manhattanChecks = 0
     collisionCache = {}
     damageMessages = {}
     ropeMessages   = {}
@@ -966,6 +972,7 @@ function World:draw()
 
    
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
+    if self.debugChecks then love.graphics.print("manhattan checks: "..manhattanChecks,0,220) end
     if World.showFPS then love.graphics.print(World:updateFPS()) end
 end
 

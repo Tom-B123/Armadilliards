@@ -259,6 +259,10 @@ local function inLobby()
     return (state[1] == "in lobby" or state[1] == "hosting lobby" or state[1] == "in game" or state[1] == "hosting game")
 end
 
+local function offline()
+    return (state[1] == "main menu" or state[1] == "gamemode select")
+end
+
 -- Updates the list of avialable maps
 local function updateMaps()
     maps = List:new()
@@ -1476,10 +1480,7 @@ end
 
 function love.quit()
     -- return true to prevent quitting?
-    if player then
-        player:send("econ:"..player.ID.."_\n")
-        return not canQuit
-    end
+    return not offline()
 end
 
 function love.load()
@@ -1538,7 +1539,7 @@ function love.update(dt)
         print("RemovingID: "..ID)
         LobbyPlayer:removeID(ID)
     end
-    
+
     tick = tick + 1
     if tempTick > 0    then tempTick = tempTick - 1 end
 end

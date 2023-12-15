@@ -132,6 +132,10 @@ function Util:findDistance(x,y)
     return (x*x + y*y)^0.5
 end
 
+function Util:manhattanDistance(x,y)
+    return math.abs(x) + math.abs(y)
+end
+
 function Util:pitchAngle(distance,radius)
     local angle = distance / radius
     return angle
