@@ -311,6 +311,31 @@ end
 function Shape:makeRopes()
     local circles = self.circles
     local dims = (#circles) ^ 0.5
+    
+    local diagonal = Util:findDistance(circles[1].x-circles[2].x,circles[1].y-circles[dims+1].y) / 1.15
+    for y = 0,dims-2 do
+        for x = 0,dims-2 do
+            local ind  = (dims)*y + x + 1
+            local nInd = (dims)*(y+1) + x + 2
+            World:newRope(
+                circles[ind].ID,
+                circles[nInd].ID,
+                diagonal,0
+            )
+        end
+    end
+    for y = 0,dims-2 do
+        for x = 1,dims-1 do
+            local ind  = (dims)*y + x + 1
+            local nInd = (dims)*(y+1) + x
+            World:newRope(
+                circles[ind].ID,
+                circles[nInd].ID,
+                diagonal,0
+            )
+        end
+    end
+
     for y = 0,dims-1 do
         for x = 1,dims-1 do
             World:newRope(
@@ -414,7 +439,7 @@ World = {
     showFPS       = true,
     debugChecks   = false,
     debugGrid     = true,
-    debugShapes   = false,
+    debugShapes   = true,
     respawnTime   = 240,
     maxHealth     = 50,
     particleLimit = 200,
