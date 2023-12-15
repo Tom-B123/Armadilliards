@@ -415,14 +415,14 @@ World = {
     debugGrid     = true,
     debugShapes   = false,
     respawnTime   = 240,
-    maxHealth     = 1,
+    maxHealth     = 50,
     particleLimit = 1000,
     particleCount = 0
 }
 
 function World:drawRespawnTime()
     timeToRespawn = -1
-    if World.focus.death then timeToRespawn = math.floor((World.respawnTime - tick + World.focus.death) / 60) + 1 end
+    if World.focus.death then timeToRespawn = (math.floor(((World.respawnTime - tick + World.focus.death) / 60)*10) + 1)/10 end
     if timeToRespawn > -1 then love.graphics.print("respawning in "..(timeToRespawn).." seconds",0,400) end
 end
 
