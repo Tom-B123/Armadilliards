@@ -894,6 +894,7 @@ drawStateSwitch:addCase("hosting lobby",function()
     drawKickButtons()
     love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
+        print(ID)
         local name  = LobbyPlayer:getName(ID)
         local ready = Util:toBool(LobbyPlayer:getReady(ID))
         local readyString = "not ready"
