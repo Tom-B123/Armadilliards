@@ -1087,7 +1087,7 @@ netSwitch:addCase("econ",function(args)
             if Util:toBool(isMain) then
                 
             else
-                state[1]      = "searching for lobby"
+                tempTick      = 30
                 toConnectMain = true
             end
             lState[2] = nil
@@ -1515,8 +1515,10 @@ function love.update(dt)
         toConnectPlayer = nil
     end
 
-    if toConnectMain and player then
+    if toConnectMain and player and tempTick == 1 then
+        player:close()
         player:connectToMain()
+        state[1]        = "searching for lobby"
         toConnectMain   = false
     end
 

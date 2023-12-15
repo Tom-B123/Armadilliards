@@ -458,7 +458,6 @@ function World:updateDeath(balls)
             self:removeRopes(ball.ID)
         end
     end
-    
 end
 
 --Create a new entry in the ropes dictionary using the 2 connected IDs

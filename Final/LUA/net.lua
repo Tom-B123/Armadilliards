@@ -48,6 +48,7 @@ function Server:receive(clients)
             --     table.insert(newPlayerIDs, {client,ID})
             -- end
         elseif err == "closed" then
+            print("client left")
             client:close()
             table.remove(clients, i)
         end
