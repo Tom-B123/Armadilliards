@@ -130,17 +130,8 @@ end
 
 --Drawing ball objects
 function Ball:draw(offsetX,offsetY)
-    if self.multi or self.death then
-        if World.debugShapes then
-            love.graphics.circle(
-                "line",
-                self.x + offsetX,
-                self.y + offsetY,
-                self.radius
-            )
-        end
-        return
-    end
+    local debugBall = false
+    if World.debugShapes and (self.multi or self.death) then debugBall = true end
     local name   = nil
     local health = nil
     if self.playerID and World.showNames then
@@ -154,7 +145,8 @@ function Ball:draw(offsetX,offsetY)
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        name,health,World.debugChecks
+        name,health,World.debugChecks,
+        debugBall,self.radius
     )
 end
 
@@ -437,7 +429,7 @@ World = {
     showNames     = true,
     showHealth    = true,
     showFPS       = true,
-    debugChecks   = false,
+    debugChecks   = true,
     debugGrid     = true,
     debugShapes   = true,
     respawnTime   = 240,

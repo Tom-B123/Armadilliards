@@ -14,7 +14,7 @@ end
 
 local root2 = 2^0.5
 
-function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions)
+function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,debugBall,radius)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
 
@@ -32,8 +32,17 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions)
             love.graphics.setColor(0,0,1,0.5)
             love.graphics.circle("fill",x,y,32)
         end
-        love.graphics.setColor(colour)
-        love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
+        if debugBall then
+            love.graphics.circle(
+                "line",
+                x,
+                y,
+                radius
+            )
+        else
+            love.graphics.setColor(colour)
+            love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
+        end
         love.graphics.setColor(1,1,1)
         if name then
             love.graphics.print(name,x - (4.5 * #name),y-32)
