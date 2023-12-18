@@ -763,12 +763,17 @@ function World:expensiveCollisions(ballIDs)
         local ball1 = self:getByID(ID1)
         local ball2 = self:getByID(ID2)
 
-        if     hole1 and not hole2 then
+        --If ball1 is a hole and ball2 is a non-multi-shape ball then
+
+        if     hole1 and not hole2 and not ball2.multi then
             ball2.health = 0
             table.insert(damageMessages,"damg:"..ball2.ID.."_"..(0).."_"..(2).."_"..ball2.x.."_"..ball2.y)
             self:updateDeath({ball2})
             return
-        elseif hole2 and not hole1 then
+        
+        --If ball2 is a hole and ball1 is a non-multi-shape ball then
+
+        elseif hole2 and not hole1 and not ball1.multi then
             ball1.health = 0
             table.insert(damageMessages,"damg:"..ball1.ID.."_"..(0).."_"..(2).."_"..ball1.x.."_"..ball1.y)
             self:updateDeath({ball1})
