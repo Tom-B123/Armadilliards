@@ -501,6 +501,16 @@ end
 --Create a new entry in the ropes dictionary using the 2 connected IDs
 function World:newRope(ID1,ID2,length,elasticity)
     if ID1 == ID2 then return end
+
+    --Holes can't be roped.
+
+    if self.holesSet:has(ID1) or self.holesSet:has(ID2) then return end
+
+    --Dead players can't be roped
+
+    if self:getByID(ID1).death or self:getByID(ID2).death then return end
+
+    
     --Create an ID for the rope unique to the two connected balls. creating a new rope with the same ID will alter the existing rope connection
     local hashedID       = Util:hashIDs({ID1,ID2})
     local nRope          = {ID1,ID2,length,elasticity}
@@ -988,7 +998,9 @@ function World:update(dt,isClient)
     if isClient then
         self:updateDeath(self.balls)
         for i, ball in ipairs(self.balls) do
-            ball:verlet(dt)
+            if not self.holesSet:has(ball) then
+                ball:verlet(dt)
+            end
         end
         tick = tick + 1
         return
@@ -1002,8 +1014,10 @@ function World:update(dt,isClient)
     self:updateRopes()
     
     for i, ball in ipairs(self.balls) do
-        ball:edgeConstraint()
-        ball:verlet(dt)
+        if not self.holesSet:has(ball) then
+            ball:edgeConstraint()
+            ball:verlet(dt)
+        end
     end
     for i,shape in ipairs(self.shapes) do
         shape:update()
