@@ -51,7 +51,6 @@ function Ball:new(x,y)
     object.yaw      = 0
     object.pitch    = 0
     object.colour   = colours[1]
-    object.multi    = false
     object.health   = World.maxHealth
     object.mass     = 10
     object.death    = nil
@@ -139,13 +138,13 @@ function Ball:draw(offsetX,offsetY)
     end
 
     local debugBall = false
-    if (self.multi or self.death) then debugBall = true end
+    if (World.multiSet:has(self.ID) or self.death) then debugBall = true end
     local name   = nil
     local health = nil
     if self.playerID and World.showNames then
         name = LobbyPlayer:getName(self.playerID)
     end
-    if self.health > 0 and World.showHealth and not self.multi then
+    if self.health > 0 and World.showHealth and not World.multiSet:has(self.ID) then
         health = math.floor(self.health).."/"..World.maxHealth
     end
     if debugBall and World.debugShapes or not debugBall then
@@ -430,20 +429,29 @@ World = {
     ballsList     = List:new(),
     balls         = {},
     shapes        = {},
+
     holes         = {},
     holesSet      = Set: new(),
+    multi         = {},
+    multiSet      = Set: new(),
+
     playableBalls = {},
     ballIDDict    = {},
+
     ropes         = {},
     ropedBalls    = Set: new(),
+
     particles     = {},
+
     focus         = nil,
+    
     showNames     = true,
     showHealth    = true,
     showFPS       = true,
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
+
     respawnTime   = 240,
     maxHealth     = 50,
     particleLimit = 200,
@@ -636,6 +644,7 @@ function World:clear()
     self.shapes        = {}
     self.holes         = {}
     self.holesSet:  clear()
+    self.multiSet:  clear()
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
@@ -660,6 +669,13 @@ function World:assignID(ball,ID,salt)
             self.holesSet:add(ID)
         end
     end
+    self.holes = {}
+    for i,multi in ipairs(self.multi) do
+        if multi == ball then
+            self.multiSet:add(ID)
+        end
+    end
+    self.multi = {}
     self.ballIDDict[ID] = ball
     return ID
 end
@@ -708,9 +724,9 @@ function World:square(x,y,length)
     for circleY = 1,count do
         for circleX = 1,count do
             local ball  = self:newBall(x + (circleX*circleSize),y + (circleY*circleSize))
-            ball.multi  = true
             ball.radius = circleSize/2
-            table.insert(circles,ball)
+            table.insert(circles,   ball)
+            table.insert(self.multi,ball)
         end
     end
     
@@ -767,12 +783,15 @@ function World:expensiveCollisions(ballIDs)
         local hole1 = self.holesSet:has(ID1)
         local hole2 = self.holesSet:has(ID2)
 
+        local multi1 = self.multiSet:has(ID1)
+        local multi2 = self.multiSet:has(ID2)
+
         local ball1 = self:getByID(ID1)
         local ball2 = self:getByID(ID2)
 
         --If ball1 is a hole and ball2 is a non-multi-shape ball then
 
-        if     hole1 and not hole2 and not ball2.multi then
+        if     hole1 and not hole2 and not multi2 then
             ball2.health = 0
             table.insert(damageMessages,"damg:"..ball2.ID.."_"..(0).."_"..(2).."_"..ball2.x.."_"..ball2.y)
             self:updateDeath({ball2})
@@ -780,7 +799,7 @@ function World:expensiveCollisions(ballIDs)
         
         --If ball2 is a hole and ball1 is a non-multi-shape ball then
 
-        elseif hole2 and not hole1 and not ball1.multi then
+        elseif hole2 and not hole1 and not multi1 then
             ball1.health = 0
             table.insert(damageMessages,"damg:"..ball1.ID.."_"..(0).."_"..(2).."_"..ball1.x.."_"..ball1.y)
             self:updateDeath({ball1})
@@ -824,19 +843,19 @@ function World:expensiveCollisions(ballIDs)
 
         local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
 
-        if not ball1.multi then ball1.health = nHealth1 end
-        if not ball2.multi then ball2.health = nHealth2 end
+        if not multi1 then ball1.health = nHealth1 end
+        if not multi2 then ball2.health = nHealth2 end
 
         self:updateDeath({ball1,ball2})
 
-        if not (ball1.multi and ball2.multi) then
+        if not (multi1 and multi2) then
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
         end
-        if not ball1.multi then
+        if not multi1 then
             table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
         end
-        if not ball2.multi then
+        if not multi2 then
             table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
         end
     end
@@ -1106,7 +1125,7 @@ end
 function World:getUpgm()
     local out = {}
     for i, ball in ipairs(self.balls) do
-        if not ball.multi then 
+        if not self.multiSet:has(ball.ID) then
             table.insert(out,"upgm:ball_"..ball.ID.."_"..Util:coordToHex(ball.x,ball.y).."_\n")
         end
     end
