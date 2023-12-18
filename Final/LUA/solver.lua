@@ -131,6 +131,13 @@ end
 
 --Drawing ball objects
 function Ball:draw(offsetX,offsetY)
+
+    if World.holesSet:has(self.ID) then
+        love.graphics.setColor(0,0.2,0)
+        love.graphics.circle("fill",self.x + offsetX,self.y + offsetY,self.radius)
+        return
+    end
+
     local debugBall = false
     if (self.multi or self.death) then debugBall = true end
     local name   = nil
@@ -628,7 +635,7 @@ function World:clear()
     self.balls         = {}
     self.shapes        = {}
     self.holes         = {}
-    self.holesSet:clear()
+    self.holesSet:  clear()
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
