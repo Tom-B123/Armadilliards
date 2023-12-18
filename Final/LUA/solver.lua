@@ -2,6 +2,7 @@ require("util")
 require("grid")
 local drawBall  = require("drawBall")
 require("lists")
+require("sets")
 
 local tick            = 0
 local lastFrame       = Socket.gettime() * 10000
@@ -423,11 +424,11 @@ World = {
     balls         = {},
     shapes        = {},
     holes         = {},
-    holesDict     = {},
+    holesSet      = Set: new(),
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
-    ropedBalls    = {},
+    ropedBalls    = Set: new(),
     particles     = {},
     focus         = nil,
     showNames     = true,
@@ -517,16 +518,16 @@ function World:newRope(ID1,ID2,length,elasticity)
     --delete the rope if the same rope already exists
     if isSameRope(self.ropes[hashedID],nRope) then
         self.ropes[hashedID] = nil
-        self.ropedBalls[ID1] = false
-        self.ropedBalls[ID2] = false
+        self.ropedBalls:remove(ID1)
+        self.ropedBalls:remove(ID2)
         return
     end
 
     if true then
         self.ropes[hashedID] = nRope
 
-        self.ropedBalls[ID1] = true
-        self.ropedBalls[ID2] = true
+        self.ropedBalls:add(ID1)
+        self.ropedBalls:add(ID2)
     end
 
     return nRope
@@ -534,15 +535,15 @@ end
 
 --Removes all ropes connected to a ballID
 function World:removeRopes(ID)
-    if not self.ropedBalls[ID] then return end
+    if not self.ropedBalls:has(ID) then return end
     local hashedID
-    for ballID,val in pairs(self.ropedBalls) do
+    for ballID,val in self.ropedBalls:pairs() do
         --Loop through every ball that is roped, if that ID combined with the removing ball's ID exists, they must be roped. Remove all
         --rope connections found
         hashedID = Util:hashIDs({ID,ballID})
         if self.ropes[hashedID] then self.ropes[hashedID] = nil end
     end
-    self.ropedBalls[ID] = nil
+    self.ropedBalls:remove(ID)
 end
 
 function World:updateRopes()
@@ -619,7 +620,7 @@ function World:clear()
     self.balls         = {}
     self.shapes        = {}
     self.holes         = {}
-    self.holesDict     = {}
+    self.holesSet:clear()
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
@@ -641,7 +642,7 @@ function World:assignID(ball,ID,salt)
     ball.ID = ID
     for i,hole in ipairs(self.holes) do
         if hole == ball then
-            self.holesDict[ID] = ball
+            self.holesSet:add(ID)
         end
     end
     self.ballIDDict[ID] = ball
@@ -738,7 +739,7 @@ local collisionCache  = {}
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs)
     local bounce = 1
-    local function calculateDamage(ball1,ball2,hashSum)
+    local function calculateDamage(ID1,ID2,hashSum)
 
         --The tick of the last collision of ball1 and ball2
         local lastTick = damageCooldowns[hashSum]
@@ -748,6 +749,24 @@ function World:expensiveCollisions(ballIDs)
             return
         end
         
+        local hole1 = self.holesSet:has(ID1)
+        local hole2 = self.holesSet:has(ID2)
+
+        local ball1 = self:getByID(ID1)
+        local ball2 = self:getByID(ID2)
+
+        if     hole1 and not hole2 then
+            ball2.health = 0
+            table.insert(damageMessages,"damg:"..ball2.ID.."_"..(0).."_"..(2).."_"..ball2.x.."_"..ball2.y)
+            self:updateDeath({ball2})
+            return
+        elseif hole2 and not hole1 then
+            ball1.health = 0
+            table.insert(damageMessages,"damg:"..ball1.ID.."_"..(0).."_"..(2).."_"..ball1.x.."_"..ball1.y)
+            self:updateDeath({ball1})
+            return
+        end
+
         --Update the damageCooldowns
         damageCooldowns[hashSum] = tick
 
@@ -827,7 +846,7 @@ function World:expensiveCollisions(ballIDs)
         checks = checks + 1
 
         --Calulate the damage caused
-        calculateDamage(ball1,ball2,hashSum)
+        calculateDamage(ID1,ID2,hashSum)
 
         local n = collisionAxis
         n.x = n.x / distance
@@ -852,7 +871,7 @@ function World:expensiveCollisions(ballIDs)
             offset2 = ball1.radius / ball2.radius * dWeight
         end
 
-        if not (self.holesDict[ID1] or self.holesDict[ID2]) then
+        if not (self.holesSet:has(ID1) or self.holesSet:has(ID2)) then
             ball2.x = ball2.x - bounce * offset2 * delta * n.x
             ball2.y = ball2.y - bounce * offset2 * delta * n.y
 
