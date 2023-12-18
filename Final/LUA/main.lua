@@ -6,10 +6,10 @@ require("util")
 require("solver")
 local ReadMap = require("readMap")
 
-local mobile = false
-if love.system.getOS() == 'iOS' or love.system.getOS() == 'Android' then
-    mobile = true
-end
+-- local mobile = false
+-- if love.system.getOS() == 'iOS' or love.system.getOS() == 'Android' then
+--     mobile = true
+-- end
 
 local player = nil
 -- Default values for creating a lobby

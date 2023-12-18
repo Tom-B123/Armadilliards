@@ -664,18 +664,7 @@ function World:assignID(ball,ID,salt)
     if salt == nil then salt = 0 end
     if ID == nil then ID = Util:calculateID(6,salt) end
     ball.ID = ID
-    for i,hole in ipairs(self.holes) do
-        if hole == ball then
-            self.holesSet:add(ID)
-        end
-    end
-    self.holes = {}
-    for i,multi in ipairs(self.multi) do
-        if multi == ball then
-            self.multiSet:add(ID)
-        end
-    end
-    self.multi = {}
+
     self.ballIDDict[ID] = ball
     return ID
 end
@@ -740,7 +729,19 @@ function World:generateIDs()
     for i,ball in ipairs(self.balls) do
         local ID = self:assignID(ball,nil,i)
         table.insert(IDs,ID)
+        for j,hole in ipairs(self.holes) do
+            if hole == ball then
+                self.holesSet:add(ID)
+            end
+        end
+        for j,multi in ipairs(self.multi) do
+            if multi == ball then
+                self.multiSet:add(ID)
+            end
+        end
     end
+    self.holes = {}
+    self.multi = {}
     for i,shape in ipairs(self.shapes) do
         shape:makeRopes()
     end
