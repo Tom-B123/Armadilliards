@@ -24,18 +24,26 @@ processSwitch:addCase(0,function(args)
     World:newBall(x,y,false)
 end)
 
--- --Player controlled ball
+--Player controlled ball
 processSwitch:addCase(1,function(args)
     local x = args[1]
     local y = args[2]
     World:newBall(x,y,true)
 end)
 
+--Square object
 processSwitch:addCase(2,function(args)
     local x      = args[1]
     local y      = args[2]
     local length = args[3]
     World:square(x,y,length)
+end)
+
+--Hole object
+processSwitch:addCase(3,function(args)
+    local x      = args[1]
+    local y      = args[2]
+    World:newHole(x,y)
 end)
 
 local function process(object,args)

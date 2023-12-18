@@ -422,6 +422,8 @@ World = {
     ballsList     = List:new(),
     balls         = {},
     shapes        = {},
+    holes         = {},
+    holesDict     = {},
     playableBalls = {},
     ballIDDict    = {},
     ropes         = {},
@@ -616,6 +618,8 @@ local iTime           = 5
 function World:clear()
     self.balls         = {}
     self.shapes        = {}
+    self.holes         = {}
+    self.holesDict     = {}
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
@@ -635,6 +639,11 @@ function World:assignID(ball,ID,salt)
     if salt == nil then salt = 0 end
     if ID == nil then ID = Util:calculateID(6,salt) end
     ball.ID = ID
+    for i,hole in ipairs(self.holes) do
+        if hole == ball then
+            self.holesDict[ID] = ball
+        end
+    end
     self.ballIDDict[ID] = ball
     return ID
 end
@@ -652,6 +661,14 @@ function World:newBall(x,y,playable)
         table.insert(self.playableBalls,nBall)
         self.ballsList:push(nBall)
     end
+    return nBall
+end
+
+--Creates a new ball in the world
+function World:newHole(x,y)
+    local nBall = Ball:new(x,y)
+    table.insert(self.balls,nBall)
+    table.insert(self.holes,nBall)
     return nBall
 end
 
@@ -834,11 +851,16 @@ function World:expensiveCollisions(ballIDs)
             offset1 = ball2.radius / ball1.radius / dWeight
             offset2 = ball1.radius / ball2.radius * dWeight
         end
-        ball2.x = ball2.x - bounce * offset2 * delta * n.x
-        ball2.y = ball2.y - bounce * offset2 * delta * n.y
-        ball1.x = ball1.x + bounce * offset1 * delta * n.x
-        ball1.y = ball1.y + bounce * offset1 * delta * n.y
+
+        if not (self.holesDict[ID1] or self.holesDict[ID2]) then
+            ball2.x = ball2.x - bounce * offset2 * delta * n.x
+            ball2.y = ball2.y - bounce * offset2 * delta * n.y
+
+            ball1.x = ball1.x + bounce * offset1 * delta * n.x
+            ball1.y = ball1.y + bounce * offset1 * delta * n.y
+        end
     end
+
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
