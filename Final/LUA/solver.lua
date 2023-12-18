@@ -510,7 +510,7 @@ function World:newRope(ID1,ID2,length,elasticity)
 
     if self:getByID(ID1).death or self:getByID(ID2).death then return end
 
-    
+
     --Create an ID for the rope unique to the two connected balls. creating a new rope with the same ID will alter the existing rope connection
     local hashedID       = Util:hashIDs({ID1,ID2})
     local nRope          = {ID1,ID2,length,elasticity}
@@ -533,12 +533,10 @@ function World:newRope(ID1,ID2,length,elasticity)
         return
     end
 
-    if true then
-        self.ropes[hashedID] = nRope
+    self.ropes[hashedID] = nRope
 
-        self.ropedBalls:add(ID1)
-        self.ropedBalls:add(ID2)
-    end
+    self.ropedBalls:add(ID1)
+    self.ropedBalls:add(ID2)
 
     return nRope
 end
