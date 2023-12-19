@@ -770,8 +770,6 @@ function World:assign(playerID,ballID)
     end
 end
 
-local collisionCache  = {}
-
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs)
     local bounce = 1
@@ -935,10 +933,7 @@ function World:expensiveCollisions(ballIDs)
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
                 local sum = Util:hashIDs({ID1,ID2})
-                if not collisionCache[sum] then
-                    collision(ID1,ID2,sum)
-                    collisionCache[sum] = true
-                end
+                collision(ID1,ID2,sum)
             end
         end
     end
@@ -1031,7 +1026,7 @@ function World:getBallIDs()
     return out
 end
 
-track:new("update")
+track:new("solver")
 track:new("grid population")
 track:new("ropes")
 track:new("verlet")
@@ -1039,7 +1034,7 @@ track:new("collisions")
 
 local function getTrackingTimes()
     local out = {}
-    table.insert(out,"update: "..track:getTime("update"))
+    table.insert(out,"solver: "..track:getTime("solver"))
     table.insert(out,"grid pop: "..track:getTime("grid population"))
     table.insert(out,"ropes: "..track:getTime("ropes"))
     table.insert(out,"verlet: "..track:getTime("verlet"))
@@ -1049,6 +1044,7 @@ end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
+    track:start("solver")
     if self.focus then camera:update(dt) end
     self:updateParticles(dt)
     self:updateRespawns()
@@ -1062,7 +1058,6 @@ function World:update(dt,isClient)
         tick = tick + 1
         return
     end
-    track:start("update")
     checks = 0
     manhattanChecks = 0
     collisionCache = {}
@@ -1090,10 +1085,11 @@ function World:update(dt,isClient)
     track:finish("verlet")
 
     track:start("collisions")
-    self:optimisedCollisions()
+    self:expensiveCollisions(World:getBallIDs())
+    -- self:optimisedCollisions()
     track:finish("collisions")
-    
-    track:finish("update")
+
+    track:finish("solver")
     tick = tick + 1
 end
 
