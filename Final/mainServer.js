@@ -51,6 +51,7 @@ function getUplobs() {
    
 }
 
+//Remove a lobby from dict and list
 function removeLobby(ID) {
     let ind = -1;
     for (i in lobbyIDs) {
@@ -92,6 +93,7 @@ function split(string, sep) {
 let messageQueue = [];
 let updateQueue = [];
 
+//Update lobby based on the fiven field and value
 function updateLobby(ID,field,value) {
     if (!isLobby(ID)) { return; }
 
@@ -161,12 +163,15 @@ function netSwitch(message,client) {
         }
 
         case "econ": {
-            const playerID = splitData[0];
+            const lobbyID = splitData[0];
             // remove playerID from player IDs
-            closeClient(client);
+            if (client) { loseClient(client); } 
 
             console.log("Client disconnected. Current count: " + clients.size);
 
+            if (!lobbyID) { break; }
+            console.log("client was hosting lobby: " + lobbyID);
+            delete hostDict[client];
             break;
         }
 
@@ -194,10 +199,14 @@ function netSwitch(message,client) {
             else { portDict[IP] = []; }
             portDict[IP].push(port);
 
-            const nLobby = new Lobby(lobbyID,lobbyName,hostName,0,maxPlayers,IP,port);
+            const nLobby       = new Lobby(lobbyID,lobbyName,hostName,0,maxPlayers,IP,port);
             lobbyDict[lobbyID] = nLobby;
             lobbyIDs.push(lobbyID);
             console.log("create new lobby: " + lobbyID);
+
+            //Store the lobbyID for unexpected closure of the client's connection
+            hostDict[client]   = lobbyID
+
             messageQueue.push("create:" + hostID + "_" + lobbyID + "_" + lobbyName + "_" + IP + "_" + port + "_" + maxPlayers + "_" + "\n");
         break;
     }
@@ -237,7 +246,8 @@ function netSwitch(message,client) {
     }
 }
 
-const clients = new Set();
+const clients  = new Set();
+let   hostDict = {};
 
 function send(clientsToReceive,msg) {
     if (clientsToReceive == "all") {
@@ -292,15 +302,16 @@ const server = net.createServer((socket) => {
 
     socket.on("end", () => {
         console.log("Client disconnected. Current count: " + clients.size);
-        clients.delete(socket)
+        clients.delete(socket);
     });
 
     socket.on("error", (error) => {
         if (error.code == "ECONNRESET") {
             console.log("client closed unexpectedly");
-            clients.delete(socket)
+            const lobbyID = hostDict[socket];
+            if (lobbyID) { netSwitch("econ:" + lobbyID); }
         }
-    })
+    });
 });
 
 const PORT = 500;
