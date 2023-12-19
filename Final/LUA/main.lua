@@ -11,7 +11,8 @@ local ReadMap = require("readMap")
 --     mobile = true
 -- end
 
-local player = nil
+local mainClient = nil
+local player     = nil
 -- Default values for creating a lobby
 local lobbyToCreate = {name = "new lobby", maxPlayers = 8}
 
@@ -175,9 +176,9 @@ end
 
 -- Apply editing text to the player name
 local function changePlayerName()
-    if not player then return end
+    if not mainClient then return end
     if editingText == "" then editingText = "new player" end
-    player.name    = editingText
+    mainClient.name    = editingText
     editingText    = nil
     state[2]       = nil
     lState[2]      = nil
@@ -202,7 +203,7 @@ end
 
 -- Apply editing text to the lobby name
 local function changeLobbyName()
-    if not player then return end
+    if not mainClient then return end
     if editingText    == "" then editingText = "new lobby" end
     lobbyToCreate.name = editingText
     editingText        = nil
@@ -212,7 +213,7 @@ local function changeLobbyName()
 end
 
 -- Pass received data into netSwitch
-local function processReceived()
+local function processReceived(client)
     local function process(data)
         for i,message in ipairs(data) do
             local splitData = Util:split(message,":")
@@ -223,14 +224,11 @@ local function processReceived()
         end
     end
     local data
-    if server then
-        data = server:receive("all")
-        process(data)
-    elseif player then
-        data = {player:receive()}
+    if client then
+        data = {client:receive()}
         while data do
             process(data)
-            data = player:receive()
+            data = client:receive()
             if data then data = {data}
             end
         end
@@ -284,24 +282,24 @@ updateMaps()
 -- Adding cases to the switch statements
 
 stateSwitch:addCase("searching for lobby",function()
-    if not player then return end
+    if not mainClient then return end
 
     if order == 1 then updateLobbyButtons() end
 
     if tick % 2 == 0 then
-        player:send("no dat\n")
+        mainClient:send("no dat\n")
     end
-    
-    processReceived()
+
+    processReceived(mainClient)
 end)
 
 stateSwitch:addCase("hosting lobby",function()
-    if not (server and player) then return end
-    processReceived()
+    if not (server and mainClient) then return end
+    processReceived(mainClient)
     if order == 1 then updateKickButtons() end
     if tick % refreshRate == 0 then
         server:sendUpdateMessage()
-        player:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
+        mainClient:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
     elseif tick % 2       == 0 then
         server:update()
     else
@@ -312,13 +310,13 @@ end)
 stateSwitch:addCase("connecting to lobby",function()
     if not player then return end
 
-    processReceived()
+    processReceived(player)
 end)
 
 stateSwitch:addCase("in lobby",function()
     if not player then return end
 
-    processReceived()
+    processReceived(player)
 end)
 
 stateSwitch:addCase("in game",function(dt)
@@ -326,7 +324,7 @@ stateSwitch:addCase("in game",function(dt)
 
     polyCoords = {}
 
-    processReceived()
+    processReceived(player)
 
     World:update(dt,true)
 
@@ -371,7 +369,7 @@ end)
 stateSwitch:addCase("hosting game",function(dt)
     if not server then return end
     server:send("all","no dat".."_\n")
-    processReceived()
+    processReceived(player)
 
     for rope in World:getRope() do
         server:send("all",rope)
@@ -467,8 +465,8 @@ newStateSwitch:addCase("connecting to server",function()
         lState[1] = "connecting to server"
         state[1]  = "searching for lobby"
 
-        player    = nPlayer
-        player.ID = Util:calculateID(8)
+        mainClient     = nPlayer
+        mainClient.ID  = Util:calculateID(8)
     end
 end)
 
@@ -513,12 +511,8 @@ newStateSwitch:addCase("configure game settings",function()
 end)
 
 newStateSwitch:addCase("searching for lobby",function()
-    if not player then return end
+    if not mainClient then return end
     clearButtons()
-    if server then
-        server:close()
-        server = nil
-    end
 
     JoinableLobby:clear()
     -- no text, the player name is drawn separatly above the button
@@ -534,7 +528,7 @@ newStateSwitch:addCase("searching for lobby",function()
         order     = 2
     end)
     newButton(1,"back",300,475,500,525,function()
-        player:send("econ:"..player.ID.."_\n")
+        mainClient:send("econ:"..mainClient.ID.."_\n")
         toChangeState = "gamemode select"
         tempTick      = 30
         JoinableLobby:clear()
@@ -543,10 +537,10 @@ newStateSwitch:addCase("searching for lobby",function()
 end)
 
 newStateSwitch:addCase("editing player name",function()
-    if not player then return end
+    if not mainClient then return end
     clearButtons()
     
-    editingText  = player.name
+    editingText  = mainClient.name
     editingIndex = #editingText + 1
     local cancel = newButton(2,"cancel",300,80,398,105,function()
         state[2]    = nil
@@ -563,7 +557,7 @@ newStateSwitch:addCase("editing player name",function()
 end)
 
 newStateSwitch:addCase("lobby creation",function()
-    if not player then return end
+    if not mainClient then return end
     clearButtons()
     newButton(2,"back",300,300,500,350,function()
         state[2]  = nil
@@ -580,11 +574,11 @@ newStateSwitch:addCase("lobby creation",function()
         local lobbyID = Util:calculateID(6)
         local IP      = Socket.dns.toip(Socket.dns.gethostname( ))
         local port    = 1000
-        player:send("create:"..
+        mainClient:send("create:"..
             lobbyID.."_"..
             lobbyToCreate.name.."_"..
-            player.ID.."_"..
-            player.name.."_"..
+            mainClient.ID.."_"..
+            mainClient.name.."_"..
             IP.."_"..
             port.."_"..
             lobbyToCreate.maxPlayers.."_\n"
@@ -614,7 +608,7 @@ newStateSwitch:addCase("lobby settings",function()
 end)
 
 newStateSwitch:addCase("editing lobby name",function()
-    if not player then return end
+    if not mainClient then return end
     clearButtons()
     
     editingText  = lobbyToCreate.name
@@ -634,7 +628,7 @@ newStateSwitch:addCase("editing lobby name",function()
 end)
 
 newStateSwitch:addCase("hosting lobby",function()
-    if not (player and server) then return end
+    if not (mainClient and server) then return end
 
     clearButtons()
 
@@ -642,11 +636,11 @@ newStateSwitch:addCase("hosting lobby",function()
 
     if lState[1] ~= "in game"  then
         LobbyPlayer:clear()
-        LobbyPlayer:new(player.ID)
-        LobbyPlayer:setName(player.ID,     player.name)
-        LobbyPlayer:setReady(player.ID,    true)
-        LobbyPlayer:setInLobby(player.ID,  true)
-        LobbyPlayer:setTeam(player.ID,    "team 1")
+        LobbyPlayer:new(mainClient.ID)
+        LobbyPlayer:setName(mainClient.ID,     mainClient.name)
+        LobbyPlayer:setReady(mainClient.ID,    true)
+        LobbyPlayer:setInLobby(mainClient.ID,  true)
+        LobbyPlayer:setTeam(mainClient.ID,    "team 1")
     end
 
     newButton(1,"start",600,500,750,550,function()
@@ -666,23 +660,23 @@ newStateSwitch:addCase("hosting lobby",function()
 end)
 
 newStateSwitch:addCase("connecting to lobby",function()
-    if not player then return end
+    if not mainClient then return end
 
-    player:send("ncon:"..player.ID.."_"..player.name.."_\n")
+    mainClient:send("ncon:"..mainClient.ID.."_"..mainClient.name.."_\n")
     lState[1] = state[1]
 end)
 
 newStateSwitch:addCase("in lobby",function()
-    if not player then return end
+    if not mainClient then return end
 
     clearButtons()
 
     love.graphics.setBackgroundColor( 0,0,0 )
 
     newButton(1,"ready",600,500,750,550,function()
-        local ready = LobbyPlayer:getReady(player.ID)
-        LobbyPlayer:setReady(player.ID,not ready)
-        player:send("updt:"..player.ID.."_ready_"..tostring(not ready).."_\n")
+        local ready = LobbyPlayer:getReady(mainClient.ID)
+        LobbyPlayer:setReady(mainClient.ID,not ready)
+        mainClient:send("updt:"..mainClient.ID.."_ready_"..tostring(not ready).."_\n")
     end)
 
     lState[1] = state[1]
@@ -702,12 +696,12 @@ newStateSwitch:addCase("editing message",function()
 end)
 
 newStateSwitch:addCase("hosting game",function()
-    if not (server and player) then return end
+    if not (server and mainClient) then return end
     clearButtons()
 
     love.graphics.setBackgroundColor( 0,0.2,0 )
 
-    LobbyPlayer:setInLobby(player.ID,false)
+    LobbyPlayer:setInLobby(mainClient.ID,false)
     
     --Load the map file
     ReadMap:open(maps:getVal())
@@ -729,7 +723,7 @@ newStateSwitch:addCase("hosting game",function()
 end)
 
 newStateSwitch:addCase("in game",function()
-    if not player then return end
+    if not mainClient then return end
     clearButtons()
 
     love.graphics.setBackgroundColor( 0,0.2,0 )
@@ -841,7 +835,7 @@ drawStateSwitch:addCase("configure game settings",function()
 end)
 
 drawStateSwitch:addCase("searching for lobby",function()
-    if not player then return end
+    if not mainClient then return end
     drawLobbyButtons()
     love.graphics.setColor(0,0,0)
     love.graphics.rectangle("fill",0,0,800,100)
@@ -852,7 +846,7 @@ drawStateSwitch:addCase("searching for lobby",function()
     -- Drawing the player name onto the edit player name button
     local playerNameText
     if editingText and getState(2) == "editing player name" then playerNameText = editingText
-    else playerNameText = player.name end
+    else playerNameText = mainClient.name end
     if playerNameText then love.graphics.print(playerNameText,300,25) end
 end)
 
@@ -1151,7 +1145,7 @@ end)
 
 -- Create a new lobby and confirm creation
 netSwitch:addCase("create",function(args)
-    if not player then return end
+    if not mainClient then return end
     local splitData   = Util:split(args,"_")
 
     local hostID      = splitData[1]
@@ -1161,13 +1155,13 @@ netSwitch:addCase("create",function(args)
     local port        = splitData[5]
     local maxPlayers  = splitData[6]
 
-    if player.ID     == hostID then
+    if mainClient.ID  == hostID then
 
         -- Host has both a server and player object, player object is kept
         toChangeState = "hosting lobby"
         tempTick      = 30
 
-        server        = Lobby:new(lobbyID,lobbyName,port,IP,player.ID,maxPlayers)
+        server        = Lobby:new(lobbyID,lobbyName,port,IP,mainClient.ID,maxPlayers)
 
     end
 end)
@@ -1372,8 +1366,8 @@ end)
 
 -- Handles keyboard inputs for writing text
 function love.textinput(t)
-    if not editingText then return end
-    if not player      then return end
+    if not editingText then            return end
+    if not (player or mainClient) then return end
     if t == nil or t == ":" or t == "_" then return end
 
     -- Adds text at the editing index and incriments the index
@@ -1394,7 +1388,7 @@ function love.keypressed(key)
         if key == "left" then maps:prev() end
         if key == "right" then maps:next() end
     end
-    if editingText and player then
+    if editingText and (player or mainClient) then
         if key == "escape"    then
             state[order]  = nil
             lState[order] = nil

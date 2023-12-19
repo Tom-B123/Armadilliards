@@ -163,16 +163,16 @@ function netSwitch(message,client) {
         }
 
         case "econ": {
-            console.log(message);
             const lobbyID = splitData[0];
-            // remove playerID from player ID
 
-            console.log(lobbyID);
+            //If the player is hosting a lobby, close that lobby
             if (lobbyID) {
                 console.log("client was hosting lobby: " + lobbyID);
                 netSwitch("clse:" + lobbyID + "_\n",client)
                 delete hostDict[client];
             }
+
+            //Close the socket connection
             if (client) { closeClient(client);} 
 
             console.log("Client disconnected. Current count: " + clients.size);
@@ -182,6 +182,7 @@ function netSwitch(message,client) {
         case "create": {
             const lobbyID = splitData[0];
 
+            //Prevent lobby creation if the lobbyID already exists
             if (isLobby(lobbyID)) {
                 console.log("lobby: " + lobbyID + " already exists");
                 break;
