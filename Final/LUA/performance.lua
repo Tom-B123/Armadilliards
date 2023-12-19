@@ -1,6 +1,5 @@
 require("lists")
 
-local trackingKeys = {}
 local trackingDict = {}
 
 local resolution = 60
@@ -8,25 +7,37 @@ local resolution = 60
 local track = {}
 
 function track:new(event)
-    table.insert(trackingKeys,event)
     trackingDict[event] = List:new()
 end
 
-local function updateEvent(list)
-    list:append(Socket.gettime())
-    if list.length > resolution then list:pop() end
+local function getTime()
+    return Socket.gettime()*10000
 end
 
-function track:startEvent(event)
+function track:start(event)
     local list = trackingDict[event]
-    list:enqueue(Socket.gettime*10000)
+    list:enqueue(getTime())
 end
 
-function track:endEvent(event)
+function track:finish(event)
     local list = trackingDict[event]
-    
+    local lastTime = list:getVal()
+    local deltaTime = getTime() - lastTime
+    list:setVal(deltaTime)
+    return deltaTime
 end
 
-track:updateTime()
+track:new("event1")
+track:new("event2")
+track:start("event1")
+local b = 0
+for i = 1,100000 do b = b + i^0.5 end
+print(b)
+track:start("event2")
+b = 0
+for i = 1,1000000 do b = b + i^0.5 end
+print(b)
+print("time 1: "..track:finish("event1"))
+print("time 2: "..track:finish("event2"))
 
 return track
