@@ -1326,12 +1326,10 @@ end)
 
 netSwitch:addCase("damg",function(args)
     if not player then return end
-    print(args)
     local splitData          = Util:split(args,"_")
     local ballID             = splitData[1]
     local health             = Util:hexToNum(splitData[2])/10
     local force              = Util:hexToNum(splitData[3])/10
-    print(splitData[4],splitData[5])
     local centreX,centreY    = Util:hexToCoord(splitData[4],splitData[5])
     local ball               = World:getByID(ballID)
     if ball then ball.health = health end
@@ -1343,7 +1341,6 @@ end)
 
 netSwitch:addCase("nrope",function(args)
     if not player then return end
-    print(args)
     local splitData = Util:split(args,"_")
     local ID1    = splitData[1]
     local ID2    = splitData[2]

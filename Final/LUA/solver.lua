@@ -489,7 +489,7 @@ function World:updateDeath(balls)
     for i, ball in ipairs(balls) do
         local health = ball.health
         if health <= 0 then
-            for i = 1,15 do
+            for j = 1,15 do
                 self:newParticle("rainbow",ball.x,ball.y,5,i)
             end
             ball.health = self.maxHealth
@@ -520,8 +520,10 @@ function World:newRope(ID1,ID2,length,elasticity)
 
     --Holes can't be roped.
 
-    if self.holesSet:has(ID1) or self.holesSet:has(ID2) then return end
+    if self.holesSet:has(ID1) or self.holesSet:has(ID2)   then return end
 
+
+    if not (self:getByID(ID1) and self:getByID(ID2))      then return end
     --Dead players can't be roped
 
     if self:getByID(ID1).death or self:getByID(ID2).death then return end
@@ -795,7 +797,8 @@ function World:expensiveCollisions(ballIDs)
 
         if     hole1 and not hole2 and not multi2 then
             ball2.health = 0
-            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..ball2.x.."_"..ball2.y)
+            local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
+            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
             self:updateDeath({ball2})
             return
         
@@ -803,7 +806,8 @@ function World:expensiveCollisions(ballIDs)
 
         elseif hole2 and not hole1 and not multi1 then
             ball1.health = 0
-            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..ball1.x.."_"..ball1.y)
+            local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
+            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
             self:updateDeath({ball1})
             return
         end
