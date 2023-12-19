@@ -11,7 +11,6 @@ local manhattanChecks = 0
 local fpsList         = List:new()
 local timeToRespawn   = 0
 
-
 local grid = Grid:new(4098,32)
 
 local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}

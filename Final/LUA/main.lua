@@ -465,8 +465,9 @@ newStateSwitch:addCase("connecting to server",function()
         lState[1] = "connecting to server"
         state[1]  = "searching for lobby"
 
+        nPlayer.ID     = Util:calculateID(8)
         mainClient     = nPlayer
-        mainClient.ID  = Util:calculateID(8)
+        player         = nPlayer
     end
 end)
 
@@ -723,7 +724,7 @@ newStateSwitch:addCase("hosting game",function()
 end)
 
 newStateSwitch:addCase("in game",function()
-    if not mainClient then return end
+    if not player then return end
     clearButtons()
 
     love.graphics.setBackgroundColor( 0,0.2,0 )
@@ -1122,21 +1123,21 @@ end)
 
 -- Request and confirm joining a new lobby
 netSwitch:addCase("join",function(args)
-    if not player then return end
+    if not mainClient then return end
     local splitData  = Util:split(args,"_")
     local ID   = splitData[1]
     local IP   = splitData[2]
     local port = splitData[3]
 
-    if ID == player.ID then
+    if ID == mainClient.ID then
         local nPlayer   = Player:new(IP,port)
         if nPlayer then
-            player:send("econ:"..player.ID.."_\n")
+            mainClient:send("econ:"..mainClient.ID.."_\n")
             toChangeState   = "connecting to lobby"
             tempTick        = 30
 
-            nPlayer.name    = player.name
-            nPlayer.ID      = player.ID
+            nPlayer.name    = mainClient.name
+            nPlayer.ID      = mainClient.ID
 
             toConnectPlayer = nPlayer
         end
