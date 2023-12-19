@@ -97,7 +97,7 @@ function Util:coordToHex(x,y)
     return hexX,hexY
 end
 
-function Util:HexToCoord(hexX,hexY)
+function Util:hexToCoord(hexX,hexY)
     local numX = self:hexToNum(hexX) / 10
     local numY = self:hexToNum(hexY) / 10
     return numX,numY

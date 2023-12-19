@@ -1137,7 +1137,7 @@ function World:getUpgm()
     end
     for i,shape in ipairs(self.shapes) do
         local verts = shape:getVerts()
-        local msg = "upgm:poly"
+        local msg = "upgm:poly_"
         for j = 1, #verts/2 do
             local x = verts[j*2-1]
             local y = verts[j*2]

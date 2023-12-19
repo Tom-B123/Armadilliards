@@ -1298,7 +1298,7 @@ netSwitch:addCase("upgm",function(args)
             local ascY      = change[3]
             if ID and ascX and ascY then
                 local ball  = World:getByID(ID)
-                local x,y   = Util:HexToCoord(ascX,ascY)
+                local x,y   = Util:hexToCoord(ascX,ascY)
                 if ball then
                     ball.x  = x
                     ball.y  = y
@@ -1315,7 +1315,7 @@ netSwitch:addCase("upgm",function(args)
             local ascX = splitData[i*2]
             local ascY = splitData[1+i*2]
             if ascX and ascY then
-                local x,y  = Util:HexToCoord(ascX,ascY)
+                local x,y  = Util:hexToCoord(ascX,ascY)
                 table.insert(coords,x + offsetX)
                 table.insert(coords,y + offsetY)
             end
