@@ -1,4 +1,5 @@
-const net = require("net");
+const net      = require("net");
+const socketIo = require('socket.io');
 
 let lobbyIDs  = [];
 let lobbyDict = {};
@@ -165,9 +166,11 @@ function netSwitch(message,client) {
         case "econ": {
             const lobbyID = splitData[0];
             // remove playerID from player IDs
-            if (client) { loseClient(client); } 
+            if (client) { closeClient(client);} 
 
             console.log("Client disconnected. Current count: " + clients.size);
+
+            console.log(lobbyID);
 
             if (!lobbyID) { break; }
             console.log("client was hosting lobby: " + lobbyID);
@@ -306,6 +309,7 @@ const server = net.createServer((socket) => {
     });
 
     socket.on("error", (error) => {
+        console.log(socket.id);
         if (error.code == "ECONNRESET") {
             console.log("client closed unexpectedly");
             const lobbyID = hostDict[socket];
