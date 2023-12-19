@@ -459,6 +459,7 @@ World = {
 }
 
 function World:drawRespawnTime()
+    if not self.focus then return end
     timeToRespawn = -1
     if World.focus.death then timeToRespawn = (math.floor(((World.respawnTime - tick + World.focus.death) / 60)*10) + 1)/10 end
     if timeToRespawn > -1 then love.graphics.print("respawning in "..(timeToRespawn).." seconds",0,400) end
@@ -794,7 +795,7 @@ function World:expensiveCollisions(ballIDs)
 
         if     hole1 and not hole2 and not multi2 then
             ball2.health = 0
-            table.insert(damageMessages,"damg:"..ball2.ID.."_"..(0).."_"..(2).."_"..ball2.x.."_"..ball2.y)
+            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..ball2.x.."_"..ball2.y)
             self:updateDeath({ball2})
             return
         
@@ -802,7 +803,7 @@ function World:expensiveCollisions(ballIDs)
 
         elseif hole2 and not hole1 and not multi1 then
             ball1.health = 0
-            table.insert(damageMessages,"damg:"..ball1.ID.."_"..(0).."_"..(2).."_"..ball1.x.."_"..ball1.y)
+            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..ball1.x.."_"..ball1.y)
             self:updateDeath({ball1})
             return
         end
@@ -1027,7 +1028,7 @@ end
 
 --Updates the position of every ball
 function World:update(dt,isClient)
-    camera:update(dt)
+    if self.focus then camera:update(dt) end
     self:updateParticles(dt)
     self:updateRespawns()
     if isClient then
