@@ -94,7 +94,7 @@ function Util:coordToHex(x,y)
     if y < 0 then    y = 0 end
     local hexX = self:numToHex(x*10)
     local hexY = self:numToHex(y*10)
-    return hexX.."_"..hexY
+    return hexX,hexY
 end
 
 function Util:HexToCoord(hexX,hexY)

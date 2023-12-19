@@ -1326,13 +1326,12 @@ end)
 
 netSwitch:addCase("damg",function(args)
     if not player then return end
-    local splitData = Util:split(args,"_")
-    local ballID    = splitData[1]
-    local health    = tonumber(splitData[2])
-    local force     = tonumber(splitData[3])
-    local centreX   = tonumber(splitData[4])
-    local centreY   = tonumber(splitData[5])
-    local ball      = World:getByID(ballID)
+    local splitData          = Util:split(args,"_")
+    local ballID             = splitData[1]
+    local health             = Util:hexToNum(splitData[2])/10
+    local force              = Util:hexToNum(splitData[3])/10
+    local centreX,centreY    = Util:hexToCoord(splitData[4],splitData[5])
+    local ball               = World:getByID(ballID)
     if ball then ball.health = health end
     if force and centreX and centreY then
         World:newParticle("spark",centreX,centreY,math.floor(force)*1.5 / 2,force/2)

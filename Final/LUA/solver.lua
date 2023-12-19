@@ -853,11 +853,16 @@ function World:expensiveCollisions(ballIDs)
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
         end
+        local hexHealth
+        local hexSpeed  = Util:numToHex(math.max(0,dSpeed*10))
+        local hexX,hexY = Util:coordToHex(centre[1],centre[2])
         if not multi1 then
-            table.insert(damageMessages,"damg:"..ball1.ID.."_"..nHealth1.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
+            hexHealth = Util:numToHex(math.max(0,nHealth1*10))
+            table.insert(damageMessages,"damg:"..ball1.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
         end
         if not multi2 then
-            table.insert(damageMessages,"damg:"..ball2.ID.."_"..nHealth2.."_"..dSpeed.."_"..centre[1].."_"..centre[2])
+            hexHealth = Util:numToHex(math.max(0,nHealth2*10))
+            table.insert(damageMessages,"damg:"..ball2.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
         end
     end
 
@@ -1102,7 +1107,6 @@ function World:draw()
 
     self:drawRespawnTime()
 
-   
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
     if self.debugChecks then love.graphics.print("manhattan checks: "..manhattanChecks,0,220) end
     if World.showFPS then love.graphics.print(World:updateFPS()) end
@@ -1127,7 +1131,8 @@ function World:getUpgm()
     local out = {}
     for i, ball in ipairs(self.balls) do
         if not self.multiSet:has(ball.ID) then
-            table.insert(out,"upgm:ball_"..ball.ID.."_"..Util:coordToHex(ball.x,ball.y).."_\n")
+            local hexX,hexY = Util:coordToHex(ball.x,ball.y)
+            table.insert(out,"upgm:ball_"..ball.ID.."_"..hexX.."_"..hexY.."_\n")
         end
     end
     for i,shape in ipairs(self.shapes) do
@@ -1136,7 +1141,8 @@ function World:getUpgm()
         for j = 1, #verts/2 do
             local x = verts[j*2-1]
             local y = verts[j*2]
-            msg = msg.."_"..Util:coordToHex(x,y)
+            local hexX,hexY = Util:coordToHex(x,y)
+            msg = msg..hexX.."_"..hexY.."_"
         end
         table.insert(out,msg)
     end
