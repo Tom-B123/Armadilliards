@@ -1,8 +1,9 @@
 require("util")
 require("grid")
-local drawBall  = require("drawBall")
 require("lists")
 require("sets")
+local drawBall  = require("drawBall")
+local track     = require("performance")
 
 local tick            = 0
 local lastFrame       = Socket.gettime() * 10000

@@ -29,6 +29,13 @@ function List:getVal()
     return nil
 end
 
+--Change the current head value
+function List:setVal(val)
+    if self.head then
+        self.head.val = val
+    end
+end
+
 -- Returns the length of the list
 function List:getLength()
     return self.length
