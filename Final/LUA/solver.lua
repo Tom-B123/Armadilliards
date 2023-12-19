@@ -770,6 +770,8 @@ function World:assign(playerID,ballID)
     end
 end
 
+local collisionCache = {}
+
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs)
     local bounce = 1
@@ -933,7 +935,10 @@ function World:expensiveCollisions(ballIDs)
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
                 local sum = Util:hashIDs({ID1,ID2})
-                collision(ID1,ID2,sum)
+                -- if not collisionCache[sum] then
+                    collision(ID1,ID2,sum)
+                --     collisionCache[sum] = true
+                -- end
             end
         end
     end
@@ -1085,8 +1090,8 @@ function World:update(dt,isClient)
     track:finish("verlet")
 
     track:start("collisions")
-    self:expensiveCollisions(World:getBallIDs())
-    -- self:optimisedCollisions()
+    -- self:expensiveCollisions(World:getBallIDs())
+    self:optimisedCollisions()
     track:finish("collisions")
 
     track:finish("solver")
