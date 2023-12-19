@@ -17,6 +17,7 @@ end
 function track:start(event)
     local list = trackingDict[event]
     list:enqueue(getTime())
+    if list.length == resolution then list:dequeue() end
 end
 
 function track:finish(event)
@@ -27,17 +28,13 @@ function track:finish(event)
     return deltaTime
 end
 
-track:new("event1")
-track:new("event2")
-track:start("event1")
-local b = 0
-for i = 1,100000 do b = b + i^0.5 end
-print(b)
-track:start("event2")
-b = 0
-for i = 1,1000000 do b = b + i^0.5 end
-print(b)
-print("time 1: "..track:finish("event1"))
-print("time 2: "..track:finish("event2"))
+function track:getTime(event)
+    local sum = 0
+    local list = trackingDict[event]
+    for i, time in list:iterator() do
+        sum = sum + time
+    end
+    return sum / list.length
+end
 
 return track

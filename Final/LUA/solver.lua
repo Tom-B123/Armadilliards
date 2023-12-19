@@ -451,6 +451,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
+    debugTracking = true,
 
     respawnTime   = 240,
     maxHealth     = 50,
@@ -1030,6 +1031,22 @@ function World:getBallIDs()
     return out
 end
 
+track:new("update")
+track:new("grid population")
+track:new("ropes")
+track:new("verlet")
+track:new("collisions")
+
+local function getTrackingTimes()
+    local out = {}
+    table.insert(out,"update: "..track:getTime("update"))
+    table.insert(out,"grid pop: "..track:getTime("grid population"))
+    table.insert(out,"ropes: "..track:getTime("ropes"))
+    table.insert(out,"verlet: "..track:getTime("verlet"))
+    table.insert(out,"collisions: "..track:getTime("collisions"))
+    return out
+end
+
 --Updates the position of every ball
 function World:update(dt,isClient)
     if self.focus then camera:update(dt) end
@@ -1045,14 +1062,22 @@ function World:update(dt,isClient)
         tick = tick + 1
         return
     end
+    track:start("update")
     checks = 0
     manhattanChecks = 0
     collisionCache = {}
     damageMessages = {}
     ropeMessages   = {}
+
+    track:start("grid population")
     self:populate()
+    track:finish("grid population")
+
+    track:start("ropes")
     self:updateRopes()
+    track:finish("ropes")
     
+    track:start("verlet")
     for i, ball in ipairs(self.balls) do
         if not self.holesSet:has(ball) then
             ball:edgeConstraint()
@@ -1062,8 +1087,13 @@ function World:update(dt,isClient)
     for i,shape in ipairs(self.shapes) do
         shape:update()
     end
-    self:optimisedCollisions()
+    track:finish("verlet")
 
+    track:start("collisions")
+    self:optimisedCollisions()
+    track:finish("collisions")
+    
+    track:finish("update")
     tick = tick + 1
 end
 
@@ -1115,6 +1145,12 @@ function World:draw()
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
     if self.debugChecks then love.graphics.print("manhattan checks: "..manhattanChecks,0,220) end
     if World.showFPS then love.graphics.print(World:updateFPS()) end
+    if World.debugTracking then
+        local times = getTrackingTimes()
+        for i,str in ipairs(times) do
+            love.graphics.print(str,0,220 + i*20)
+        end
+    end
 end
 
 --Create a string for assigning players to a ballID for taking player inputs
