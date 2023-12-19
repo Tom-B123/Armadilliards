@@ -490,7 +490,7 @@ function World:updateDeath(balls)
         local health = ball.health
         if health <= 0 then
             for j = 1,15 do
-                self:newParticle("rainbow",ball.x,ball.y,5,i)
+                self:newParticle("rainbow",ball.x,ball.y,5,j)
             end
             ball.health = self.maxHealth
             ball.death  = tick
