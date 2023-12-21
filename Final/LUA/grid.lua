@@ -5,29 +5,39 @@ Grid.__index = Grid
 function Grid:new(size,resolution)
     local object = {}
     setmetatable(object,Grid)
+
     --maximum bounds of the world
     object.size = size
+
     --diameter of balls
     object.resolution = resolution
+
     --number of grid levels
     object.levels = math.floor(math.log((size / resolution),2)) + 1
 
-    object.grid = {}
+    object.emptyGrid = Grid:getEmpty(object.levels)
 
-    for level = 1,object.levels do
+    object.grid      = Grid:getEmpty(object.levels)
+
+    return object
+end
+
+function Grid:getEmpty(levels)
+    local grid = {}
+    for level = 1,levels do
         local extraX = 2^(level-1)-1
-        for x = 1,2^(level-1) do
-            object.grid[x + extraX] = {}
-            for y = 1,2^(level-1) do
-                if level == object.levels then
-                    object.grid[x + extraX][y] = {}
+        for x = 1,2^(level-1)+1 do
+            grid[x + extraX] = {}
+            for y = 1,2^(level-1)+1 do
+                if level == levels then
+                    grid[x + extraX][y] = {}
                 else
-                    object.grid[x + extraX][y] = 0
+                    grid[x + extraX][y] = 0
                 end
             end
         end
     end
-    return object
+    return grid
 end
 
 function Grid:draw(offsetX,offsetY)
@@ -43,17 +53,10 @@ function Grid:draw(offsetX,offsetY)
 end
 
 function Grid:reset()
-    for level = 1,self.levels do
-        local extraX = 2^(level-1)-1
-        for x = 1,2^(level-1) do
-            self.grid[x + extraX] = {}
-            for y = 1,2^(level-1) do
-                if level == self.levels then
-                    self.grid[x + extraX][y] = {}
-                else
-                    self.grid[x + extraX][y] = 0
-                end
-            end
+    for i, row in ipairs(self.grid) do
+        for j,value in ipairs(row) do
+            if type(value) == "number" then self.grid[i][j] = 0 end
+            if type(value) == "table" then  self.grid[i][j] = {} end
         end
     end
 end

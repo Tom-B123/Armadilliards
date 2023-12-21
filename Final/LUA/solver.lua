@@ -974,10 +974,15 @@ end
 
 --Populates the grid for optimised collisons
 function World:populate()
+    track:start("grid clear")
     grid:reset()
+    track:finish("grid clear")
+
+    track:start("grid populate")
     for i,ball in ipairs(self.balls) do
         grid:populate(ball.x,ball.y,ball.ID)
     end
+    track:finish("grid populate")
 end
 
 --Optimised collisions to only check nearby balls
@@ -1032,17 +1037,19 @@ function World:getBallIDs()
 end
 
 track:new("solver")
-track:new("grid population")
+track:new("grid clear")
+track:new("grid populate")
 track:new("ropes")
 track:new("verlet")
 track:new("collisions")
 
 local function getTrackingTimes()
     local out = {}
-    table.insert(out,"solver: "..track:getTime("solver"))
-    table.insert(out,"grid pop: "..track:getTime("grid population"))
-    table.insert(out,"ropes: "..track:getTime("ropes"))
-    table.insert(out,"verlet: "..track:getTime("verlet"))
+    table.insert(out,"solver:     "..track:getTime("solver"))
+    table.insert(out,"grid clear: "..track:getTime("grid clear"))
+    table.insert(out,"grid pop:   "..track:getTime("grid populate"))
+    table.insert(out,"ropes:      "..track:getTime("ropes"))
+    table.insert(out,"verlet:     "..track:getTime("verlet"))
     table.insert(out,"collisions: "..track:getTime("collisions"))
     return out
 end
@@ -1069,9 +1076,7 @@ function World:update(dt,isClient)
     damageMessages = {}
     ropeMessages   = {}
 
-    track:start("grid population")
     self:populate()
-    track:finish("grid population")
 
     track:start("ropes")
     self:updateRopes()
