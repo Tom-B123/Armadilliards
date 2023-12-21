@@ -11,7 +11,7 @@ function track:new(event)
 end
 
 local function getTime()
-    return Socket.gettime()*10000
+    return Socket.gettime()*1000
 end
 
 function track:start(event)
