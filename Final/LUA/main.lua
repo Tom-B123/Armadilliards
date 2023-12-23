@@ -664,24 +664,25 @@ newStateSwitch:addCase("hosting lobby",function()
 end)
 
 newStateSwitch:addCase("connecting to lobby",function()
-    print("player, mainClient:",player,mainClient)
     if not player then return end
+
+    print("sending ncon")
 
     player:send("ncon:"..player.ID.."_"..player.name.."_\n")
     lState[1] = state[1]
 end)
 
 newStateSwitch:addCase("in lobby",function()
-    if not mainClient then return end
+    if not player then return end
 
     clearButtons()
 
     love.graphics.setBackgroundColor( 0,0,0 )
 
     newButton(1,"ready",600,500,750,550,function()
-        local ready = LobbyPlayer:getReady(mainClient.ID)
-        LobbyPlayer:setReady(mainClient.ID,not ready)
-        mainClient:send("updt:"..mainClient.ID.."_ready_"..tostring(not ready).."_\n")
+        local ready = LobbyPlayer:getReady(player.ID)
+        LobbyPlayer:setReady(player.ID,not ready)
+        player:send("updt:"..player.ID.."_ready_"..tostring(not ready).."_\n")
     end)
 
     lState[1] = state[1]
