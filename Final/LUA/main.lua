@@ -295,6 +295,7 @@ end)
 
 stateSwitch:addCase("hosting lobby",function()
     if not (server and mainClient) then return end
+    processReceived(server)
     processReceived(mainClient)
     if order == 1 then updateKickButtons() end
     if tick % refreshRate == 0 then
@@ -1022,6 +1023,7 @@ end)
 
 -- New connection, sends initial information about the player
 netSwitch:addCase("ncon",function(args)
+    print("ncon message received")
     if server then
         print("new connection")
         local splitData = Util:split(args,"_")
@@ -1138,7 +1140,6 @@ netSwitch:addCase("join",function(args)
     if ID == mainClient.ID then
         local nPlayer   = Player:new(IP,port)
         if nPlayer then
-            -- mainClient:send("econ:".."_".."_\n")
             toChangeState   = "connecting to lobby"
             tempTick        = 30
 
@@ -1175,8 +1176,6 @@ end)
 
 -- Update lobby list
 netSwitch:addCase("uplobs",function(args)
-    if not player or server then return end
-
     local splitData   = Util:split(args,"_")
 
     local lobbyID     = splitData[1]
@@ -1199,7 +1198,9 @@ netSwitch:addCase("uplobs",function(args)
 
         local y = #JoinableLobby.IDTable * 40
         local nButton = Button:new("lobby name: "..lobbyName.." host name: "..hostName.." count: "..playerCount.."/"..maxPlayers,0,100,100 + y,700,135 + y,function()
-            player:join(lobbyID)
+            if mainClient then
+                mainClient:join(lobbyID)
+            end
         end)
         lobbyButtons:append(nButton)
         LobbyButton:new(lobbyID,nButton)
