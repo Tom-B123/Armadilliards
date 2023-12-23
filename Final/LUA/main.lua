@@ -1383,6 +1383,73 @@ function love.wheelmoved( dx, dy )
     lobbyScrollVel = lobbyScrollVel + dy * scrollSpeed
 end
 
+local editingTextSwitch = Switch:new()
+
+editingTextSwitch:addCase("escape", function(args)
+    local text,index = args[1],args[2]
+    state[order]  = nil
+    lState[order] = nil
+    order         = order - 1
+    text          = nil
+    index         = 1
+
+    return text,index
+end)
+
+editingTextSwitch:addCase("return", function(args)
+    local text,index = args[1],args[2]
+    if getState(2)     == "editing player name" then changePlayerName()
+    elseif getState(2) == "editing message"     then sendMessage()
+    elseif getState(4) == "editing lobby name"  then changeLobbyName()
+    end
+    return text,index
+end)
+
+editingTextSwitch:addCase("delete",function(args)
+    local text,index = args[1],args[2]
+    -- Delete everything after the index when ctrl + delete
+    if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
+        text  = string.sub(text,1,index-1)
+
+    -- Deletes the text at the editing index
+    elseif index <= #text then
+        text  = string.sub(text,1,index-1)..string.sub(text,index+1,#text)
+    end
+
+    return text,index
+end)
+
+editingTextSwitch:addCase("backspace",function(args)
+    local text,index = args[1],args[2]
+    -- Delete everything before the index when ctrl + backspace
+    if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
+        text  = string.sub(text,index,#text)
+        index = 1
+
+    -- Deletes the text before the editing index and decriments the index
+    elseif index > 1 then
+        text  = string.sub(text,1,index-2)..string.sub(text,index,#text)
+        index = index - 1
+    end
+    return text,index
+end)
+
+editingTextSwitch:addCase("left",function(args)
+    local text,index = args[1],args[2]
+    if index > 1 then 
+        index = index - 1
+    end
+    return text,index
+end)
+
+editingTextSwitch:addCase("right",function(args)
+    local text,index = args[1],args[2]
+    if index < #text + 1 then
+        index = index + 1
+    end
+    return text,index
+end)
+
 -- Handle keyboard inputs
 function love.keypressed(key)
     if order == 1 and state[1] == "hosting lobby" then
@@ -1390,53 +1457,9 @@ function love.keypressed(key)
         if key == "right" then maps:next() end
     end
     if editingText and (player or mainClient) then
-        if key == "escape"    then
-            state[order]  = nil
-            lState[order] = nil
-            order         = order - 1
-            editingText   = nil
-        
-        elseif key == "return" then
-            if getState(2)     == "editing player name" then changePlayerName()
-            elseif getState(2) == "editing message"     then sendMessage()
-            elseif getState(4) == "editing lobby name"  then changeLobbyName()
-            end
-        
-        elseif key == "delete" then
-            -- Delete everything after the index when ctrl + delete
-            if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
-                editingText  = string.sub(editingText,1,editingIndex-1)
-
-            -- Deletes the text at the editing index
-            elseif editingIndex <= #editingText then
-                editingText  = string.sub(editingText,1,editingIndex-1)..string.sub(editingText,editingIndex+1,#editingText)
-            end
-
-        elseif key == "backspace" then
-            -- Delete everything before the index when ctrl + backspace
-            if love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") then
-                editingText  = string.sub(editingText,editingIndex,#editingText)
-                editingIndex = 1
-
-            -- Deletes the text before the editing index and decriments the index
-            elseif editingIndex > 1 then
-                editingText  = string.sub(editingText,1,editingIndex-2)..string.sub(editingText,editingIndex,#editingText)
-                editingIndex = editingIndex - 1
-            end
-
-            -- Move the index left or right until there is no space left
-        elseif key == "left"    then
-            if editingIndex > 1 then 
-                editingIndex = editingIndex - 1
-            end
-
-        elseif key == "right" then
-            if editingIndex < #editingText + 1 then
-                editingIndex = editingIndex + 1
-            end
-        
+        if editingTextSwitch:isCase(key) then
+            editingText,editingIndex = editingTextSwitch:case(key,{editingText,editingIndex})
         end
-    
     elseif key == "escape" then
         -- If in an offline state
         if not inLobby() and state[1] ~= "end screen" then

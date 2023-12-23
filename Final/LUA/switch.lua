@@ -17,9 +17,8 @@ function Switch:isCase(value)
 end
 
 function Switch:case(value,args)
-    if self:isCase(value) then
-        self.cases[value](args)
-    end
+    if not self:isCase(value) then return nil end
+    return self.cases[value](args)
 end
 
 return Switch
