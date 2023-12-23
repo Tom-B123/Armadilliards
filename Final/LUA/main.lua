@@ -310,12 +310,14 @@ end)
 stateSwitch:addCase("connecting to lobby",function()
     if not player then return end
 
+    processReceived(mainClient)
     processReceived(player)
 end)
 
 stateSwitch:addCase("in lobby",function()
     if not player then return end
 
+    processReceived(mainClient)
     processReceived(player)
 end)
 
@@ -324,6 +326,7 @@ stateSwitch:addCase("in game",function(dt)
 
     polyCoords = {}
 
+    processReceived(mainClient)
     processReceived(player)
 
     World:update(dt,true)
@@ -661,9 +664,10 @@ newStateSwitch:addCase("hosting lobby",function()
 end)
 
 newStateSwitch:addCase("connecting to lobby",function()
-    if not mainClient then return end
+    print("player, mainClient:",player,mainClient)
+    if not player then return end
 
-    mainClient:send("ncon:"..mainClient.ID.."_"..mainClient.name.."_\n")
+    player:send("ncon:"..player.ID.."_"..player.name.."_\n")
     lState[1] = state[1]
 end)
 
@@ -1051,6 +1055,7 @@ netSwitch:addCase("ncon",function(args)
         local conf = splitData[3]
 
         if conf == "confirm" and ID == player.ID then
+            print("successfully joined lobby")
             -- On confirmation, make a LobbyPlayer object with player's details
             LobbyPlayer:clear()
             LobbyPlayer:new(player.ID)
@@ -1542,6 +1547,7 @@ function love.update(dt)
     if toConnectPlayer then
         player          = toConnectPlayer
         toConnectPlayer = nil
+        print("player: ",player)
     end
 
     if toConnectMain and player and tempTick == 1 then
