@@ -712,11 +712,12 @@ end
 function World:newBullet(owner,x,y,angle,velocity)
     local nBall = Ball:new(x,y)
     --The player that shot the bullet, used to prevent shooting yourself
-    nBall.owner = owner
-    nBall.vx    = velocity * math.cos(angle)
-    nBall.vy    = velocity * math.sin(angle)
-    local salt  = x+y+angle+velocity
-    local ID    = self:assignID(nBall,Util:calculateID(6,salt))
+    nBall.owner  = owner
+    nBall.vx     = velocity * math.cos(angle)
+    nBall.vy     = velocity * math.sin(angle)
+    nBall.radius = 16
+    local salt   = x+y+angle+velocity
+    local ID     = self:assignID(nBall,Util:calculateID(6,salt))
     table.insert(self.balls,nBall)
     self.bulletsSet:add(ID)
     return nBall
@@ -947,12 +948,31 @@ function World:expensiveCollisions(ballIDs)
             offset2 = ball1.radius / ball2.radius * dWeight
         end
 
-        if not (self.holesSet:has(ID1) or self.holesSet:has(ID2)) then
-            ball2.x = ball2.x - bounce * offset2 * delta * n.x
-            ball2.y = ball2.y - bounce * offset2 * delta * n.y
+        local function toCollide()
+            
+            --If either ball is a hole, move neither ball
+            if self.holesSet:has(ID1) or self.holesSet:has(ID2) then return false,false end
 
+            --If both balls are bullets, move neither
+            if self.bulletsSet:has(ID1) and self.bulletsSet:has(ID2) then return false,false end
+
+            --If one ball is a bullet, move the non-bullet ball
+            if self.bulletsSet:has(ID1) then return false,true end
+            if self.bulletsSet:has(ID2) then return true,false end
+
+            --If both balls are normal, move both
+            return true,true
+        end
+
+        local col1,col2 = toCollide()
+
+        if col1 then
             ball1.x = ball1.x + bounce * offset1 * delta * n.x
             ball1.y = ball1.y + bounce * offset1 * delta * n.y
+        end
+        if col2 then
+            ball2.x = ball2.x - bounce * offset2 * delta * n.x
+            ball2.y = ball2.y - bounce * offset2 * delta * n.y
         end
     end
 
