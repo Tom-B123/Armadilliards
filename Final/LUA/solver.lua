@@ -395,7 +395,7 @@ end
 function Particle:draw(offsetX,offsetY)
     local c = self.colour
     love.graphics.setColor(c[1],c[2],c[3],self.life / self.maxLife)
-    love.graphics.circle("fill",offsetX + self.x,offsetY + self.y,self.size)
+    love.graphics.circle("fill",offsetX + self.x,offsetY + self.y,self.size * self.life / self.maxLife)
 end
 
 function camera:update(dt)
@@ -501,10 +501,12 @@ function World:updateDeath(balls)
     for i, ball in ipairs(balls) do
         local health = ball.health
         if health <= 0 then
-            for j = 1,15 do
-                self:newParticle("rainbow",ball.x,ball.y,5,j)
+            if not self.bulletsSet:has(ball.ID) then
+                for j = 1,15 do
+                    self:newParticle("rainbow",ball.x,ball.y,5,j)
+                end
+                ball.health = self.maxHealth
             end
-            ball.health = self.maxHealth
             ball.death  = tick
             self:removeRopes(ball.ID)
         end
@@ -793,6 +795,25 @@ function World:assign(playerID,ballID)
     if ball then
         ball.playerID = playerID
         LobbyPlayer:setBallID(playerID,ball.ID)
+    end
+end
+
+function World:updateBullets()
+    local toRemove = {}
+    for ID,v in self.bulletsSet:pairs() do
+        local ball = self:getByID(ID)
+        if ball.health <= 0 then
+            self.bulletsSet:remove(ID)
+            table.insert(toRemove,ball)
+        end
+    end
+
+    for i,ball in ipairs(self.balls) do
+        for j,rBall in ipairs(toRemove) do
+            if rBall == ball then
+                table.remove(self.balls,i)
+            end
+        end
     end
 end
 
@@ -1169,7 +1190,7 @@ function World:update(dt,isClient)
     -- self:expensiveCollisions(World:getBallIDs())
     self:optimisedCollisions()
     track:finish("collisions")
-
+    self:updateBullets()
     track:finish("solver")
     tick = tick + 1
 end
