@@ -715,7 +715,7 @@ function World:newBullet(owner,x,y,angle,velocity)
     nBall.owner  = owner
     nBall.vx     = velocity * math.cos(angle)
     nBall.vy     = velocity * math.sin(angle)
-    nBall.radius = 16
+    nBall.radius = 8
     local salt   = x+y+angle+velocity
     local ID     = self:assignID(nBall,Util:calculateID(6,salt))
     table.insert(self.balls,nBall)
@@ -949,7 +949,7 @@ function World:expensiveCollisions(ballIDs)
         end
 
         local function toCollide()
-            
+
             --If either ball is a hole, move neither ball
             if self.holesSet:has(ID1) or self.holesSet:has(ID2) then return false,false end
 
