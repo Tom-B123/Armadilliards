@@ -707,7 +707,7 @@ newStateSwitch:addCase("hosting game",function()
     --Load the map file
     ReadMap:open(maps:getVal())
 
-    local playerBall = World.balls[1]
+    local playerBall = World.ballsList:getVal()
     World:setFocus(playerBall)
 
     World:generateIDs()
@@ -1132,7 +1132,7 @@ netSwitch:addCase("join",function(args)
     if ID == mainClient.ID then
         local nPlayer   = Player:new(IP,port)
         if nPlayer then
-            mainClient:send("econ:"..mainClient.ID.."_\n")
+            -- mainClient:send("econ:".."_".."_\n")
             toChangeState   = "connecting to lobby"
             tempTick        = 30
 

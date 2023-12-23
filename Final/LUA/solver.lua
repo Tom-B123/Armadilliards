@@ -437,7 +437,7 @@ end
 --World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
 World = {
     ballsList     = List:new(),
-    balls         = {},
+    -- balls         = {},
     shapes        = {},
 
     holes         = {},
@@ -641,7 +641,7 @@ end
 --Follows a ball with the camera
 function World:setFocus(ball)
     local ind = -1
-    for i,sBall in ipairs(self.balls) do
+    for i,sBall in self.ballsList:iterator() do
         if sBall == ball then ind = i end
     end
     if ind > -1 then
@@ -671,7 +671,7 @@ function World:clear()
 end
 
 function World:updateRespawns()
-    for i,ball in ipairs(self.balls) do
+    for i,ball in self.ballsList:iterator() do
         if ball.death then ball:tryRespawn() end
     end
 end
@@ -694,10 +694,9 @@ end
 --Creates a new ball in the world
 function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
-    table.insert(self.balls,nBall)
-    if playable then 
+    self.ballsList:push(nBall)
+    if playable then
         table.insert(self.playableBalls,nBall)
-        self.ballsList:push(nBall)
     end
     return nBall
 end
@@ -705,7 +704,7 @@ end
 --Creates a new ball in the world
 function World:newHole(x,y)
     local nBall = Ball:new(x,y)
-    table.insert(self.balls,nBall)
+    self.ballsList:push(nBall)
     table.insert(self.holes,nBall)
     return nBall
 end
@@ -720,7 +719,7 @@ function World:newBullet(owner,x,y,angle,velocity)
     nBall.radius = 8
     local salt   = x+y+angle+velocity
     local ID     = self:assignID(nBall,Util:calculateID(6,salt))
-    table.insert(self.balls,nBall)
+    self.ballsList:push(nBall)
     self.bulletsSet:add(ID)
     return nBall
 end
@@ -758,7 +757,7 @@ end
 --Assigns IDs to every ball, passing in a salt value to avoid duplicate IDs
 function World:generateIDs()
     local IDs = {}
-    for i,ball in ipairs(self.balls) do
+    for i,ball in self.ballsList:iterator() do
         local ID = self:assignID(ball,nil,i)
         table.insert(IDs,ID)
         for j,hole in ipairs(self.holes) do
@@ -808,10 +807,11 @@ function World:updateBullets()
         end
     end
 
-    for i,ball in ipairs(self.balls) do
+    --Can be shortened to o(n), currently O(n^2) with removeItem being O(n)
+    for i,ball in self.ballsList:iterator() do
         for j,rBall in ipairs(toRemove) do
             if rBall == ball then
-                table.remove(self.balls,i)
+                self.ballsList:removeItem(ball)
             end
         end
     end
@@ -1071,7 +1071,7 @@ function World:populate()
     track:finish("grid clear")
 
     track:start("grid populate")
-    for i,ball in ipairs(self.balls) do
+    for i,ball in self.ballsList:iterator() do
         grid:populate(ball.x,ball.y,ball.ID)
     end
     track:finish("grid populate")
@@ -1122,7 +1122,7 @@ end
 
 function World:getBallIDs()
     local out = {}
-    for i,ball in ipairs(self.balls) do
+    for i,ball in self.ballsList:iterator() do
         table.insert(out,ball.ID)
     end
     return out
@@ -1146,6 +1146,14 @@ local function getTrackingTimes()
     return out
 end
 
+local function getBallsTable()
+    local out = {}
+    for i,ball in World.ballsList:iterator() do
+        out[#out+1] = ball
+    end
+    return out
+end
+
 --Updates the position of every ball
 function World:update(dt,isClient)
     track:start("solver")
@@ -1153,13 +1161,14 @@ function World:update(dt,isClient)
     self:updateParticles(dt)
     self:updateRespawns()
     if isClient then
-        self:updateDeath(self.balls)
-        for i, ball in ipairs(self.balls) do
+        self:updateDeath(getBallsTable())
+        for i, ball in self.ballsList:iterator() do
             if not self.holesSet:has(ball) then
                 ball:verlet(dt)
             end
         end
         tick = tick + 1
+        track:finish("solver")
         return
     end
     checks = 0
@@ -1175,7 +1184,7 @@ function World:update(dt,isClient)
     track:finish("ropes")
     
     track:start("verlet")
-    for i, ball in ipairs(self.balls) do
+    for i, ball in self.ballsList:iterator() do
         if not self.holesSet:has(ball) then
             ball:edgeConstraint()
             ball:verlet(dt)
@@ -1230,7 +1239,7 @@ function World:draw()
 
     self:drawParticles(offsetX,offsetY)
 
-    for i, ball in ipairs(self.balls) do
+    for i, ball in self.ballsList:iterator() do
         ball:draw(offsetX,offsetY)
     end
 
@@ -1254,13 +1263,13 @@ end
 --Create a string for assigning players to a ballID for taking player inputs
 function World:getAsgn()
     local out = "asgn:"
-    for i, ball in ipairs(self.balls) do
+    for i, ball in self.ballsList:iterator() do
         if ball.playerID then
             out = out..ball.ID.."_"..ball.playerID
         else
             out = out..ball.ID.."_".."no ID"
         end
-        if i < #self.balls then out = out.."_" end
+        if i < self.ballsList.length then out = out.."_" end
     end
     return out
 end
@@ -1268,7 +1277,7 @@ end
 --Create a string for updating player's positions
 function World:getUpgm()
     local out = {}
-    for i, ball in ipairs(self.balls) do
+    for i, ball in self.ballsList:iterator() do
         if not self.multiSet:has(ball.ID) then
             local hexX,hexY = Util:coordToHex(ball.x,ball.y)
             table.insert(out,"upgm:ball_"..ball.ID.."_"..hexX.."_"..hexY.."_\n")

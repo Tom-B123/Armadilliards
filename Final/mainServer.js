@@ -247,7 +247,7 @@ function netSwitch(message,client) {
         break;
     }
     default:
-        console.log("unknown command");
+        console.log("unknown: "+message)
     }
 }
 
