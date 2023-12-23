@@ -1398,11 +1398,11 @@ end)
 
 editingTextSwitch:addCase("return", function(args)
     local text,index = args[1],args[2]
-    if getState(2)     == "editing player name" then changePlayerName()
+    if     getState(2) == "editing player name" then changePlayerName()
     elseif getState(2) == "editing message"     then sendMessage()
     elseif getState(4) == "editing lobby name"  then changeLobbyName()
     end
-    return text,index
+    return editingText,editingIndex
 end)
 
 editingTextSwitch:addCase("delete",function(args)
