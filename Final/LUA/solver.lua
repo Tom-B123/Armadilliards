@@ -137,6 +137,12 @@ function Ball:draw(offsetX,offsetY)
         return
     end
 
+    if World.bulletsSet:has(self.ID) then
+        love.graphics.setColor(1,0,0)
+        love.graphics.circle("fill",self.x + offsetX,self.y + offsetY,self.radius)
+        return
+    end
+
     local debugBall = false
     if (World.multiSet:has(self.ID) or self.death) then debugBall = true end
     local name   = nil
@@ -184,13 +190,17 @@ function Ball:tryRespawn()
     end
 end
 
-function Ball:dash(angle,speed)
-    local vx = speed * math.cos(angle)
-    local vy = speed * math.sin(angle)
+function Ball:dash(angle,velocity)
+    local vx = velocity * math.cos(angle)
+    local vy = velocity * math.sin(angle)
     self.vx  = vx
     self.lvx = vx
     self.vy  = vy
     self.lvy = vy
+end
+
+function Ball:shoot(angle,velocity)
+    World:newBullet(self.ID,self.x,self.y,angle,velocity)
 end
 
 --Rope a ball at the given position
@@ -434,6 +444,7 @@ World = {
     holesSet      = Set: new(),
     multi         = {},
     multiSet      = Set: new(),
+    bulletsSet    = Set: new(),
 
     playableBalls = {},
     ballIDDict    = {},
@@ -694,6 +705,20 @@ function World:newHole(x,y)
     local nBall = Ball:new(x,y)
     table.insert(self.balls,nBall)
     table.insert(self.holes,nBall)
+    return nBall
+end
+
+--Creates a new ball in the world
+function World:newBullet(owner,x,y,angle,velocity)
+    local nBall = Ball:new(x,y)
+    --The player that shot the bullet, used to prevent shooting yourself
+    nBall.owner = owner
+    nBall.vx    = velocity * math.cos(angle)
+    nBall.vy    = velocity * math.sin(angle)
+    local salt  = x+y+angle+velocity
+    local ID    = self:assignID(nBall,Util:calculateID(6,salt))
+    table.insert(self.balls,nBall)
+    self.bulletsSet:add(ID)
     return nBall
 end
 

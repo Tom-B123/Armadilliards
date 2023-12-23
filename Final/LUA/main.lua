@@ -390,7 +390,7 @@ stateSwitch:addCase("hosting game",function(dt)
             local offsetX,offsetY = World:getOffset()
             local bx,by = offsetX+ball.x,offsetY+ball.y
             local angle = Util:yawAngle(mx-bx,my-by)
-            ball:dash(angle,20)
+            ball:shoot(angle,20)
         end
         if b == -1 then
             local mx,my = love.mouse.getPosition()
@@ -1268,6 +1268,16 @@ netSwitch:addCase("plin",function(args)
 
         ball:rope(rx,ry)
     end
+
+    if command == "shoot" then
+        local angle  = splitData[3]
+        local force  = splitData[4]
+
+        local ball   = World:getByID(ID)
+
+        ball:shoot(angle,force)
+    end
+
 end)
 
 -- Update gamestate
@@ -1367,8 +1377,8 @@ end)
 
 -- Handles keyboard inputs for writing text
 function love.textinput(t)
-    if not editingText then            return end
-    if not (player or mainClient) then return end
+    if not editingText then                  return end
+    if not (player or mainClient) then       return end
     if t == nil or t == ":" or t == "_" then return end
 
     -- Adds text at the editing index and incriments the index
@@ -1382,6 +1392,8 @@ function love.wheelmoved( dx, dy )
     local scrollSpeed = 100
     lobbyScrollVel = lobbyScrollVel + dy * scrollSpeed
 end
+
+
 
 local editingTextSwitch = Switch:new()
 
@@ -1456,10 +1468,9 @@ function love.keypressed(key)
         if key == "left" then maps:prev() end
         if key == "right" then maps:next() end
     end
-    if editingText and (player or mainClient) then
-        if editingTextSwitch:isCase(key) then
-            editingText,editingIndex = editingTextSwitch:case(key,{editingText,editingIndex})
-        end
+    if editingText and (player or mainClient) and editingTextSwitch:isCase(key) then
+        --update the editing text and index corresponding to the given "special" input (e.g. backspace, left/right arrow)
+        editingText,editingIndex = editingTextSwitch:case(key,{editingText,editingIndex})
     elseif key == "escape" then
         -- If in an offline state
         if not inLobby() and state[1] ~= "end screen" then
