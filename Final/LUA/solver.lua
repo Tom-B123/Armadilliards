@@ -811,14 +811,17 @@ function World:expensiveCollisions(ballIDs)
             return
         end
         
-        local hole1 = self.holesSet:has(ID1)
-        local hole2 = self.holesSet:has(ID2)
+        
+        local ball1 = self:getByID(ID1)
+        local ball2 = self:getByID(ID2)
 
         local multi1 = self.multiSet:has(ID1)
         local multi2 = self.multiSet:has(ID2)
 
-        local ball1 = self:getByID(ID1)
-        local ball2 = self:getByID(ID2)
+        local hole1 = self.holesSet:has(ID1)
+        local hole2 = self.holesSet:has(ID2)
+
+        
 
         --If ball1 is a hole and ball2 is a non-multi-shape ball then
 
@@ -830,12 +833,26 @@ function World:expensiveCollisions(ballIDs)
             return
         
         --If ball2 is a hole and ball1 is a non-multi-shape ball then
-
         elseif hole2 and not hole1 and not multi1 then
             ball1.health = 0
             local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
             table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
             self:updateDeath({ball1})
+            return
+        end
+
+        local bullet1 = self.bulletsSet:has(ID1)
+        local bullet2 = self.bulletsSet:has(ID2)
+
+        if bullet1 and bullet2 then
+            ball1.health = 0
+            ball2.health = 0
+
+            local centre = {(ball1.x+ball2.x)/2,(ball1.y+ball2.y)/2}
+            local hexX,hexY = Util:coordToHex(centre[1],centre[2])
+            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
+            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
+            self:updateDeath({ball1,ball2})
             return
         end
 
@@ -940,7 +957,7 @@ function World:expensiveCollisions(ballIDs)
         local delta = diameter - distance
         local offset1
         local offset2
-        if weight1 > weight2 then 
+        if weight1 > weight2 then
             offset1 = ball2.radius / ball1.radius * dWeight
             offset2 = ball1.radius / ball2.radius / dWeight
         else
@@ -957,8 +974,17 @@ function World:expensiveCollisions(ballIDs)
             if self.bulletsSet:has(ID1) and self.bulletsSet:has(ID2) then return false,false end
 
             --If one ball is a bullet, move the non-bullet ball
-            if self.bulletsSet:has(ID1) then return false,true end
-            if self.bulletsSet:has(ID2) then return true,false end
+            if self.bulletsSet:has(ID1) then
+                --If the bullet hits it's owner, don't collide them
+                if self:getByID(ID1).owner == ID2 then return false,false end
+                offset2 = offset2 * 5
+                return false,true
+            end
+            if self.bulletsSet:has(ID2) then
+                --If the bullet hits it's owner, don't collide them
+                if self:getByID(ID2).owner == ID1 then return false,false end
+                offset1 = offset1 * 5
+                return true,false end
 
             --If both balls are normal, move both
             return true,true
