@@ -863,18 +863,6 @@ function World:expensiveCollisions(ballIDs)
         local bullet1 = self.bulletsSet:has(ID1)
         local bullet2 = self.bulletsSet:has(ID2)
 
-        if bullet1 and bullet2 then
-            ball1.health = 0
-            ball2.health = 0
-
-            local centre = {(ball1.x+ball2.x)/2,(ball1.y+ball2.y)/2}
-            local hexX,hexY = Util:coordToHex(centre[1],centre[2])
-            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
-            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
-            self:updateDeath({ball1,ball2})
-            return
-        end
-
         if bullet1 then
             if ball1.owner == ID2 then return end
         end
@@ -883,6 +871,32 @@ function World:expensiveCollisions(ballIDs)
             if ball2.owner == ID1 then return end
         end
 
+        -- if bullet1 and bullet2 then
+        --     ball1.health = 0
+        --     ball2.health = 0
+
+        --     local centre = {(ball1.x+ball2.x)/2,(ball1.y+ball2.y)/2}
+        --     local hexX,hexY = Util:coordToHex(centre[1],centre[2])
+        --     table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
+        --     table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
+        --     self:updateDeath({ball1,ball2})
+        --     return
+        -- end
+
+        if bullet1 then
+            ball1.health = 0
+            local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
+            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
+            self:updateDeath({ball1})
+        end
+
+        if bullet2 then
+            ball2.health = 0
+            local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
+            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
+            self:updateDeath({ball2})
+        end
+        
         --Update the damageCooldowns
         damageCooldowns[hashSum] = tick
 
@@ -940,6 +954,7 @@ function World:expensiveCollisions(ballIDs)
             hexHealth = Util:numToHex(math.max(0,nHealth2*10))
             table.insert(damageMessages,"damg:"..ball2.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
         end
+
     end
 
     local function collision(ID1,ID2,hashSum)
