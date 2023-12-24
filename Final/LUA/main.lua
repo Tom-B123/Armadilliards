@@ -213,7 +213,7 @@ local function changeLobbyName()
 end
 
 -- Pass received data into netSwitch
-local function processReceived(client)
+local function processReceived()
     local function process(data)
         for i,message in ipairs(data) do
             local splitData = Util:split(message,":")
@@ -224,11 +224,24 @@ local function processReceived(client)
         end
     end
     local data
-    if client then
-        data = {client:receive()}
+    if server then
+        data = server:receive("all")
+        process(data)
+    end
+    if player then
+        data = {player:receive()}
         while data do
             process(data)
-            data = client:receive()
+            data = player:receive()
+            if data then data = {data}
+            end
+        end
+    end
+    if mainClient then
+        data = {mainClient:receive()}
+        while data do
+            process(data)
+            data = mainClient:receive()
             if data then data = {data}
             end
         end
@@ -290,13 +303,13 @@ stateSwitch:addCase("searching for lobby",function()
         mainClient:send("no dat\n")
     end
 
-    processReceived(mainClient)
+    processReceived()
 end)
 
 stateSwitch:addCase("hosting lobby",function()
     if not (server and mainClient) then return end
-    processReceived(server)
-    processReceived(mainClient)
+    processReceived()
+
     if order == 1 then updateKickButtons() end
     if tick % refreshRate == 0 then
         server:sendUpdateMessage()
@@ -311,15 +324,13 @@ end)
 stateSwitch:addCase("connecting to lobby",function()
     if not player then return end
 
-    processReceived(mainClient)
-    processReceived(player)
+    processReceived()
 end)
 
 stateSwitch:addCase("in lobby",function()
     if not player then return end
 
-    processReceived(mainClient)
-    processReceived(player)
+    processReceived()
 end)
 
 stateSwitch:addCase("in game",function(dt)
@@ -327,8 +338,7 @@ stateSwitch:addCase("in game",function(dt)
 
     polyCoords = {}
 
-    processReceived(mainClient)
-    processReceived(player)
+    processReceived()
 
     World:update(dt,true)
 
@@ -373,7 +383,7 @@ end)
 stateSwitch:addCase("hosting game",function(dt)
     if not server then return end
     server:send("all","no dat".."_\n")
-    processReceived(player)
+    processReceived()
 
     for rope in World:getRope() do
         server:send("all",rope)
