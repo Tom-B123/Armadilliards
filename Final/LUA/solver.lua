@@ -871,18 +871,6 @@ function World:expensiveCollisions(ballIDs)
             if ball2.owner == ID1 then return end
         end
 
-        -- if bullet1 and bullet2 then
-        --     ball1.health = 0
-        --     ball2.health = 0
-
-        --     local centre = {(ball1.x+ball2.x)/2,(ball1.y+ball2.y)/2}
-        --     local hexX,hexY = Util:coordToHex(centre[1],centre[2])
-        --     table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
-        --     table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."00".."_"..hexX.."_"..hexY)
-        --     self:updateDeath({ball1,ball2})
-        --     return
-        -- end
-
         if bullet1 then
             ball1.health = 0
             local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
