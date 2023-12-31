@@ -473,7 +473,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = false,
+    debugTracking = true,
 
     respawnTime   = 240,
     maxHealth     = 50,
@@ -1155,6 +1155,12 @@ track:new("ropes")
 track:new("verlet")
 track:new("collisions")
 
+track:new("draw")
+track:new("grid and ropes")
+track:new("particles")
+track:new("balls")
+track:new("polygons")
+track:new("other debugs")
 local function getTrackingTimes()
     local out = {}
     table.insert(out,"solver:     "..track:getTime("solver"))
@@ -1163,6 +1169,12 @@ local function getTrackingTimes()
     table.insert(out,"ropes:      "..track:getTime("ropes"))
     table.insert(out,"verlet:     "..track:getTime("verlet"))
     table.insert(out,"collisions: "..track:getTime("collisions"))
+    table.insert(out,"draw time:  "..track:getTime("draw"))
+    table.insert(out,"grid+ropes: "..track:getTime("grid and ropes"))
+    table.insert(out,"particles:  "..track:getTime("particles"))
+    table.insert(out,"balls:      "..track:getTime("balls"))
+    table.insert(out,"polygons:   "..track:getTime("polygons"))
+    table.insert(out,"debug info: "..track:getTime("other debugs"))
     return out
 end
 
@@ -1250,28 +1262,43 @@ end
 function World:draw()
     local offsetX,offsetY = camera:getOffset()
 
+    track:start("draw")
+
+    track:start("grid and ropes")
     love.graphics.setColor( 0,0.4,0 )
     love.graphics.rectangle("fill",offsetX,offsetY,4096,4096)
 
     if self.debugGrid then grid:draw(offsetX,offsetY) end
 
     self:drawRopes(offsetX,offsetY)
+    track:finish("grid and ropes")
 
+    track:start("particles")
     self:drawParticles(offsetX,offsetY)
+    track:finish("particles")
 
+    track:start("balls")
     for i, ball in self.ballsList:iterator() do
         ball:draw(offsetX,offsetY)
     end
+    track:finish("balls")
 
+    track:start("polygons")
     for i,shape in ipairs(self.shapes) do
         shape:draw(offsetX,offsetY)
     end
+    track:finish("polygons")
 
+    track:start("other debugs")
     self:drawRespawnTime()
 
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
     if self.debugChecks then love.graphics.print("manhattan checks: "..manhattanChecks,0,220) end
     if World.showFPS then love.graphics.print(World:updateFPS()) end
+    track:finish("other debugs")
+
+    track:finish("draw")
+
     if World.debugTracking then
         local times = getTrackingTimes()
         for i,str in ipairs(times) do
