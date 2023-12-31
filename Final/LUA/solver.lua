@@ -142,8 +142,12 @@ function Ball:draw(offsetX,offsetY)
     end
 
     local debugBall = false
-
-    local style = "armadillo"
+    local style = "ball"
+    for i,ball in ipairs(World.playableBalls) do
+        if ball.ID == self.ID then
+            style = "armadillo"
+        end
+    end
     if (World.multiSet:has(self.ID) or self.death) then
         if World.debugShapes then
             style = "debug"

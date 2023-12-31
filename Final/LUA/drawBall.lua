@@ -2,7 +2,7 @@ require("switch")
 local drawBall = {}
 
 local ball       = love.graphics.newImage("Assets/ball.png")
-local blankSheet = love.graphics.newImage("Assets/blank.png")
+local blankSheet = love.graphics.newImage("Assets/blankSheet.png")
 local bodySheet  = love.graphics.newImage("Assets/bodySheet.png")
 local faceSheet  = love.graphics.newImage("Assets/faceSheet.png")
 
