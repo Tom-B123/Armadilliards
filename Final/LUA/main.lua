@@ -723,6 +723,7 @@ newStateSwitch:addCase("hosting game",function()
     --Load the map file
     ReadMap:open(maps:getVal())
 
+    World.ballsList:prev()
     local playerBall = World.ballsList:getVal()
     World:setFocus(playerBall)
 
