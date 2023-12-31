@@ -24,11 +24,8 @@ local ropeMessages    = {}
 local Ball    = {}
 Ball.__index  = Ball
 
-local colours = {}
-colours[1] = {0.1,0.1,0.1}
-colours[2] = {1,0,0}
-colours[3] = {0,1,0}
-colours[4] = {0,0,1}
+local colours = {{1,0,0},{0,1,0},{0,0,1},{1,1,0},{0,1,1},{1,0,1}}
+local ind = 1
 --Create a new ball object
 function Ball:new(x,y)
     local object = {}
@@ -50,7 +47,8 @@ function Ball:new(x,y)
     object.radius   = 16
     object.yaw      = 0
     object.pitch    = 0
-    object.colour   = colours[1]
+    object.colour   = colours[1+ind%6]
+    ind = ind + 1
     object.health   = World.maxHealth
     object.mass     = 10
     object.death    = nil
@@ -145,7 +143,7 @@ function Ball:draw(offsetX,offsetY)
 
     local debugBall = false
 
-    local style = "ball"
+    local style = "armadillo"
     if (World.multiSet:has(self.ID) or self.death) then
         if World.debugShapes then
             style = "debug"

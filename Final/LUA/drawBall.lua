@@ -45,6 +45,20 @@ typeSwitch:addCase("ball",function(args)
     love.graphics.draw(blankSheet,imageQuads[imageIndex],x,y,yaw,scale,scale,16,16)
 end)
 
+typeSwitch:addCase("armadillo",function(args)
+    local colour     = args[1]
+    local x          = args[2]
+    local y          = args[3]
+    local yaw        = args[4]
+    local scale      = args[5]
+    local imageIndex = args[6]
+
+    love.graphics.setColor(colour)
+    love.graphics.draw(bodySheet,imageQuads[imageIndex],x,y,yaw,scale,scale,16,16)
+    love.graphics.setColor(1,1,1)
+    love.graphics.draw(faceSheet,imageQuads[imageIndex],x,y,yaw,scale,scale,16,16)
+end)
+
 function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,style,radius)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
@@ -69,13 +83,15 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,sty
         else
             typeSwitch:case(style,{colour,x,y,yaw,scale,imageIndex})
         end
-        
-        love.graphics.setColor(1,1,1)
-        if name then
-            love.graphics.print(name,x - (4.5 * #name),y-32)
-        end
-        if health then
-            love.graphics.print(health,x - (4.5 * #health),y+10)
+
+        if style ~= debug then
+            love.graphics.setColor(1,1,1)
+            if name then
+                love.graphics.print(name,x - (4.5 * #name),y-32)
+            end
+            if health then
+                love.graphics.print(health,x - (4.5 * #health),y+10)
+            end
         end
     end
     pcall(tryDraw)
