@@ -1,4 +1,5 @@
-Util = {}
+local track = require("performance")
+Util        = {}
 --Splits a string by the seperator into a table of substrings
 function Util:split (inputstr, sep)
     if sep == nil then
@@ -172,4 +173,12 @@ function Util:hashIDs(IDs)
         sum = sum + (numID * numID)
     end
     return sum
+end
+
+function Util:fastSqrt(num,steps)
+    local tmp = num/2
+    for i = 1,steps do
+        tmp = tmp - (((tmp*tmp) - num) / (2*tmp))
+    end
+    return tmp
 end
