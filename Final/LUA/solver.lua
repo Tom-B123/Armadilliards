@@ -146,8 +146,12 @@ function Ball:draw(offsetX,offsetY)
     local debugBall = false
 
     local style = "ball"
-    if (World.multiSet:has(self.ID) or self.death) and World.debugShapes then
-        style = "debug"
+    if (World.multiSet:has(self.ID) or self.death) then
+        if World.debugShapes then
+            style = "debug"
+        else
+            return
+        end
     end
 
     local name   = nil
@@ -161,16 +165,14 @@ function Ball:draw(offsetX,offsetY)
         health = math.floor(self.health).."/"..World.maxHealth
     end
 
-    if debugBall and World.debugShapes or not debugBall then
-        drawBall:draw(
-            self.x + offsetX,
-            self.y + offsetY,
-            self.yaw,self.pitch,
-            self.colour,1,
-            name,health,World.debugChecks,
-            style,self.radius
-        )
-    end
+    drawBall:draw(
+        self.x + offsetX,
+        self.y + offsetY,
+        self.yaw,self.pitch,
+        self.colour,1,
+        name,health,World.debugChecks,
+        style,self.radius
+    )
 end
 
 function Ball:updateRoll()
