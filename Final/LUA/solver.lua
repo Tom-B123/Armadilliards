@@ -445,7 +445,6 @@ end
 --World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
 World = {
     ballsList     = List:new(),
-    -- balls         = {},
     shapes        = {},
 
     holes         = {},
@@ -470,7 +469,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = true,
+    debugTracking = false,
 
     respawnTime   = 240,
     maxHealth     = 50,
@@ -665,7 +664,7 @@ local iTime           = 5
 
 --Clears all balls
 function World:clear()
-    self.balls         = {}
+    self.ballsList     = List:new()
     self.shapes        = {}
     self.holes         = {}
     self.holesSet:  clear()
