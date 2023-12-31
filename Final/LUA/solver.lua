@@ -144,15 +144,23 @@ function Ball:draw(offsetX,offsetY)
     end
 
     local debugBall = false
-    if (World.multiSet:has(self.ID) or self.death) then debugBall = true end
+
+    local style = "ball"
+    if (World.multiSet:has(self.ID) or self.death) and World.debugShapes then
+        style = "debug"
+    end
+
     local name   = nil
     local health = nil
+
     if self.playerID and World.showNames then
         name = LobbyPlayer:getName(self.playerID)
     end
+
     if self.health > 0 and World.showHealth and not World.multiSet:has(self.ID) then
         health = math.floor(self.health).."/"..World.maxHealth
     end
+
     if debugBall and World.debugShapes or not debugBall then
         drawBall:draw(
             self.x + offsetX,
@@ -160,7 +168,7 @@ function Ball:draw(offsetX,offsetY)
             self.yaw,self.pitch,
             self.colour,1,
             name,health,World.debugChecks,
-            debugBall,self.radius
+            style,self.radius
         )
     end
 end

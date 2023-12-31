@@ -1,20 +1,51 @@
+require("switch")
 local drawBall = {}
 
 local ball       = love.graphics.newImage("Assets/ball.png")
 local blankSheet = love.graphics.newImage("Assets/blank.png")
+local bodySheet  = love.graphics.newImage("Assets/bodySheet.png")
+local faceSheet  = love.graphics.newImage("Assets/faceSheet.png")
 
-local blankQuads = {}
+local imageQuads = {}
 
 for y = 0,3 do
     for x = 0,7 do
         local quad = love.graphics.newQuad(x*32,y*32,32,32,32*8,32*4)
-        table.insert(blankQuads,quad)
+        table.insert(imageQuads,quad)
     end
 end
 
 local root2 = 2^0.5
 
-function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,debugBall,radius)
+local typeSwitch = Switch:new()
+
+typeSwitch:addCase("debug",function(args)
+    local x      = args[1]
+    local y      = args[2]
+    local radius = args[3]
+    love.graphics.circle(
+        "line",
+        x,
+        y,
+        radius
+    )
+end)
+
+typeSwitch:addCase("ball",function(args)
+    local colour     = args[1]
+    local x          = args[2]
+    local y          = args[3]
+    local yaw        = args[4]
+    local scale      = args[5]
+    local imageIndex = args[6]
+
+    love.graphics.setColor(colour)
+    love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
+    love.graphics.setColor(1,1,1)
+    love.graphics.draw(blankSheet,imageQuads[imageIndex],x,y,yaw,scale,scale,16,16)
+end)
+
+function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,style,radius)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
 
@@ -32,19 +63,13 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,deb
             love.graphics.setColor(0,0,1,0.5)
             love.graphics.circle("fill",x,y,32)
         end
-        if debugBall then
-            love.graphics.circle(
-                "line",
-                x,
-                y,
-                radius
-            )
+
+        if style == "debug" then
+            typeSwitch:case("debug",{x,y,radius})
         else
-            love.graphics.setColor(colour)
-            love.graphics.draw(ball,x,y,yaw,scale,scale,16,16)
-            love.graphics.setColor(1,1,1)
-            love.graphics.draw(blankSheet,blankQuads[imageIndex],x,y,yaw,scale,scale,16,16)
+            typeSwitch:case(style,{colour,x,y,yaw,scale,imageIndex})
         end
+        
         love.graphics.setColor(1,1,1)
         if name then
             love.graphics.print(name,x - (4.5 * #name),y-32)
