@@ -508,7 +508,24 @@ function World:getOffset()
     return camera:getOffset()
 end
 
-function World:updateDeath(balls)
+function World:updateDeath(balls,kill)
+    if kill and #balls == 2 then
+        --Process who was killed by who
+        if balls[1].health <= 0 then
+            if balls[2].playerID then
+                print(LobbyPlayer:getTeam(balls[2].playerID).." got a kill")
+            elseif balls[1].playerID then
+                print(LobbyPlayer:getTeam(balls[1].playerID).." lost a player")
+            end
+        end
+        if balls[2].health <= 0 then
+            if balls[1].playerID then
+                print(LobbyPlayer:getTeam(balls[1].playerID).." got a kill")
+            elseif balls[2].playerID then
+                print(LobbyPlayer:getTeam(balls[2].playerID).." lost a player")
+            end
+        end
+    end
     for i, ball in ipairs(balls) do
         local health = ball.health
         if health <= 0 then
@@ -517,9 +534,6 @@ function World:updateDeath(balls)
                     self:newParticle("rainbow",ball.x,ball.y,5,j)
                 end
                 ball.health = self.maxHealth
-            end
-            if ball.playerID then
-                print("a ball on team "..LobbyPlayer:getTeam(ball.playerID).." died")
             end
             ball.death  = tick
             self:removeRopes(ball.ID)
@@ -862,6 +876,9 @@ function World:expensiveCollisions(ballIDs)
             ball2.health = 0
             local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
             table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
+
+            if ball2.playerID then print(LobbyPlayer:getTeam(ball2.playerID).." lost a player") end
+
             self:updateDeath({ball2})
             return
         
@@ -870,6 +887,9 @@ function World:expensiveCollisions(ballIDs)
             ball1.health = 0
             local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
             table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
+
+            if ball1.playerID then print(LobbyPlayer:getTeam(ball1.playerID).." lost a player") end
+
             self:updateDeath({ball1})
             return
         end
@@ -939,7 +959,7 @@ function World:expensiveCollisions(ballIDs)
         if not multi1 then ball1.health = nHealth1 end
         if not multi2 then ball2.health = nHealth2 end
 
-        self:updateDeath({ball1,ball2})
+        self:updateDeath({ball1,ball2},true)
 
         if not (multi1 and multi2) then
             self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
