@@ -1,29 +1,24 @@
 require("lists")
-require("util")
 
---Converts the objective name into an ID
-local objectiveDict = {}
-
+--Holds multiple teams, each of which holds a dictionary of events and scores
 local teamDict      = {}
 for i = 1,8 do
     teamDict["team "..i] = {}
 end
 
+--Holds the functions for creating and using objectives
 local objective     = {}
 
---Create a new objective ID from the event name
-function objective:new(event,salt)
-    objectiveDict[event] = Util:calculateID(5,salt)
-end
-
---Get the objective ID
-function objective:getID(event)
-    return objectiveDict[event]
+--Create a new objective for all teams, setting their score to 0
+function objective:new(event)
+    for team,v in pairs(teamDict) do
+        local scores = teamDict[team]
+        scores[event] = 0
+    end
 end
 
 --Get the score corresponding to the team and event
 function objective:getScore(event,team)
-    local ID = self:getID(event)
     local scores = teamDict[team]
     if scores[event] then
         return scores[event]
@@ -32,7 +27,6 @@ end
 
 --Sets the score corresponding to the team and event
 function objective:setScore(event,team,nScore)
-    local ID = self:getID(event)
     local scores = teamDict[team]
     scores[event] = nScore
 end
