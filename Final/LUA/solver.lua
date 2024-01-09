@@ -4,6 +4,7 @@ require("lists")
 require("sets")
 local drawBall  = require("drawBall")
 local track     = require("performance")
+local objective = require("objective")
 
 local tick            = 0
 local lastFrame       = Socket.gettime() * 10000
@@ -444,6 +445,12 @@ function camera:updateFocus()
         self.focus = World.ballsList:getVal()
     end
 end
+
+objective:new("deaths")
+objective:new("kills")
+objective:new("damage dealt")
+objective:new("damage taken")
+objective:new("distance traveled")
 
 --World table, stores and processes all balls
 --World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
