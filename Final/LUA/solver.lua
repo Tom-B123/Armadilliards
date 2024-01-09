@@ -1172,6 +1172,7 @@ function World:getBallIDs()
 end
 
 track:new("solver")
+track:new("update particles")
 track:new("grid clear")
 track:new("grid populate")
 track:new("ropes")
@@ -1188,6 +1189,7 @@ track:new("other debugs")
 local function getTrackingTimes()
     local out = {}
     table.insert(out,"solver:     "..track:getTime("solver"))
+    table.insert(out,"particles:  "..track:getTime("update particles"))
     table.insert(out,"grid clear: "..track:getTime("grid clear"))
     table.insert(out,"grid pop:   "..track:getTime("grid populate"))
     table.insert(out,"ropes:      "..track:getTime("ropes"))
@@ -1214,7 +1216,9 @@ end
 function World:update(dt,isClient)
     track:start("solver")
     if self.focus then camera:update(dt) end
+    track:start("update particles")
     self:updateParticles(dt)
+    track:finish("update particles")
     self:updateRespawns()
     if isClient then
         self:updateDeath(getBallsTable())
