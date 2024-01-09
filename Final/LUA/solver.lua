@@ -518,6 +518,9 @@ function World:updateDeath(balls)
                 end
                 ball.health = self.maxHealth
             end
+            if ball.playerID then
+                print("a ball on team "..LobbyPlayer:getTeam(ball.playerID).." died")
+            end
             ball.death  = tick
             self:removeRopes(ball.ID)
         end
@@ -1161,6 +1164,7 @@ track:new("particles")
 track:new("balls")
 track:new("polygons")
 track:new("other debugs")
+
 local function getTrackingTimes()
     local out = {}
     table.insert(out,"solver:     "..track:getTime("solver"))
