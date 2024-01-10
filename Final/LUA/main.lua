@@ -50,6 +50,7 @@ local maxOrder = 4
 local buttons        = {}
 local lobbyButtons   = List:new()
 local kickButtons    = List:new()
+local teamButtons    = List:new()
 local maps           = List:new()
 
 local polyCoords     = {}
@@ -150,6 +151,20 @@ end
 local function drawKickButtons()
     local distance = 20
     for i,button in kickButtons:iterator() do
+        button:setCoords(450,20 + i*distance,500,20 + distance * 0.9 + i*distance)
+        button:draw()
+    end
+end
+
+local function updateTeamButtons()
+    for i,button in teamButtons:iterator() do
+        button:update()
+    end
+end
+
+local function drawTeamButtons()
+    local distance = 20
+    for i,button in teamButtons:iterator() do
         button:setCoords(450,20 + i*distance,500,20 + distance * 0.9 + i*distance)
         button:draw()
     end
@@ -1062,6 +1077,14 @@ netSwitch:addCase("ncon",function(args)
         nButton:preset("cancel")
         kickButtons:append(nButton)
         KickButton:new(ID,nButton)
+
+        local nTeamButton = Button:new("team",0,450,y,500, y + 17.5,function()
+            print(ID)
+        end)
+
+        teamButtons:append(nButton)
+        TeamButton:new(ID,nButton)
+        
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
     end
 

@@ -456,3 +456,18 @@ end
 function KickButton:remove(ID)
     self.buttonsDict[ID] = nil
 end
+
+TeamButton = {
+    buttonsDict = {}
+}
+function TeamButton:new(ID,button)
+    self.buttonsDict[ID] = button
+end
+
+function TeamButton:get(ID)
+    return self.buttonsDict[ID]
+end
+
+function TeamButton:remove(ID)
+    self.buttonsDict[ID] = nil
+end
