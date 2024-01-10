@@ -481,7 +481,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = true,
+    debugTracking = false,
 
     respawnTime   = 240,
     maxHealth     = 50,
@@ -516,8 +516,8 @@ function World:getOffset()
     return camera:getOffset()
 end
 
-function World:updateDeath(balls,kill)
-    if kill and #balls == 2 then
+function World:updateDeath(balls,kill,isClient)
+    if not isClient and kill and #balls == 2 then
         --Logic for detecting which team got a kill
         if balls[1].health <= 0 then
             if balls[2].playerID then
@@ -544,7 +544,7 @@ function World:updateDeath(balls,kill)
         local health = ball.health
         if health <= 0 then
             --If the dead ball is a player, update their team's death count
-            if ball.playerID then
+            if not isClient and ball.playerID then
                 local team = LobbyPlayer:getTeam(ball.playerID)
                 objective:addScore("deaths",team,1)
 
@@ -1295,7 +1295,7 @@ function World:update(dt,isClient)
     track:finish("update particles")
     self:updateRespawns()
     if isClient then
-        self:updateDeath(getBallsTable())
+        self:updateDeath(getBallsTable(),false,true)
         for i, ball in self.ballsList:iterator() do
             if not self.holesSet:has(ball) then
                 ball:verlet(dt)
