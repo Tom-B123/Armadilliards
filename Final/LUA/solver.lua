@@ -517,7 +517,7 @@ end
 
 function World:updateDeath(balls,kill)
     if kill and #balls == 2 then
-        --Process who was killed by who
+        --Logic for detecting which team got a kill
         if balls[1].health <= 0 then
             if balls[2].playerID then
                 local team2 = LobbyPlayer:getTeam(balls[2].playerID)
@@ -892,6 +892,11 @@ function World:expensiveCollisions(ballIDs)
         --If ball1 is a hole and ball2 is a non-multi-shape ball then
 
         if     hole1 and not hole2 and not multi2 then
+
+            --Adds damage taken for the reamaining ball health
+            local team2 = LobbyPlayer:getTeam(ball2.playerID)
+            if team2 then Objective:addScore("damage taken",team2,ball2.health) end
+
             ball2.health = 0
             local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
             table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
@@ -902,11 +907,14 @@ function World:expensiveCollisions(ballIDs)
         
         --If ball2 is a hole and ball1 is a non-multi-shape ball then
         elseif hole2 and not hole1 and not multi1 then
+
+            --Adds damage taken for the reamaining ball health
+            local team1 = LobbyPlayer:getTeam(ball1.playerID)
+            if team1 then Objective:addScore("damage taken",team1,ball1.health) end
+
             ball1.health = 0
             local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
             table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
-
-            if ball1.playerID then print(LobbyPlayer:getTeam(ball1.playerID).." lost a player") end
 
             self:updateDeath({ball1})
             return
@@ -950,14 +958,31 @@ function World:expensiveCollisions(ballIDs)
         local dSpeed = Util:findDistance(dvx,dvy)
         if dSpeed < 3 then return end
 
+        --Get the teams of the two balls, or nil if they aren't player controlled.
+        local team1
+        local team2
+        if ball1.playerID then
+            team1  = LobbyPlayer:getTeam(ball1.playerID)
+        end
 
+        if ball2.playerID then
+            team2  = LobbyPlayer:getTeam(ball2.playerID)
+        end
+
+        --Get the true speed of the balls
         local speed1 = Util:findDistance(ball1.vx,ball1.vy)
         local speed2 = Util:findDistance(ball2.vx,ball2.vy)
 
         --The faster ball (the aggressor) will take less damage and inflict more damage
         local dampening       = 2
         local aggeressionMult = 1.5
-        local nHealth1,nHealth2
+
+        local oHealth1        = ball1.health
+        local oHealth2        = ball2.health
+
+        local nHealth1
+        local nHealth2
+
         --If the speeds are similar, there is no aggressor so both balls lose equal health
         if math.abs(speed1 - speed2) < 0.3 then
             nHealth1 = ball1.health - (dSpeed * dSpeed / 10)
@@ -967,10 +992,29 @@ function World:expensiveCollisions(ballIDs)
         elseif speed1 > speed2 then
             nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)
             nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult)
+
         elseif speed2 > speed1 then
             nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult)
             nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
+
         end
+
+        --Damage taken = change in health
+        local damage1 = oHealth1 - nHealth1
+        local damage2 = oHealth2 - nHealth2
+
+        --Update the damage dealt scores
+        if team1 then Objective:addScore("damage dealt",team1,damage2) end
+        if team2 then Objective:addScore("damage dealt",team2,damage1) end
+
+        if team1 then Objective:addScore("damage taken",team1,damage1) end
+        if team2 then Objective:addScore("damage taken",team2,damage2) end
+
+        if team1 then print("damage dealt for team ".. team1..": "..Objective:getScore("damage dealt", team1)) end
+        if team2 then print("damage dealt for team ".. team2..": "..Objective:getScore("damage dealt", team2)) end
+
+        if team1 then print("damage taken for team ".. team1..": "..Objective:getScore("damage taken", team1)) end
+        if team2 then print("damage taken for team ".. team2..": "..Objective:getScore("damage taken", team2)) end
 
         local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
 
