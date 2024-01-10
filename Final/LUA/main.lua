@@ -53,6 +53,16 @@ local kickButtons    = List:new()
 local teamButtons    = List:new()
 local maps           = List:new()
 
+local nextTeam       = {}
+
+local teamCount = 8
+
+for i = 1,teamCount-1 do
+    nextTeam["team "..i] = "team "..i+1
+end
+
+nextTeam["team "..teamCount] = "team "..(1)
+
 local polyCoords     = {}
 
 local lobbyScroll    = 0
@@ -682,7 +692,8 @@ newStateSwitch:addCase("hosting lobby",function()
         local y = 20
 
         local nTeamButton = Button:new("",0,450,y,500, y + 17.5,function()
-            print(mainClient.ID)
+            local nTeam = nextTeam[LobbyPlayer:getTeam(mainClient.ID)]
+            LobbyPlayer:setTeam(mainClient.ID,nTeam)
         end)
         nTeamButton:preset("text editing")
 
@@ -1094,10 +1105,11 @@ netSwitch:addCase("ncon",function(args)
         KickButton:new(ID,nKickButton)
 
         local nTeamButton = Button:new("",0,450,y,500, y + 17.5,function()
-            print(ID)
+            local nTeam = nextTeam[LobbyPlayer:getTeam(ID)]
+            LobbyPlayer:setTeam(ID,nTeam)
         end)
         nTeamButton:preset("text editing")
-        
+
         teamButtons:append(nTeamButton)
         TeamButton:new(ID,nTeamButton)
 
