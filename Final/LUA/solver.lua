@@ -4,7 +4,7 @@ require("lists")
 require("sets")
 local drawBall  = require("drawBall")
 local track     = require("performance")
-local objective = require("objective")
+require("objective")
 
 local tick            = 0
 local lastFrame       = Socket.gettime() * 10000
@@ -446,11 +446,11 @@ function camera:updateFocus()
     end
 end
 
-objective:new("deaths")
-objective:new("kills")
-objective:new("damage dealt")
-objective:new("damage taken")
-objective:new("distance traveled")
+Objective:new("deaths")
+Objective:new("kills")
+Objective:new("damage dealt")
+Objective:new("damage taken")
+Objective:new("distance traveled")
 
 --World table, stores and processes all balls
 --World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
@@ -520,22 +520,34 @@ function World:updateDeath(balls,kill)
         --Process who was killed by who
         if balls[1].health <= 0 then
             if balls[2].playerID then
-                print(LobbyPlayer:getTeam(balls[2].playerID).." got a kill")
-            elseif balls[1].playerID then
-                print(LobbyPlayer:getTeam(balls[1].playerID).." lost a player")
+                local team2 = LobbyPlayer:getTeam(balls[2].playerID)
+                if team2 then
+                    Objective:addScore("kills",team2,1)
+                    print("kills for "..team2..": "..Objective:getScore("kills",team2))
+                end
             end
         end
         if balls[2].health <= 0 then
             if balls[1].playerID then
-                print(LobbyPlayer:getTeam(balls[1].playerID).." got a kill")
-            elseif balls[2].playerID then
-                print(LobbyPlayer:getTeam(balls[2].playerID).." lost a player")
+                local team1 = LobbyPlayer:getTeam(balls[1].playerID)
+                if team1 then
+                    Objective:addScore("kills",team1,1)
+                    print("kills for "..team1..": "..Objective:getScore("kills",team1))
+                end
             end
         end
     end
     for i, ball in ipairs(balls) do
         local health = ball.health
         if health <= 0 then
+            --If the dead ball is a player, update their team's death count
+            if ball.playerID then
+                local team = LobbyPlayer:getTeam(ball.playerID)
+                Objective:addScore("deaths",team,1)
+
+                print("deaths for "..team..": "..Objective:getScore("deaths",team))
+            end
+
             if not self.bulletsSet:has(ball.ID) then
                 for j = 1,15 do
                     self:newParticle("rainbow",ball.x,ball.y,5,j)
@@ -861,7 +873,7 @@ function World:expensiveCollisions(ballIDs)
 
         --The tick of the last collision of ball1 and ball2
         local lastTick = damageCooldowns[hashSum]
-        --If the balls have collided before, within 5 ticks, deal no damage
+        --If the balls have collided before, within iTime ticks, deal no damage and reset the cooldown timer
         if lastTick and tick - lastTick <= iTime then
             damageCooldowns[hashSum] = tick
             return
@@ -884,7 +896,6 @@ function World:expensiveCollisions(ballIDs)
             local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
             table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
 
-            if ball2.playerID then print(LobbyPlayer:getTeam(ball2.playerID).." lost a player") end
 
             self:updateDeath({ball2})
             return
@@ -1077,10 +1088,10 @@ function World:expensiveCollisions(ballIDs)
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
                 local sum = Util:hashIDs({ID1,ID2})
-                -- if not collisionCache[sum] then
+                if not collisionCache[sum] then
                     collision(ID1,ID2,sum)
-                --     collisionCache[sum] = true
-                -- end
+                    collisionCache[sum] = true
+                end
             end
         end
     end

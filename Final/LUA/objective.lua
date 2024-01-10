@@ -7,18 +7,17 @@ for i = 1,8 do
 end
 
 --Holds the functions for creating and using objectives
-local objective     = {}
+Objective     = {}
 
 --Create a new objective for all teams, setting their score to 0
-function objective:new(event)
+function Objective:new(event)
     for team,v in pairs(teamDict) do
-        local scores = teamDict[team]
-        scores[event] = 0
+        teamDict[team][event] = 0
     end
 end
 
 --Get the score corresponding to the team and event
-function objective:getScore(event,team)
+function Objective:getScore(event,team)
     local scores = teamDict[team]
     if scores[event] then
         return scores[event]
@@ -26,15 +25,14 @@ function objective:getScore(event,team)
 end
 
 --Sets the score corresponding to the team and event
-function objective:setScore(event,team,nScore)
-    local scores = teamDict[team]
-    scores[event] = nScore
+function Objective:setScore(event,team,nScore)
+    teamDict[team][event] = nScore
 end
 
 --Adds an amount to the current score for that team
-function objective:addScore(event,team,amount)
+function Objective:addScore(event,team,amount)
     local cScore = self:getScore(event,team)
-    self:setScore(cScore + amount)
+    self:setScore(event,team,cScore + amount)
 end
 
-return objective
+return Objective
