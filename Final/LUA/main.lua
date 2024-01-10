@@ -165,7 +165,7 @@ end
 local function drawTeamButtons()
     local distance = 20
     for i,button in teamButtons:iterator() do
-        button:setCoords(400,20 + i*distance,455,20 + distance * 0.9 + i*distance)
+        button:setCoords(400,0 + i*distance,455,0 + distance * 0.9 + i*distance)
         button:draw()
     end
 end
@@ -678,6 +678,16 @@ newStateSwitch:addCase("hosting lobby",function()
         LobbyPlayer:setReady(mainClient.ID,    true)
         LobbyPlayer:setInLobby(mainClient.ID,  true)
         LobbyPlayer:setTeam(mainClient.ID,    "team 1")
+
+        local y = 20
+
+        local nTeamButton = Button:new("",0,450,y,500, y + 17.5,function()
+            print(mainClient.ID)
+        end)
+        nTeamButton:preset("text editing")
+
+        teamButtons:append(nTeamButton)
+        TeamButton:new(mainClient.ID,nTeamButton)
     end
 
     newButton(1,"start",600,500,750,550,function()
@@ -1086,7 +1096,8 @@ netSwitch:addCase("ncon",function(args)
         local nTeamButton = Button:new("",0,450,y,500, y + 17.5,function()
             print(ID)
         end)
-
+        nTeamButton:preset("text editing")
+        
         teamButtons:append(nTeamButton)
         TeamButton:new(ID,nTeamButton)
 
