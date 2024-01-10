@@ -151,7 +151,7 @@ end
 local function drawKickButtons()
     local distance = 20
     for i,button in kickButtons:iterator() do
-        button:setCoords(450,20 + i*distance,500,20 + distance * 0.9 + i*distance)
+        button:setCoords(475,20 + i*distance,525,20 + distance * 0.9 + i*distance)
         button:draw()
     end
 end
@@ -165,7 +165,7 @@ end
 local function drawTeamButtons()
     local distance = 20
     for i,button in teamButtons:iterator() do
-        button:setCoords(450,20 + i*distance,500,20 + distance * 0.9 + i*distance)
+        button:setCoords(400,20 + i*distance,455,20 + distance * 0.9 + i*distance)
         button:draw()
     end
 end
@@ -325,7 +325,10 @@ stateSwitch:addCase("hosting lobby",function()
     if not (server and mainClient) then return end
     processReceived()
 
-    if order == 1 then updateKickButtons() end
+    if order == 1 then 
+        updateKickButtons()
+        updateTeamButtons()
+    end
     if tick % refreshRate == 0 then
         server:sendUpdateMessage()
         mainClient:send("updt:"..server.ID.."_player count_"..server.playerCount.."_\n")
@@ -927,6 +930,7 @@ drawStateSwitch:addCase("hosting lobby",function()
     drawMessages()
     drawButtons(1)
     drawKickButtons()
+    drawTeamButtons()
     love.graphics.setColor(1,1,1)
     for i, ID in ipairs(LobbyPlayer:getIDs()) do
         local name  = LobbyPlayer:getName(ID)
@@ -1068,23 +1072,24 @@ netSwitch:addCase("ncon",function(args)
         LobbyPlayer:setInLobby(ID,true)
         LobbyPlayer:setTeam(ID,"team 1")
 
+        --Creates player specific kick and team button for the host to use
         local y         = #LobbyPlayer:getIDs() * 20
-        local nButton   = Button:new("kick",0,450,y,500, y + 17.5)
+        local nKickButton   = Button:new("kick",0,450,y,500, y + 17.5)
 
-        nButton.command = function()
+        nKickButton.command = function()
             server:send("all","kick:"..ID.."_\n")
         end
-        nButton:preset("cancel")
-        kickButtons:append(nButton)
-        KickButton:new(ID,nButton)
+        nKickButton:preset("cancel")
+        kickButtons:append(nKickButton)
+        KickButton:new(ID,nKickButton)
 
-        local nTeamButton = Button:new("team",0,450,y,500, y + 17.5,function()
+        local nTeamButton = Button:new("",0,450,y,500, y + 17.5,function()
             print(ID)
         end)
 
-        teamButtons:append(nButton)
-        TeamButton:new(ID,nButton)
-        
+        teamButtons:append(nTeamButton)
+        TeamButton:new(ID,nTeamButton)
+
         server:send("all","ncon:"..ID.."_"..name.."_confirm_\n")
     end
 
