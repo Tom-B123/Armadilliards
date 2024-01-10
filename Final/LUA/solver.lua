@@ -4,7 +4,7 @@ require("lists")
 require("sets")
 local drawBall  = require("drawBall")
 local track     = require("performance")
-require("objective")
+local objective = require("objective")
 
 local tick            = 0
 local lastFrame       = Socket.gettime() * 10000
@@ -19,14 +19,15 @@ local windowDims = {x = love.graphics.getWidth(),y=love.graphics.getHeight()}
 
 local camera = {x=0,y=0,vx=0,vy=0,focus = nil,focusInd = -1}
 
-local damageMessages  = {}
-local ropeMessages    = {}
+local damageMessages     = {}
+local objectiveMessages  = {}
+local ropeMessages       = {}
 
 local Ball    = {}
 Ball.__index  = Ball
 
 local colours = {{1,0,0},{0,1,0},{0,0,1},{1,1,0},{0,1,1},{1,0,1}}
-local ind = 1
+local colourInd = 1
 --Create a new ball object
 function Ball:new(x,y)
     local object = {}
@@ -48,8 +49,8 @@ function Ball:new(x,y)
     object.radius   = 16
     object.yaw      = 0
     object.pitch    = 0
-    object.colour   = colours[1+ind%6]
-    ind = ind + 1
+    object.colour   = colours[1+colourInd%6]
+    colourInd = colourInd + 1
     object.health   = World.maxHealth
     object.mass     = 10
     object.death    = nil
@@ -446,11 +447,11 @@ function camera:updateFocus()
     end
 end
 
-Objective:new("deaths")
-Objective:new("kills")
-Objective:new("damage dealt")
-Objective:new("damage taken")
-Objective:new("distance traveled")
+objective:new("deaths")
+objective:new("kills")
+objective:new("damage dealt")
+objective:new("damage taken")
+objective:new("capture point")
 
 --World table, stores and processes all balls
 --World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
@@ -522,8 +523,9 @@ function World:updateDeath(balls,kill)
             if balls[2].playerID then
                 local team2 = LobbyPlayer:getTeam(balls[2].playerID)
                 if team2 then
-                    Objective:addScore("kills",team2,1)
-                    print("kills for "..team2..": "..Objective:getScore("kills",team2))
+                    objective:addScore("kills",team2,1)
+
+                    table.insert(objectiveMessages,{"kills",team2,objective:getScore("kills",team2)})
                 end
             end
         end
@@ -531,8 +533,9 @@ function World:updateDeath(balls,kill)
             if balls[1].playerID then
                 local team1 = LobbyPlayer:getTeam(balls[1].playerID)
                 if team1 then
-                    Objective:addScore("kills",team1,1)
-                    print("kills for "..team1..": "..Objective:getScore("kills",team1))
+                    objective:addScore("kills",team1,1)
+
+                    table.insert(objectiveMessages,{"kills",team1,objective:getScore("kills",team1)})
                 end
             end
         end
@@ -543,9 +546,9 @@ function World:updateDeath(balls,kill)
             --If the dead ball is a player, update their team's death count
             if ball.playerID then
                 local team = LobbyPlayer:getTeam(ball.playerID)
-                Objective:addScore("deaths",team,1)
+                objective:addScore("deaths",team,1)
 
-                print("deaths for "..team..": "..Objective:getScore("deaths",team))
+                table.insert(objectiveMessages,{"deaths",team,objective:getScore("deaths",team)})
             end
 
             if not self.bulletsSet:has(ball.ID) then
@@ -895,12 +898,14 @@ function World:expensiveCollisions(ballIDs)
 
             --Adds damage taken for the reamaining ball health
             local team2 = LobbyPlayer:getTeam(ball2.playerID)
-            if team2 then Objective:addScore("damage taken",team2,ball2.health) end
+            if team2 then 
+                objective:addScore("damage taken",team2,ball2.health) 
+                table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage dealt",team2)})
+            end
 
             ball2.health = 0
             local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
             table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
-
 
             self:updateDeath({ball2})
             return
@@ -910,7 +915,10 @@ function World:expensiveCollisions(ballIDs)
 
             --Adds damage taken for the reamaining ball health
             local team1 = LobbyPlayer:getTeam(ball1.playerID)
-            if team1 then Objective:addScore("damage taken",team1,ball1.health) end
+            if team1 then 
+                objective:addScore("damage taken",team1,ball1.health) 
+                table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage dealt",team1)})
+            end
 
             ball1.health = 0
             local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
@@ -1003,18 +1011,22 @@ function World:expensiveCollisions(ballIDs)
         local damage1 = oHealth1 - nHealth1
         local damage2 = oHealth2 - nHealth2
 
-        --Update the damage dealt scores
-        if team1 then Objective:addScore("damage dealt",team1,damage2) end
-        if team2 then Objective:addScore("damage dealt",team2,damage1) end
+        --Update the damage dealt scores, adding scores to objectiveMessages
+        if team1 then
+            objective:addScore("damage dealt",team1,damage2)
+            objective:addScore("damage taken",team1,damage1)
 
-        if team1 then Objective:addScore("damage taken",team1,damage1) end
-        if team2 then Objective:addScore("damage taken",team2,damage2) end
+            table.insert(objectiveMessages,{"damage dealt",team1,objective:getScore("damage dealt",team1)})
+            table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
+        end
 
-        if team1 then print("damage dealt for team ".. team1..": "..Objective:getScore("damage dealt", team1)) end
-        if team2 then print("damage dealt for team ".. team2..": "..Objective:getScore("damage dealt", team2)) end
+        if team2 then
+            objective:addScore("damage dealt",team2,damage1)
+            objective:addScore("damage taken",team2,damage2)
 
-        if team1 then print("damage taken for team ".. team1..": "..Objective:getScore("damage taken", team1)) end
-        if team2 then print("damage taken for team ".. team2..": "..Objective:getScore("damage taken", team2)) end
+            table.insert(objectiveMessages,{"damage dealt",team2,objective:getScore("damage dealt",team2)})
+            table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
+        end
 
         local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
 
@@ -1293,11 +1305,14 @@ function World:update(dt,isClient)
         track:finish("solver")
         return
     end
-    checks = 0
-    manhattanChecks = 0
-    collisionCache = {}
-    damageMessages = {}
-    ropeMessages   = {}
+
+    --Reset all per-tick variables
+    checks            = 0
+    manhattanChecks   = 0
+    collisionCache    = {}
+    damageMessages    = {}
+    objectiveMessages = {}
+    ropeMessages      = {}
 
     self:populate()
 
@@ -1335,6 +1350,24 @@ function World:getDamg()
             return damageMessages[ind]
         end
     end
+end
+
+--Iterator for objective messages messages
+function World:getObjv()
+    local ind = 0
+    return function()
+        if objectiveMessages[ind+1] then
+            ind = ind + 1
+            local message = objectiveMessages[ind]
+            return "objv:"..message[1].."_"..message[2].."_"..message[3].."_\n"
+        end
+    end
+end
+
+--Sets the score of a team and event
+function World:setScore(event,team,nScore)
+    print(event,team,nScore)
+    objective:setScore(event,team,nScore)
 end
 
 --Iterator for rope messages

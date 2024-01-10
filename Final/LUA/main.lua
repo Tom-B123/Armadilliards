@@ -395,6 +395,10 @@ stateSwitch:addCase("hosting game",function(dt)
         server:send("all",damage)
     end
 
+    for objective in World:getObjv() do
+        server:send("all",objective)
+    end
+
     if order == 1 and not editingText then
         local ball = World.focus
         local nx,ny,a,b = Util:processGameInputs()
@@ -1360,6 +1364,15 @@ netSwitch:addCase("damg",function(args)
         World:newParticle("spark",centreX,centreY,math.floor(force)*1.5 / 2,force/2)
         World:newParticle("spark",centreX,centreY,math.floor(force) / 2    ,1)
     end
+end)
+
+netSwitch:addCase("objv",function(args)
+    if not player then return end
+    local splitData          = Util:split(args,"_")
+    local event              = splitData[1]
+    local team               = splitData[2]
+    local value              = splitData[3]
+    World:setScore(event,team,value)
 end)
 
 netSwitch:addCase("nrope",function(args)
