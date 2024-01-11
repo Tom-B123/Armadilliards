@@ -4,16 +4,23 @@ Set.__index = Set
 function Set:new()
     local object = {}
     setmetatable(object,Set)
-    object.dict = {}
+    object.dict   = {}
+    object.length = 0
     return object
 end
 
 function Set:add(value)
-    self.dict[value] = true
+    if not self:has(value) then
+        self.dict[value] = true
+        self.length = self.length + 1
+    end
 end
 
 function Set:remove(value)
-    self.dict[value] = nil
+    if self:has(value) then
+        self.dict[value] = nil
+        self.length = self.length - 1
+    end
 end
 
 function Set:has(value)

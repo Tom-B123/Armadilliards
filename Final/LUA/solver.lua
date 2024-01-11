@@ -51,6 +51,7 @@ function Ball:new(x,y)
     object.health   = World.maxHealth
     object.mass     = 10
     object.death    = nil
+    object.eliminated = false
     return object
 end
 
@@ -490,9 +491,13 @@ World = {
 
 function World:drawRespawnTime()
     if not self.focus then return end
+    if World.focus.eliminated then love.graphics.print("your team has been eliminated!",0,400) return end
     timeToRespawn = -1
     if World.focus.death then timeToRespawn = (math.floor(((World.respawnTime - tick + World.focus.death) / 60)*10) + 1)/10 end
-    if timeToRespawn > -1 then love.graphics.print("respawning in "..(timeToRespawn).." seconds",0,400) end
+
+    if timeToRespawn > -1 then
+        love.graphics.print("respawning in "..(timeToRespawn).." seconds",0,400)
+    end
 end
 
 function World:updateFPS()
@@ -545,7 +550,10 @@ function World:updateDeath(balls,kill,isClient)
             --If the dead ball is a player, update their team's death count
             if not isClient and ball.playerID then
                 local team = LobbyPlayer:getTeam(ball.playerID)
-                if objective:addScore("deaths",team,1) then self.atGoal = true end
+                if objective:addScore("deaths",team,1) then
+                    print(team.." is out of lives!")
+                    ball.eliminated = true
+                end
 
                 table.insert(objectiveMessages,{"deaths",team,objective:getScore("deaths",team)})
             end
@@ -719,11 +727,29 @@ function World:clear()
     tick               = 0
     objective:resetScores()
     self.atGoal        = false
+    
 end
 
+local allTeams        = Set:new()
+local eliminatedTeams = Set:new()
+
+function World:updateEliminations()
+    for i,ball in self.ballsList:iterator() do
+        --Add the team to the eliminated and regular teams sets
+        if ball.playerID then
+            local team = LobbyPlayer:getTeam(ball.playerID)
+            if ball.eliminated and not eliminatedTeams:has(team) then eliminatedTeams:add(team) end
+        end
+    end
+    if allTeams.length == eliminatedTeams.length then
+        print("all teams are eliminated")
+    end
+end
+
+--Respawns every ball that has reached the end if its respawn timer.
 function World:updateRespawns()
     for i,ball in self.ballsList:iterator() do
-        if ball.death then ball:tryRespawn() end
+        if not ball.eliminated and ball.death then ball:tryRespawn() end
     end
 end
 
