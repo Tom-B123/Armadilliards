@@ -28,7 +28,8 @@ function Set:has(value)
 end
 
 function Set:clear()
-    self.dict = {}
+    self.dict   = {}
+    self.length = 0
 end
 
 function Set:pairs()
