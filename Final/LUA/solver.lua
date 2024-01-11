@@ -486,7 +486,9 @@ World = {
     respawnTime   = 240,
     maxHealth     = 50,
     particleLimit = 200,
-    particleCount = 0
+    particleCount = 0,
+
+    atGoal        = false
 }
 
 function World:drawRespawnTime()
@@ -523,7 +525,7 @@ function World:updateDeath(balls,kill,isClient)
             if balls[2].playerID then
                 local team2 = LobbyPlayer:getTeam(balls[2].playerID)
                 if team2 then
-                    objective:addScore("kills",team2,1)
+                    if objective:addScore("kills",team2,1) then self.atGoal = true end
 
                     table.insert(objectiveMessages,{"kills",team2,objective:getScore("kills",team2)})
                 end
@@ -533,7 +535,7 @@ function World:updateDeath(balls,kill,isClient)
             if balls[1].playerID then
                 local team1 = LobbyPlayer:getTeam(balls[1].playerID)
                 if team1 then
-                    objective:addScore("kills",team1,1)
+                    if objective:addScore("kills",team1,1) then self.atGoal = true end
 
                     table.insert(objectiveMessages,{"kills",team1,objective:getScore("kills",team1)})
                 end
@@ -546,7 +548,7 @@ function World:updateDeath(balls,kill,isClient)
             --If the dead ball is a player, update their team's death count
             if not isClient and ball.playerID then
                 local team = LobbyPlayer:getTeam(ball.playerID)
-                objective:addScore("deaths",team,1)
+                if objective:addScore("deaths",team,1) then self.atGoal = true end
 
                 table.insert(objectiveMessages,{"deaths",team,objective:getScore("deaths",team)})
             end
@@ -899,7 +901,7 @@ function World:expensiveCollisions(ballIDs)
             --Adds damage taken for the reamaining ball health
             local team2 = LobbyPlayer:getTeam(ball2.playerID)
             if team2 then 
-                objective:addScore("damage taken",team2,ball2.health) 
+                if objective:addScore("damage taken",team2,ball2.health) then self.atGoal = true end
                 table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage dealt",team2)})
             end
 
@@ -1013,16 +1015,16 @@ function World:expensiveCollisions(ballIDs)
 
         --Update the damage dealt scores, adding scores to objectiveMessages
         if team1 then
-            objective:addScore("damage dealt",team1,damage2)
-            objective:addScore("damage taken",team1,damage1)
+            if objective:addScore("damage dealt",team1,damage2) then self.atGoal = true end
+            if objective:addScore("damage taken",team1,damage1) then self.atGoal = true end
 
             table.insert(objectiveMessages,{"damage dealt",team1,objective:getScore("damage dealt",team1)})
             table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
         end
 
         if team2 then
-            objective:addScore("damage dealt",team2,damage1)
-            objective:addScore("damage taken",team2,damage2)
+            if objective:addScore("damage dealt",team2,damage1) then self.atGoal = true end
+            if objective:addScore("damage taken",team2,damage2) then self.atGoal = true end
 
             table.insert(objectiveMessages,{"damage dealt",team2,objective:getScore("damage dealt",team2)})
             table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
@@ -1366,8 +1368,11 @@ end
 
 --Sets the score of a team and event
 function World:setScore(event,team,nScore)
-    print(event,team,nScore)
     objective:setScore(event,team,nScore)
+end
+
+function World:setGoal(event,score)
+    objective:setGoal(event,score)
 end
 
 --Iterator for rope messages

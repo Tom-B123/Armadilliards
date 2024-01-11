@@ -457,7 +457,7 @@ stateSwitch:addCase("hosting game",function(dt)
         end
     end
 
-    if love.keyboard.isDown("y") and order == 1 then
+    if World.atGoal then
         local msg = "endgm:"
 
         for i = 1,4 do
@@ -796,6 +796,8 @@ newStateSwitch:addCase("end screen",function()
     if not player then return end
     clearButtons()
 
+    print("end screen")
+
     newButton(2,"Return to lobby",300,200,500,250,function()
         -- Last state set to in game to stop Ids being dropped
         LobbyPlayer:setInLobby(player.ID,true)
@@ -830,7 +832,12 @@ newStateSwitch:addCase("lobby pause screen",function()
     end)
 
     if server then
-        newButton(2,"close lobby",300,275,500,325, function()
+        newButton(2,"game settings",300,275,500,325, function()
+            lState[3] = nil
+            state[3]  = "game settings"
+            order     = 3
+        end)
+        newButton(2,"close lobby",300,350,500,400, function()
             for i, ID in ipairs(LobbyPlayer:getIDs()) do
                 if ID ~= player.ID then server:send("all","kick:"..ID.."_\n") end
             end
@@ -847,6 +854,44 @@ newStateSwitch:addCase("lobby pause screen",function()
         end)
     end
     lState[2] = state[2]
+end)
+
+newStateSwitch:addCase("game settings",function()
+    clearButtons()
+    newButton(3,"back",300,200,500,250, function()
+        lState[3] = nil
+        state[3]  = nil
+        order     = 2
+    end)
+
+    --kill buttons
+    for i = 1,3 do
+        newButton(3,(i*5).." kills",275 + 100 * (i-1),300,350 + 100 * (i-1),340, function()
+            lState[3] = nil
+            state[3]  = nil
+            order     = 2
+        end)
+    end
+
+    --damage buttons
+    for i = 1,3 do
+        newButton(3,"deal "..(i*250).."\ndamage",275 + 100 * (i-1),350,350 + 100 * (i-1),390, function()
+            lState[3] = nil
+            state[3]  = nil
+            order     = 2
+        end)
+    end
+
+    --deaths buttons
+    for i = 1,3 do
+        newButton(3,(i*5).." lives",275 + 100 * (i-1),400,350 + 100 * (i-1),440, function()
+            lState[3] = nil
+            state[3]  = nil
+            order     = 2
+        end)
+    end
+    
+    lState[3] = state[3]
 end)
 
 -- ============================================================================================-- 
@@ -1039,6 +1084,11 @@ end)
 
 drawStateSwitch:addCase("lobby pause screen",function()
     drawButtons(2)
+end)
+
+drawStateSwitch:addCase("game settings",function()
+    drawButtons(3)
+    
 end)
 
 -- ============================================================================================-- 
