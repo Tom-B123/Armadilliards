@@ -46,7 +46,6 @@ function objective:resetScores()
     for team,scores in pairs(teamDict) do
         for event,score in pairs(scores) do
             teamDict[team][event] = 0
-            print(teamDict[team][event])
         end
     end
 end
