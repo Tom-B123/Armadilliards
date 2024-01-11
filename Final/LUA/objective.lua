@@ -42,6 +42,15 @@ function objective:addScore(event,team,amount)
     end
 end
 
+function objective:resetScores()
+    for team,scores in pairs(teamDict) do
+        for event,score in pairs(scores) do
+            teamDict[team][event] = 0
+            print(teamDict[team][event])
+        end
+    end
+end
+
 --Sets the victory condition
 function objective:setGoal(event,amount)
     goal = {event,amount}

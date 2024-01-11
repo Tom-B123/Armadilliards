@@ -720,6 +720,8 @@ function World:clear()
     camera.focus       = nil
     damageCooldowns    = {}
     tick               = 0
+    objective:resetScores()
+    self.atGoal        = false
 end
 
 function World:updateRespawns()
