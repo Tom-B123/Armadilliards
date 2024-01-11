@@ -744,7 +744,9 @@ function World:updateEliminations()
             if ball.eliminated then self.eliminatedTeams:add(team) end
         end
     end
-    if self.allTeams.length + 1 >= self.eliminatedTeams.length then
+    
+    if self.allTeams.length <= self.eliminatedTeams.length + 1 then
+        print(self.allTeams.length,self.eliminatedTeams.length)
         self.atGoal = true
     end
 end
