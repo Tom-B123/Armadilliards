@@ -57,7 +57,7 @@ end
 
 --Returns the current victory condition as a string
 function objective:getGoal()
-    return goal[2].." "..goal[1]
+    return {goal[2],goal[1]}
 end
 
 

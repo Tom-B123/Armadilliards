@@ -486,6 +486,9 @@ World = {
     particleLimit = 200,
     particleCount = 0,
 
+    allTeams        = Set:new(),
+    eliminatedTeams = Set:new(),
+
     atGoal        = false
 }
 
@@ -551,7 +554,6 @@ function World:updateDeath(balls,kill,isClient)
             if not isClient and ball.playerID then
                 local team = LobbyPlayer:getTeam(ball.playerID)
                 if objective:addScore("deaths",team,1) then
-                    print(team.." is out of lives!")
                     ball.eliminated = true
                 end
 
@@ -719,6 +721,8 @@ function World:clear()
     self.holes         = {}
     self.holesSet:  clear()
     self.multiSet:  clear()
+    self.allTeams:       clear()
+    self.eliminatedTeams:clear()
     self.playableBalls = {}
     self.ballIDDict    = {}
     self.ropes         = {}
@@ -730,19 +734,18 @@ function World:clear()
     
 end
 
-local allTeams        = Set:new()
-local eliminatedTeams = Set:new()
-
 function World:updateEliminations()
+    if objective:getGoal()[2] ~= "deaths" then return end
     for i,ball in self.ballsList:iterator() do
         --Add the team to the eliminated and regular teams sets
         if ball.playerID then
             local team = LobbyPlayer:getTeam(ball.playerID)
-            if ball.eliminated and not eliminatedTeams:has(team) then eliminatedTeams:add(team) end
+            self.allTeams:add(team)
+            if ball.eliminated then self.eliminatedTeams:add(team) end
         end
     end
-    if allTeams.length == eliminatedTeams.length then
-        print("all teams are eliminated")
+    if self.allTeams.length + 1 >= self.eliminatedTeams.length then
+        self.atGoal = true
     end
 end
 
@@ -1354,6 +1357,8 @@ function World:update(dt,isClient)
     ropeMessages      = {}
 
     self:populate()
+
+    self:updateEliminations()
 
     track:start("ropes")
     self:updateRopes()
