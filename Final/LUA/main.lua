@@ -876,7 +876,7 @@ newStateSwitch:addCase("game settings",function()
     --damage buttons
     for i = 1,3 do
         newButton(3,"deal "..(i*250).."\ndamage",275 + 100 * (i-1),350,350 + 100 * (i-1),390, function()
-            World:setGoal("damage dealt",i*5)
+            World:setGoal("damage dealt",i*250)
             goBack()
         end)
     end
