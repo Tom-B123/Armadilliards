@@ -856,36 +856,36 @@ end)
 
 newStateSwitch:addCase("game settings",function()
     clearButtons()
-    newButton(3,"back",300,200,500,250, function()
+    local function goBack()
         lState[3] = nil
         state[3]  = nil
         order     = 2
+    end
+    newButton(3,"back",300,200,500,250, function()
+        goBack()
     end)
 
     --kill buttons
     for i = 1,3 do
         newButton(3,(i*5).." kills",275 + 100 * (i-1),300,350 + 100 * (i-1),340, function()
-            lState[3] = nil
-            state[3]  = nil
-            order     = 2
+            World:setGoal("kills",i*5)
+            goBack()
         end)
     end
 
     --damage buttons
     for i = 1,3 do
         newButton(3,"deal "..(i*250).."\ndamage",275 + 100 * (i-1),350,350 + 100 * (i-1),390, function()
-            lState[3] = nil
-            state[3]  = nil
-            order     = 2
+            World:setGoal("damage dealt",i*5)
+            goBack()
         end)
     end
 
     --deaths buttons
     for i = 1,3 do
         newButton(3,(i*5).." lives",275 + 100 * (i-1),400,350 + 100 * (i-1),440, function()
-            lState[3] = nil
-            state[3]  = nil
-            order     = 2
+            World:setGoal("deaths",i*5)
+            goBack()
         end)
     end
     
