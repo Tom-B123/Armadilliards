@@ -1386,6 +1386,10 @@ function World:setGoal(event,score)
     objective:setGoal(event,score)
 end
 
+function World:getGoal()
+    return objective:getGoal()
+end
+
 --Iterator for rope messages
 function World:getRope()
     local ind = 0

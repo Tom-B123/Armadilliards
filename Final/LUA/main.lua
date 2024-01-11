@@ -823,19 +823,19 @@ newStateSwitch:addCase("lobby pause screen",function()
     if not player then return end
     clearButtons()
 
-    newButton(2,"back",300,200,500,250, function()
+    newButton(2,"back",300,300,500,350, function()
         state[2]  = nil
         lState[2] = nil
         order     = 1
     end)
 
     if server then
-        newButton(2,"game settings",300,275,500,325, function()
+        newButton(2,"game settings",300,375,500,425, function()
             lState[3] = nil
             state[3]  = "game settings"
             order     = 3
         end)
-        newButton(2,"close lobby",300,350,500,400, function()
+        newButton(2,"close lobby",300,450,500,500, function()
             for i, ID in ipairs(LobbyPlayer:getIDs()) do
                 if ID ~= player.ID then server:send("all","kick:"..ID.."_\n") end
             end
@@ -847,7 +847,7 @@ newStateSwitch:addCase("lobby pause screen",function()
             order         = 1
         end)
     else
-        newButton(2,"exit lobby",300,275,500,325, function()
+        newButton(2,"exit lobby",300,375,500,425, function()
             player:send("econ:"..player.ID.."_\n")
         end)
     end
@@ -861,13 +861,13 @@ newStateSwitch:addCase("game settings",function()
         state[3]  = nil
         order     = 2
     end
-    newButton(3,"back",300,200,500,250, function()
+    newButton(3,"back",360,325,440,365, function()
         goBack()
     end)
 
     --kill buttons
     for i = 1,3 do
-        newButton(3,(i*5).." kills",275 + 100 * (i-1),300,350 + 100 * (i-1),340, function()
+        newButton(3,(i*5).." kills",260 + 100 * (i-1),375,340 + 100 * (i-1),415, function()
             World:setGoal("kills",i*5)
             goBack()
         end)
@@ -875,7 +875,7 @@ newStateSwitch:addCase("game settings",function()
 
     --damage buttons
     for i = 1,3 do
-        newButton(3,"deal "..(i*250).."\ndamage",275 + 100 * (i-1),350,350 + 100 * (i-1),390, function()
+        newButton(3,"deal "..(i*250).."\ndamage",260 + 100 * (i-1),425,340 + 100 * (i-1),465, function()
             World:setGoal("damage dealt",i*250)
             goBack()
         end)
@@ -883,7 +883,7 @@ newStateSwitch:addCase("game settings",function()
 
     --deaths buttons
     for i = 1,3 do
-        newButton(3,(i*5).." lives",275 + 100 * (i-1),400,350 + 100 * (i-1),440, function()
+        newButton(3,(i*5).." lives",260 + 100 * (i-1),475,340 + 100 * (i-1),515, function()
             World:setGoal("deaths",i*5)
             goBack()
         end)
@@ -964,13 +964,13 @@ end)
 
 drawStateSwitch:addCase("lobby creation",function()
     love.graphics.setColor(0.5,0.5,0.5)
-    love.graphics.rectangle("fill",250,250,300,300)
+    love.graphics.rectangle("fill",280,280,240,240)
     drawButtons(2)
 end)
 
 drawStateSwitch:addCase("lobby settings",function()
     love.graphics.setColor(0.5,0.5,0.5)
-    love.graphics.rectangle("fill",250,250,300,300)
+    love.graphics.rectangle("fill",280,280,240,240)
     drawButtons(3)
 
     love.graphics.setColor(1,1,1)
@@ -1081,12 +1081,17 @@ drawStateSwitch:addCase("end screen",function()
 end)
 
 drawStateSwitch:addCase("lobby pause screen",function()
+    love.graphics.setColor(0.5,0.5,0.5)
+    love.graphics.rectangle("fill",280,280,240,240)
     drawButtons(2)
 end)
 
 drawStateSwitch:addCase("game settings",function()
+    love.graphics.setColor(0.5,0.5,0.5)
+    love.graphics.rectangle("fill",240,275,320,250)
+    love.graphics.setColor(1,1,1)
+    love.graphics.print("Victory conditon: "..World:getGoal(),245,280)
     drawButtons(3)
-    
 end)
 
 -- ============================================================================================-- 
