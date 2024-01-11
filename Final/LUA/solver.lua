@@ -26,8 +26,6 @@ local ropeMessages       = {}
 local Ball    = {}
 Ball.__index  = Ball
 
-local colours = {{1,0,0},{0,1,0},{0,0,1},{1,1,0},{0,1,1},{1,0,1}}
-local colourInd = 1
 --Create a new ball object
 function Ball:new(x,y)
     local object = {}
@@ -49,8 +47,7 @@ function Ball:new(x,y)
     object.radius   = 16
     object.yaw      = 0
     object.pitch    = 0
-    object.colour   = colours[1+colourInd%6]
-    colourInd = colourInd + 1
+    object.colour   = {0,0,0}
     object.health   = World.maxHealth
     object.mass     = 10
     object.death    = nil
@@ -832,12 +829,24 @@ function World:generateIDs()
     end
 end
 
+local teamColour = {}
+teamColour["team 1"] = {1,0,0}
+teamColour["team 2"] = {0,1,0}
+teamColour["team 3"] = {0,0,1}
+teamColour["team 4"] = {0,1,1}
+teamColour["team 5"] = {1,0,1}
+teamColour["team 6"] = {1,1,0}
+teamColour["team 7"] = {1,1,1}
+teamColour["team 8"] = {0,0,0}
+
 --Assigns playerIDs to the ball
 function World:assignAll(playerIDs)
     for i,playerID in ipairs(playerIDs) do
         local ball = self.playableBalls[i]
         if ball then
             ball.playerID = playerID
+            local team = LobbyPlayer:getTeam(playerID)
+            ball.colour = teamColour[team]
             LobbyPlayer:setBallID(playerID,ball.ID)
         end
     end
