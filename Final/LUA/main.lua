@@ -457,7 +457,7 @@ stateSwitch:addCase("hosting game",function(dt)
         end
     end
 
-    if World.atGoal then
+    if order == 1 and World.atGoal then
         local msg = "endgm:"
 
         for i = 1,4 do
@@ -795,8 +795,6 @@ end)
 newStateSwitch:addCase("end screen",function()
     if not player then return end
     clearButtons()
-
-    print("end screen")
 
     newButton(2,"Return to lobby",300,200,500,250,function()
         -- Last state set to in game to stop Ids being dropped
