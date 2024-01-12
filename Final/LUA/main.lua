@@ -461,7 +461,7 @@ stateSwitch:addCase("hosting game",function(dt)
     end
 
     if order == 1 and World.atGoal then
-        local msg = "endgm:"
+        local msg = "endgm:"..World.atGoal.."_\n"
 
         for i = 1,4 do
             local score = Util:calculateID(4,i)
@@ -806,7 +806,7 @@ newStateSwitch:addCase("end screen",function()
     clearButtons()
 
     newButton(2,"Return to lobby",300,200,500,250,function()
-        -- Last state set to in game to stop Ids being dropped
+        --Last state set to in game to stop IDs being dropped
         LobbyPlayer:setInLobby(player.ID,true)
         if server then
             state[2]  = nil
@@ -1085,8 +1085,10 @@ end)
 
 drawStateSwitch:addCase("end screen",function()
     love.graphics.setColor(0.5,0.5,0.5)
-    love.graphics.rectangle("fill",200,200,400,300)
+    love.graphics.rectangle("fill",280,280,240,240)
     drawButtons(2)
+    love.graphics.setColor(1,1,1)
+
 end)
 
 drawStateSwitch:addCase("lobby pause screen",function()

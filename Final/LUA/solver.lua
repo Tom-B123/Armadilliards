@@ -455,25 +455,31 @@ objective:new("capture point")
 --World table, stores and processes all balls
 --World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
 World = {
+    --List of all circles
     ballsList     = List:new(),
     shapes        = {},
 
+    --Table used to initialise sets, which hold special circles
     holes         = {},
     holesSet      = Set: new(),
     multi         = {},
     multiSet      = Set: new(),
-    bulletsSet    = Set: new(),
-
-    playableBalls = {},
-    ballIDDict    = {},
-
     ropes         = {},
     ropedBalls    = Set: new(),
+    bulletsSet    = Set: new(),
 
+    --Holds all balls that could be controlled by a player
+    playableBalls = {},
+    --Converts a ball ID into a ball object
+    ballIDDict    = {},
+
+    --Stores every particle object in a table
     particles     = {},
 
+    --The ball the camera is centred on
     focus         = nil,
     
+    --Local, debug settings
     showNames     = true,
     showHealth    = true,
     showFPS       = true,
@@ -482,14 +488,17 @@ World = {
     debugShapes   = false,
     debugTracking = false,
 
+    --Globals, gameplay settings
     respawnTime   = 240,
     maxHealth     = 50,
     particleLimit = 200,
     particleCount = 0,
 
+    --Used to calculate when only one team is left
     allTeams        = Set:new(),
     eliminatedTeams = Set:new(),
 
+    --Stores the winning team, or false if no team has won yet
     atGoal        = false
 }
 
@@ -531,7 +540,7 @@ function World:updateDeath(balls,kill,isClient)
             if balls[2].playerID then
                 local team2 = LobbyPlayer:getTeam(balls[2].playerID)
                 if team2 then
-                    if objective:addScore("kills",team2,1) then self.atGoal = true end
+                    if objective:addScore("kills",team2,1) then self.atGoal = team2 end
 
                     table.insert(objectiveMessages,{"kills",team2,objective:getScore("kills",team2)})
                 end
@@ -541,7 +550,7 @@ function World:updateDeath(balls,kill,isClient)
             if balls[1].playerID then
                 local team1 = LobbyPlayer:getTeam(balls[1].playerID)
                 if team1 then
-                    if objective:addScore("kills",team1,1) then self.atGoal = true end
+                    if objective:addScore("kills",team1,1) then self.atGoal = team1 end
 
                     table.insert(objectiveMessages,{"kills",team1,objective:getScore("kills",team1)})
                 end
@@ -747,7 +756,7 @@ function World:updateEliminations()
     end
     
     if self.allTeams.length <= self.eliminatedTeams.length + 1 then
-        self.atGoal = true
+        self.atGoal = "surviving team"
     end
 end
 
@@ -943,7 +952,7 @@ function World:expensiveCollisions(ballIDs)
             --Adds damage taken for the reamaining ball health
             local team2 = LobbyPlayer:getTeam(ball2.playerID)
             if team2 then 
-                if objective:addScore("damage taken",team2,ball2.health) then self.atGoal = true end
+                if objective:addScore("damage taken",team2,ball2.health) then self.atGoal = team2 end
                 table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage dealt",team2)})
             end
 
@@ -1057,16 +1066,16 @@ function World:expensiveCollisions(ballIDs)
 
         --Update the damage dealt scores, adding scores to objectiveMessages
         if team1 then
-            if objective:addScore("damage dealt",team1,damage2) then self.atGoal = true end
-            if objective:addScore("damage taken",team1,damage1) then self.atGoal = true end
+            if objective:addScore("damage dealt",team1,damage2) then self.atGoal = team1 end
+            if objective:addScore("damage taken",team1,damage1) then self.atGoal = team1 end
 
             table.insert(objectiveMessages,{"damage dealt",team1,objective:getScore("damage dealt",team1)})
             table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
         end
 
         if team2 then
-            if objective:addScore("damage dealt",team2,damage1) then self.atGoal = true end
-            if objective:addScore("damage taken",team2,damage2) then self.atGoal = true end
+            if objective:addScore("damage dealt",team2,damage1) then self.team2 = true end
+            if objective:addScore("damage taken",team2,damage2) then self.team2 = true end
 
             table.insert(objectiveMessages,{"damage dealt",team2,objective:getScore("damage dealt",team2)})
             table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
@@ -1230,8 +1239,10 @@ function World:drawVictoryProgress()
     local target = goal[1]
     local event  = goal[2]
 
-    for team,score in objective:getAllScores(event) do
-        bar:draw(score/target,100,25*team,400,20,{0,0,1},{0,0,1})
+    for ind,team,score in objective:getAllScores(event) do
+        love.graphics.setColor(1,1,1)
+        love.graphics.print(team,100,50*ind - 25)
+        bar:draw(score/target,100,50*ind,400,20,{0,0,1},{0,0,1})
     end
 end
 

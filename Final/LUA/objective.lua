@@ -31,6 +31,7 @@ function objective:getScore(event,team)
     end
 end
 
+--Returns an iterator to get all teams scores in an event, used for drawing victory progress
 function objective:getAllScores(event)
     local teams = {}
     for team,v in activeTeams:pairs() do
@@ -42,7 +43,7 @@ function objective:getAllScores(event)
         if ind <= #teams then
             local team = teams[ind]
             ind = ind + 1
-            return ind,teamDict[team][event]
+            return ind,team,teamDict[team][event]
         end
     end
 end
@@ -66,6 +67,7 @@ function objective:addScore(event,team,amount)
     end
 end
 
+--Resets all team's scores to 0
 function objective:resetScores()
     for team,scores in pairs(teamDict) do
         for event,score in pairs(scores) do
@@ -85,7 +87,7 @@ function objective:getGoal()
     return {goal[2],goal[1]}
 end
 
-
+--Returns true if the team has reached the victory / loss condition
 function objective:atGoal(event,team)
     if not activeTeams:has(team) then return end
 
@@ -94,6 +96,7 @@ function objective:atGoal(event,team)
     end
 end
 
+--Changes the set of all teams that are active in the current game.
 function objective:setActiveTeams(nActiveTeams)
     activeTeams = nActiveTeams
 end
