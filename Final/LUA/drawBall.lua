@@ -60,9 +60,6 @@ typeSwitch:addCase("armadillo",function(args)
     love.graphics.draw(faceSheet,imageQuads[imageIndex],x,y,yaw,scale,scale,16,16)
 end)
 
-
-local healthBar = bar:new(0,0,60,20,{0,1,0},{1,0,0})
-
 function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,style,radius)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
@@ -96,8 +93,8 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,sty
             if health then
                 local ballHealth = health[1]
                 local maxHealth  = health[2]
-                
 
+                bar:draw(ballHealth / maxHealth,x,y,60,20,{1,0,0},{0,1,0})
             end
         end
     end

@@ -1,41 +1,44 @@
 local bar = {}
 
-bar.__index = bar
+-- bar.__index = bar
 
-function bar:new(x,y,w,h,base,filled)
-    local object = {}
-    setmetatable(object,bar)
-    object.x = x
-    object.y = y
-    object.w = w
-    object.h = h
-    object.base = base
-    object.filled = filled
-    object.fraction = 0
+-- function bar:new(x,y,w,h,base,filled)
+--     local object = {}
+--     setmetatable(object,bar)
+--     object.x = x
+--     object.y = y
+--     object.w = w
+--     object.h = h
+--     object.base = base
+--     object.filled = filled
+--     object.fraction = 0
 
-    return object
-end
+--     return object
+-- end
 
-function bar:update(fraction,x,y)
-    self.fraction = fraction
-    self.x = x
-    self.y = y
-end
+-- function bar:update(fraction,x,y)
+--     self.fraction = fraction
+--     self.x = x
+--     self.y = y
+-- end
 
-function bar:draw()
+function bar:draw(fraction,x,y,w,h,base,filled)
+    print("health bar")
     love.graphics.setColor(
-        self.base[1] * (1 - self.fraction) + self.filled[1] * self.fraction,
-        self.base[2] * (1 - self.fraction) + self.filled[2] * self.fraction,
-        self.base[3] * (1 - self.fraction) + self.filled[3] * self.fraction,
+        base[1] * (1 - fraction) + filled[1] * fraction,
+        base[2] * (1 - fraction) + filled[2] * fraction,
+        base[3] * (1 - fraction) + filled[3] * fraction,
         0.2
     )
-    love.graphics.rectangle("fill",self.x - self.w/2,self.y - self.h/2,self.w,self.h)
+    love.graphics.rectangle("fill",x - w/2,y - h/2,w,h)
 
     love.graphics.setColor(
-        self.base[1] * (1 - self.fraction) + self.filled[1] * self.fraction,
-        self.base[2] * (1 - self.fraction) + self.filled[2] * self.fraction,
-        self.base[3] * (1 - self.fraction) + self.filled[3] * self.fraction,
+        base[1] * (1 - fraction) + filled[1] * fraction,
+        base[2] * (1 - fraction) + filled[2] * fraction,
+        base[3] * (1 - fraction) + filled[3] * fraction,
         1
     )
-    love.graphics.rectangle("fill",self.x - self.w/2,self.y - self.h/2,self.w * self.fraction,self.h)
+    love.graphics.rectangle("fill",x - w/2,y - h/2,w * fraction,h)
 end
+
+return bar
