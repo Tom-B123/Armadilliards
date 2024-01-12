@@ -427,6 +427,7 @@ stateSwitch:addCase("hosting game",function(dt)
     end
 
     for objective in World:getObjv() do
+        print(objective)
         server:send("all",objective)
     end
 
@@ -464,10 +465,10 @@ stateSwitch:addCase("hosting game",function(dt)
         local gameResults = World:getGameResults()
         local msg = "endgm:"
         for i,v in ipairs(gameResults) do
-            if type(v) == "string" then msg = msg.."_"..v
-            elseif type(v) == "table" then msg = msg.."_"..v[1].."_"..v[2] end
+            if type(v) == "string" then msg = msg..v.."_"
+            elseif type(v) == "table" then msg = msg..v[1].."_"..v[2].."_" end
         end
-        server:send("all",msg.."_\n")
+        server:send("all",msg.."\n")
 
         for i = 1,4 do
             local score = Util:calculateID(4,i)
@@ -1503,6 +1504,7 @@ end)
 
 netSwitch:addCase("objv",function(args)
     if not player then return end
+    print(args)
     local splitData          = Util:split(args,"_")
     local event              = splitData[1]
     local team               = splitData[2]
@@ -1524,8 +1526,8 @@ netSwitch:addCase("endgm",function(args)
     local splitData   = Util:split(args,"_")
     
     World.gameResults["winner"]  = splitData[1]
-    World.gameResults["kills"]   = {splitData[2],tonumber(splitData[3])}
-    World.gameResults["deaths"]  = {splitData[4],tonumber(splitData[5])}
+    World.gameResults["kills"]          = {splitData[2],tonumber(splitData[3])}
+    World.gameResults["deaths"]         = {splitData[4],tonumber(splitData[5])}
     World.gameResults["damage dealt"]   = {splitData[6],tonumber(splitData[7])}
     World.gameResults["damage taken"]   = {splitData[8],tonumber(splitData[9])}
 

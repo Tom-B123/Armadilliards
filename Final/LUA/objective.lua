@@ -43,7 +43,7 @@ function objective:getAllScores(event)
         if ind <= #teams then
             local team = teams[ind]
             ind = ind + 1
-            return ind,team,teamDict[team][event]
+            return ind-1,team,teamDict[team][event]
         end
     end
 end
