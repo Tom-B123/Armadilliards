@@ -461,7 +461,9 @@ stateSwitch:addCase("hosting game",function(dt)
     end
 
     if order == 1 and World.atGoal then
-        local msg = "endgm:"..World.atGoal.."_\n"
+        local winner = World.gameResults["winner"]
+        print(winner)
+        local msg = "endgm:"..winner.."_\n"
 
         for i = 1,4 do
             local score = Util:calculateID(4,i)
