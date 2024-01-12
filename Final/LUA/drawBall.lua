@@ -87,10 +87,16 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,sty
         if style ~= debug then
             love.graphics.setColor(1,1,1)
             if name then
-                love.graphics.print(name,x - (4.5 * #name),y-32)
+                love.graphics.print(name,x - (4.5 * #name),y-42)
             end
             if health then
-                love.graphics.print(health,x - (4.5 * #health),y+10)
+                local ballHealth = health[1]
+                local maxHealth  = health[2]
+                love.graphics.setColor(0,1,0,0.2)
+                love.graphics.rectangle("fill",x-30,y-28,60,10)
+                love.graphics.setColor(0,1,0)
+                love.graphics.rectangle("fill",x-30,y-28,60 * ballHealth / maxHealth,10)
+                -- love.graphics.print(health,x - (4.5 * #health),y+10)
             end
         end
     end

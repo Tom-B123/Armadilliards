@@ -164,7 +164,7 @@ function Ball:draw(offsetX,offsetY)
     end
 
     if self.health > 0 and World.showHealth and not World.multiSet:has(self.ID) then
-        health = math.floor(self.health).."/"..World.maxHealth
+        health = {self.health,World.maxHealth}
     end
 
     drawBall:draw(
@@ -746,7 +746,6 @@ function World:updateEliminations()
     end
     
     if self.allTeams.length <= self.eliminatedTeams.length + 1 then
-        print(self.allTeams.length,self.eliminatedTeams.length)
         self.atGoal = true
     end
 end
