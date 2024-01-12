@@ -498,8 +498,10 @@ World = {
     allTeams        = Set:new(),
     eliminatedTeams = Set:new(),
 
-    --Stores the winning team, or false if no team has won yet
-    atGoal        = false
+    --Stores true when the game has been won
+    atGoal         = false,
+    --Stores a dictionary of end-screen values, e.g. the winning team
+    gameResults    = {}
 }
 
 function World:drawRespawnTime()
@@ -540,7 +542,10 @@ function World:updateDeath(balls,kill,isClient)
             if balls[2].playerID then
                 local team2 = LobbyPlayer:getTeam(balls[2].playerID)
                 if team2 then
-                    if objective:addScore("kills",team2,1) then self.atGoal = team2 end
+                    if objective:addScore("kills",team2,1) then
+                        self.atGoal = true
+                        self.gameResults["winner"] = team2
+                    end
 
                     table.insert(objectiveMessages,{"kills",team2,objective:getScore("kills",team2)})
                 end
@@ -550,7 +555,10 @@ function World:updateDeath(balls,kill,isClient)
             if balls[1].playerID then
                 local team1 = LobbyPlayer:getTeam(balls[1].playerID)
                 if team1 then
-                    if objective:addScore("kills",team1,1) then self.atGoal = team1 end
+                    if objective:addScore("kills",team1,1) then
+                        self.atGoal = true
+                        self.gameResults["winner"] = team1
+                    end
 
                     table.insert(objectiveMessages,{"kills",team1,objective:getScore("kills",team1)})
                 end
@@ -756,7 +764,8 @@ function World:updateEliminations()
     end
     
     if self.allTeams.length <= self.eliminatedTeams.length + 1 then
-        self.atGoal = "surviving team"
+        self.atGoal = true
+        self.gameResults["winner"] = "surviving team"
     end
 end
 
@@ -952,7 +961,10 @@ function World:expensiveCollisions(ballIDs)
             --Adds damage taken for the reamaining ball health
             local team2 = LobbyPlayer:getTeam(ball2.playerID)
             if team2 then 
-                if objective:addScore("damage taken",team2,ball2.health) then self.atGoal = team2 end
+                if objective:addScore("damage taken",team2,ball2.health) then 
+                    self.atGoal = true
+                    self.gameResults["winner"] = team2
+                end
                 table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage dealt",team2)})
             end
 
@@ -1066,16 +1078,28 @@ function World:expensiveCollisions(ballIDs)
 
         --Update the damage dealt scores, adding scores to objectiveMessages
         if team1 then
-            if objective:addScore("damage dealt",team1,damage2) then self.atGoal = team1 end
-            if objective:addScore("damage taken",team1,damage1) then self.atGoal = team1 end
+            if objective:addScore("damage dealt",team1,damage2) then 
+                self.atGoal = true
+                self.gameResults["winner"] = team1
+            end
+            if objective:addScore("damage taken",team1,damage1) then
+                self.atGoal = true
+                self.gameResults["winner"] = team1
+            end
 
             table.insert(objectiveMessages,{"damage dealt",team1,objective:getScore("damage dealt",team1)})
             table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
         end
 
         if team2 then
-            if objective:addScore("damage dealt",team2,damage1) then self.team2 = true end
-            if objective:addScore("damage taken",team2,damage2) then self.team2 = true end
+            if objective:addScore("damage dealt",team2,damage1) then 
+                self.atGoal = true 
+                self.gameResults["winner"] = team2
+            end
+            if objective:addScore("damage taken",team2,damage2) then 
+                self.atGoal = true 
+                self.gameResults["winner"] = team2
+            end
 
             table.insert(objectiveMessages,{"damage dealt",team2,objective:getScore("damage dealt",team2)})
             table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
