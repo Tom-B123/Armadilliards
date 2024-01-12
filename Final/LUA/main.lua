@@ -876,6 +876,7 @@ newStateSwitch:addCase("lobby pause screen",function()
 end)
 
 newStateSwitch:addCase("game settings",function()
+    if not server then return end
     clearButtons()
     local function goBack()
         lState[3] = nil
@@ -889,6 +890,7 @@ newStateSwitch:addCase("game settings",function()
     --kill buttons
     for i = 1,3 do
         newButton(3,(i*5).." kills",260 + 100 * (i-1),375,340 + 100 * (i-1),415, function()
+            server:send("all","sgoal:kills_"..i*5)
             World:setGoal("kills",i*5)
             goBack()
         end)
@@ -897,6 +899,7 @@ newStateSwitch:addCase("game settings",function()
     --damage buttons
     for i = 1,3 do
         newButton(3,"deal "..(i*250).."\ndamage",260 + 100 * (i-1),425,340 + 100 * (i-1),465, function()
+            server:send("all","sgoal:damage dealt_"..i*250)
             World:setGoal("damage dealt",i*250)
             goBack()
         end)
@@ -905,6 +908,7 @@ newStateSwitch:addCase("game settings",function()
     --deaths buttons
     for i = 1,3 do
         newButton(3,(i*5).." lives",260 + 100 * (i-1),475,340 + 100 * (i-1),515, function()
+            server:send("all","sgoal:deaths_"..i*5)
             World:setGoal("deaths",i*5)
             goBack()
         end)
@@ -1515,6 +1519,15 @@ netSwitch:addCase("objv",function(args)
     local team               = splitData[2]
     local value              = splitData[3]
     World:setScore(event,team,value)
+end)
+
+--Set the goal score message
+netSwitch:addCase("sgoal",function(args)
+    if not player then return end
+    local splitData          = Util:split(args,"_")
+    local event              = splitData[1]
+    local value              = splitData[2]
+    World:setGoal(event,value)
 end)
 
 --Active teams message
