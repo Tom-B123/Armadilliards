@@ -427,7 +427,6 @@ stateSwitch:addCase("hosting game",function(dt)
     end
 
     for objective in World:getObjv() do
-        print(objective)
         server:send("all",objective)
     end
 
@@ -1504,12 +1503,12 @@ end)
 
 netSwitch:addCase("objv",function(args)
     if not player then return end
-    print(args)
     local splitData          = Util:split(args,"_")
     local event              = splitData[1]
     local team               = splitData[2]
     local value              = splitData[3]
     World:setScore(event,team,value)
+    print(event,team,value)
 end)
 
 netSwitch:addCase("nrope",function(args)

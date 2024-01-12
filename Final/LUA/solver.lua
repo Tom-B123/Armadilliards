@@ -1485,7 +1485,7 @@ end
 function World:setScore(event,team,nScore)
     objective:setScore(event,team,nScore)
 
-    print(objective:getScore(event,team))
+    print("setting: ",event,team,nScore)
 end
 
 function World:setGoal(event,score)
