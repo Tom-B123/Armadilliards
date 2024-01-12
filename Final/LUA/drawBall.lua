@@ -94,7 +94,7 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,sty
                 local ballHealth = health[1]
                 local maxHealth  = health[2]
 
-                bar:draw(ballHealth / maxHealth,x,y,60,20,{1,0,0},{0,1,0})
+                bar:draw(ballHealth / maxHealth,x-30,y-26,60,10,{1,0,0},{0,1,0})
             end
         end
     end
