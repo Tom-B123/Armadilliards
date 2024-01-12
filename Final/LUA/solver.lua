@@ -1484,8 +1484,6 @@ end
 --Sets the score of a team and event
 function World:setScore(event,team,nScore)
     objective:setScore(event,team,nScore)
-
-    print("setting: ",event,team,nScore)
 end
 
 function World:setGoal(event,score)

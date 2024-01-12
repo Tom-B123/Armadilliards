@@ -1508,7 +1508,6 @@ netSwitch:addCase("objv",function(args)
     local team               = splitData[2]
     local value              = splitData[3]
     World:setScore(event,team,value)
-    print(event,team,value)
 end)
 
 netSwitch:addCase("nrope",function(args)
