@@ -461,9 +461,7 @@ stateSwitch:addCase("hosting game",function(dt)
     end
 
     if order == 1 and World.atGoal then
-        local winner = World.gameResults["winner"]
-        print(winner)
-        local msg = "endgm:"..winner.."_\n"
+        local msg = "endgm:"..World.gameResults["winner"].."_\n"
 
         for i = 1,4 do
             local score = Util:calculateID(4,i)
@@ -1090,7 +1088,7 @@ drawStateSwitch:addCase("end screen",function()
     love.graphics.rectangle("fill",280,280,240,240)
     drawButtons(2)
     love.graphics.setColor(1,1,1)
-
+    love.graphics.print("Winning team: "..World.gameResults["winner"])
 end)
 
 drawStateSwitch:addCase("lobby pause screen",function()
@@ -1505,20 +1503,12 @@ end)
 -- End game and display the end screen
 netSwitch:addCase("endgm",function(args)
     local splitData   = Util:split(args,"_")
-    local winningTeam = ""
-    local maxScore    = 0
-    for i = 1,#splitData/2 do
-        local team  = splitData[2*1-1]
-        local score = tonumber(splitData[2*i])
-        if score and score > maxScore then
-            maxScore     = score
-            winningTeam  = team
-        end
-    end
+    
+    World.gameResults["winner"] = splitData[1]
+
     state[2]  = "end screen"
     lState[2] = nil
     order     = 2
-    newMessage("server","The winner is: "..winningTeam.." with "..maxScore.." points")
 end)
 
 -- ============================================================================================-- 
