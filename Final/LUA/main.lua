@@ -1093,16 +1093,21 @@ drawStateSwitch:addCase("end screen",function()
     love.graphics.setColor(0.5,0.5,0.5)
     love.graphics.rectangle("fill",200,280,400,240)
     drawButtons(2)
+
     love.graphics.setColor(1,1,1)
-    love.graphics.print("Winning team: "..World.gameResults["winner"])
+    --Display the winning team
+    love.graphics.print("Winning team: "..World.gameResults["winner"],220,370)
+
+    --Display the MVP players
     local kills  = World.gameResults["kills"]
     local deaths = World.gameResults["deaths"]
     local damageDealt = World.gameResults["damage dealt"]
     local damageTaken = World.gameResults["damage taken"]
-    love.graphics.print(LobbyPlayer:getName(kills[1]).." got "..kills[2].." kills",220,370)
-    love.graphics.print(LobbyPlayer:getName(deaths[1]).." got "..deaths[2].." deaths",220,390)
-    love.graphics.print(LobbyPlayer:getName(damageDealt[1]).." did "..math.floor(damageDealt[2]).." damage",220,410)
-    love.graphics.print(LobbyPlayer:getName(damageTaken[1]).." took "..math.floor(damageTaken[2]).." damage",220,430)
+
+    love.graphics.print(LobbyPlayer:getName(kills[1]).." got "..kills[2].." kills",220,390)
+    love.graphics.print(LobbyPlayer:getName(deaths[1]).." got "..deaths[2].." deaths",220,410)
+    love.graphics.print(LobbyPlayer:getName(damageDealt[1]).." did "..math.floor(damageDealt[2]).." damage",220,430)
+    love.graphics.print(LobbyPlayer:getName(damageTaken[1]).." took "..math.floor(damageTaken[2]).." damage",220,450)
 end)
 
 drawStateSwitch:addCase("lobby pause screen",function()
