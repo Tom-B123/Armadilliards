@@ -722,6 +722,12 @@ newStateSwitch:addCase("hosting lobby",function()
             --Clears all existing balls
             World:clear()
 
+            local msg = "actm:"
+            for team,i in teams:pairs() do
+                msg = msg..team.."_"
+            end
+            server:send("all",msg.."\n")
+
             --Defines which teams have players for this round
             World:setActiveTeams(teams)
         else
@@ -1501,6 +1507,7 @@ netSwitch:addCase("damg",function(args)
     end
 end)
 
+--Objective message
 netSwitch:addCase("objv",function(args)
     if not player then return end
     local splitData          = Util:split(args,"_")
@@ -1508,6 +1515,16 @@ netSwitch:addCase("objv",function(args)
     local team               = splitData[2]
     local value              = splitData[3]
     World:setScore(event,team,value)
+end)
+
+--Active teams message
+netSwitch:addCase("actm",function(args)
+    local teamSet   = Set:new()
+    local splitData = Util:split(args,"_")
+    for i,team in ipairs(splitData) do
+        teamSet:add(team)
+    end
+    World:setActiveTeams(teamSet)
 end)
 
 netSwitch:addCase("nrope",function(args)
