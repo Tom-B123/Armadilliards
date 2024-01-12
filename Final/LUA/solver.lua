@@ -5,6 +5,7 @@ require("sets")
 local drawBall  = require("drawBall")
 local track     = require("performance")
 local objective = require("objective")
+local bar       = require("bar")
 
 local tick            = 0
 local lastFrame       = Socket.gettime() * 10000
