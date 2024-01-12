@@ -63,6 +63,8 @@ function Ball:new(x,y)
     }
 
     object.eliminated = false
+
+    object.healthBar = bar:new(x,y,60,10,{1,0,0},{0,1,0})
     return object
 end
 
@@ -183,7 +185,7 @@ function Ball:draw(offsetX,offsetY)
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        name,health,World.debugChecks,
+        name,health,self.bar,World.debugChecks,
         style,self.radius
     )
 end
@@ -469,6 +471,8 @@ World = {
     ballsList     = List:new(),
     shapes        = {},
 
+    bars          = {},
+
     --Table used to initialise sets, which hold special circles
     holes         = {},
     holesSet      = Set: new(),
@@ -513,6 +517,10 @@ World = {
     --Stores a dictionary of end-screen values, e.g. the winning team
     gameResults    = {}
 }
+
+for i = 1,8 do
+    World.bars[i] = bar:new(0,20 * i,400,20,{0,0,1},{0,0,1})
+end
 
 function World:drawRespawnTime()
     if not self.focus then return end
@@ -1301,7 +1309,8 @@ function World:drawVictoryProgress()
     for ind,team,score in objective:getAllScores(event) do
         love.graphics.setColor(1,1,1)
         love.graphics.print(team,100,50*ind - 25)
-        bar:draw(score/target,100,50*ind,400,20,{0,0,1},{0,0,1})
+        self.bars[ind]:update(score/target,100,50*ind)
+        self.bars[ind]:draw()
     end
 end
 

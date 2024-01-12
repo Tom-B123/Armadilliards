@@ -1,5 +1,5 @@
 require("switch")
-local bar = require("bar")
+-- local bar = require("bar")
 local drawBall = {}
 
 local ball       = love.graphics.newImage("Assets/ball.png")
@@ -60,7 +60,7 @@ typeSwitch:addCase("armadillo",function(args)
     love.graphics.draw(faceSheet,imageQuads[imageIndex],x,y,yaw,scale,scale,16,16)
 end)
 
-function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,style,radius)
+function drawBall:draw(x,y,yaw,pitch,colour,scale,name,bar,health,showCollisions,style,radius)
     if not scale then scale = 1 end
     if not colour then colour = {1,1,1} end
 
@@ -94,7 +94,9 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,health,showCollisions,sty
                 local ballHealth = health[1]
                 local maxHealth  = health[2]
 
-                bar:draw(ballHealth / maxHealth,x-30,y-26,60,10,{1,0,0},{0,1,0})
+                bar:update(ballHealth/maxHealth,x-30,y-26)
+
+                bar:draw()
             end
         end
     end
