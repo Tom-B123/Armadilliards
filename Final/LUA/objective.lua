@@ -1,10 +1,12 @@
 require("lists")
-
+require("sets")
 --Holds multiple teams, each of which holds a dictionary of events and scores
 local teamDict  = {}
 for i = 1,8 do
     teamDict["team "..i] = {}
 end
+
+local activeTeams = Set:new()
 
 --Holds the event and score for the victory condition
 local goal      = {"kills",5}
@@ -21,6 +23,8 @@ end
 
 --Get the score corresponding to the team and event
 function objective:getScore(event,team)
+    if not activeTeams:has(team) then return end
+
     local scores = teamDict[team]
     if scores[event] then
         return scores[event]
@@ -29,7 +33,9 @@ end
 
 function objective:getAllScores(event)
     local teams = {}
-    for team,v in pairs(teamDict) do teams[#teams+1] = team end
+    for team,v in activeTeams:pairs() do
+        teams[#teams+1] = team
+    end
 
     local ind = 1
     return function()
@@ -43,11 +49,15 @@ end
 
 --Sets the score corresponding to the team and event
 function objective:setScore(event,team,nScore)
+    if not activeTeams:has(team) then return end
+
     teamDict[team][event] = nScore
 end
 
 --Adds an amount to the current score for that team
 function objective:addScore(event,team,amount)
+    if not activeTeams:has(team) then return end
+
     local cScore = self:getScore(event,team)
     self:setScore(event,team,cScore + amount)
 
@@ -62,6 +72,7 @@ function objective:resetScores()
             teamDict[team][event] = 0
         end
     end
+    activeTeams:clear()
 end
 
 --Sets the victory condition
@@ -76,9 +87,15 @@ end
 
 
 function objective:atGoal(event,team)
+    if not activeTeams:has(team) then return end
+
     if event == goal[1] and self:getScore(event,team) >= goal[2] then
         return true
     end
+end
+
+function objective:setActiveTeams(nActiveTeams)
+    activeTeams = nActiveTeams
 end
 
 return objective

@@ -4,6 +4,7 @@ require("button")
 require("net")
 require("util")
 require("solver")
+require("sets")
 local ReadMap = require("readMap")
 
 -- local mobile = false
@@ -275,10 +276,12 @@ end
 
 -- Checks if every player in the lobby is ready
 local function playersAllReady()
+    local teams = Set:new()
     for i,ID in ipairs(LobbyPlayer:getIDs()) do
         if not (LobbyPlayer:getReady(ID) and LobbyPlayer:getInLobby(ID))  then return false end
+        teams:add(LobbyPlayer:getTeam(ID))
     end
-    return true
+    return teams
 end
 
 -- Applies vx and vy to the ball, at a set speed.
@@ -702,13 +705,19 @@ newStateSwitch:addCase("hosting lobby",function()
     end
 
     newButton(1,"start",600,500,750,550,function()
-        if playersAllReady() then
+
+        --Get all the unique teams from all players, return false if not all players are ready
+        local teams = playersAllReady()
+        if teams then
             server:send("all","start:".."_\n")
             state[1]  = "hosting game"
             lState[1] = nil
             order     = 1
-            -- Clears all existing balls
+            --Clears all existing balls
             World:clear()
+
+            --Defines which teams have players for this round
+            World:setActiveTeams(teams)
         else
             sendMessage("ready up")
         end

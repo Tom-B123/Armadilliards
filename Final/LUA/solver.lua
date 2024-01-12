@@ -1433,6 +1433,10 @@ function World:getGoal()
     return objective:getGoal()
 end
 
+function World:setActiveTeams(nActiveTeams)
+    objective:setActiveTeams(nActiveTeams)
+end
+
 --Iterator for rope messages
 function World:getRope()
     local ind = 0
