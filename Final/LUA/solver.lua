@@ -1484,6 +1484,8 @@ function World:draw()
 
     self:drawVictoryProgress()
 
+    love.graphics.setColor(1,1,1)
+
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
     if self.debugChecks then love.graphics.print("manhattan checks: "..manhattanChecks,0,220) end
     if World.showFPS then love.graphics.print(World:updateFPS()) end
