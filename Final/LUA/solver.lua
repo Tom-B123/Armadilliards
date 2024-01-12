@@ -778,6 +778,7 @@ function World:updateEliminations()
     
     if self.allTeams.length <= self.eliminatedTeams.length + 1 then
         local union = {}
+        local surviver = nil
         for team,v in self.allTeams:pairs() do
             union[team] = true
         end
@@ -785,10 +786,10 @@ function World:updateEliminations()
             union[team] = nil
         end
         for team,v in pairs(union) do
-            print(team)
+            surviver = team
         end
         self.atGoal = true
-        self.gameResults["winner"] = "surviving team"
+        self.gameResults["winner"] = surviver
     end
 end
 
