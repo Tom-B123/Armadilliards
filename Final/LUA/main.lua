@@ -461,7 +461,13 @@ stateSwitch:addCase("hosting game",function(dt)
     end
 
     if order == 1 and World.atGoal then
-        local msg = "endgm:"..World.gameResults["winner"].."_\n"
+        local gameResults = World:getGameResults()
+        local msg = "endgm:"
+        for i,v in ipairs(gameResults) do
+            if type(v) == "string" then msg = msg.."_"..v
+            elseif type(v) == "table" then msg = msg.."_"..v[1].."_"..v[2] end
+        end
+        server:send("all",msg.."_\n")
 
         for i = 1,4 do
             local score = Util:calculateID(4,i)
@@ -805,7 +811,7 @@ newStateSwitch:addCase("end screen",function()
     if not player then return end
     clearButtons()
 
-    newButton(2,"Return to lobby",300,200,500,250,function()
+    newButton(2,"Return to lobby",300,300,500,350,function()
         --Last state set to in game to stop IDs being dropped
         LobbyPlayer:setInLobby(player.ID,true)
         if server then
@@ -1085,10 +1091,18 @@ end)
 
 drawStateSwitch:addCase("end screen",function()
     love.graphics.setColor(0.5,0.5,0.5)
-    love.graphics.rectangle("fill",280,280,240,240)
+    love.graphics.rectangle("fill",200,280,400,240)
     drawButtons(2)
     love.graphics.setColor(1,1,1)
     love.graphics.print("Winning team: "..World.gameResults["winner"])
+    local kills  = World.gameResults["kills"]
+    local deaths = World.gameResults["deaths"]
+    local damageDealt = World.gameResults["damage dealt"]
+    local damageTaken = World.gameResults["damage taken"]
+    love.graphics.print(LobbyPlayer:getName(kills[1]).." got "..kills[2].." kills",220,370)
+    love.graphics.print(LobbyPlayer:getName(deaths[1]).." got "..deaths[2].." deaths",220,390)
+    love.graphics.print(LobbyPlayer:getName(damageDealt[1]).." did "..math.floor(damageDealt[2]).." damage",220,410)
+    love.graphics.print(LobbyPlayer:getName(damageTaken[1]).." took "..math.floor(damageTaken[2]).." damage",220,430)
 end)
 
 drawStateSwitch:addCase("lobby pause screen",function()
@@ -1504,7 +1518,11 @@ end)
 netSwitch:addCase("endgm",function(args)
     local splitData   = Util:split(args,"_")
     
-    World.gameResults["winner"] = splitData[1]
+    World.gameResults["winner"]  = splitData[1]
+    World.gameResults["kills"]   = {splitData[2],splitData[3]}
+    World.gameResults["deaths"]  = {splitData[4],splitData[5]}
+    World.gameResults["damage dealt"]   = {splitData[6],splitData[7]}
+    World.gameResults["damage taken"]   = {splitData[8],splitData[9]}
 
     state[2]  = "end screen"
     lState[2] = nil

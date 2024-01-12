@@ -52,6 +52,16 @@ function Ball:new(x,y)
     object.health   = World.maxHealth
     object.mass     = 10
     object.death    = nil
+
+    --Stats per ball, used to get the MVP stats
+    object.stats    = {
+        ["kills"] = 0,
+        ["deaths"] = 0,
+        ["damage dealt"] = 0,
+        ["damage taken"] = 0,
+        ["capture points"] = 0
+    }
+
     object.eliminated = false
     return object
 end
@@ -450,7 +460,7 @@ objective:new("deaths")
 objective:new("kills")
 objective:new("damage dealt")
 objective:new("damage taken")
-objective:new("capture point")
+objective:new("capture points")
 
 --World table, stores and processes all balls
 --World focus = player's ball, camera focus = currently focused ball (eg. when spectating it will be different to world ball)
@@ -542,6 +552,7 @@ function World:updateDeath(balls,kill,isClient)
             if balls[2].playerID then
                 local team2 = LobbyPlayer:getTeam(balls[2].playerID)
                 if team2 then
+                    balls[2].stats["kills"] = balls[2].stats["kills"] + 1
                     if objective:addScore("kills",team2,1) then
                         self.atGoal = true
                         self.gameResults["winner"] = team2
@@ -555,6 +566,7 @@ function World:updateDeath(balls,kill,isClient)
             if balls[1].playerID then
                 local team1 = LobbyPlayer:getTeam(balls[1].playerID)
                 if team1 then
+                    balls[1].stats["kills"] = balls[1].stats["kills"] + 1
                     if objective:addScore("kills",team1,1) then
                         self.atGoal = true
                         self.gameResults["winner"] = team1
@@ -571,6 +583,9 @@ function World:updateDeath(balls,kill,isClient)
             --If the dead ball is a player, update their team's death count
             if not isClient and ball.playerID then
                 local team = LobbyPlayer:getTeam(ball.playerID)
+
+                ball.stats["deaths"] = ball.stats["deaths"] + 1
+
                 if objective:addScore("deaths",team,1) then
                     ball.eliminated = true
                 end
@@ -958,6 +973,8 @@ function World:expensiveCollisions(ballIDs)
 
         if     hole1 and not hole2 and not multi2 then
 
+            ball2.stats["damage taken"] = ball2.stats["damage taken"] + ball2.health
+
             --Adds damage taken for the reamaining ball health
             local team2 = LobbyPlayer:getTeam(ball2.playerID)
             if team2 then 
@@ -977,6 +994,8 @@ function World:expensiveCollisions(ballIDs)
         
         --If ball2 is a hole and ball1 is a non-multi-shape ball then
         elseif hole2 and not hole1 and not multi1 then
+
+            ball1.stats["damage taken"] = ball1.stats["damage taken"] + ball1.health
 
             --Adds damage taken for the reamaining ball health
             local team1 = LobbyPlayer:getTeam(ball1.playerID)
@@ -1075,6 +1094,13 @@ function World:expensiveCollisions(ballIDs)
         --Damage taken = change in health
         local damage1 = oHealth1 - nHealth1
         local damage2 = oHealth2 - nHealth2
+
+        ball1.stats["damage taken"] = ball1.stats["damage taken"] + damage1
+        ball2.stats["damage taken"] = ball2.stats["damage taken"] + damage2
+
+        ball1.stats["damage dealt"] = ball1.stats["damage dealt"] + damage2
+        ball2.stats["damage dealt"] = ball2.stats["damage dealt"] + damage1
+
 
         --Update the damage dealt scores, adding scores to objectiveMessages
         if team1 then
@@ -1470,6 +1496,48 @@ end
 
 function World:setActiveTeams(nActiveTeams)
     objective:setActiveTeams(nActiveTeams)
+end
+
+function World:getGameResults()
+    local maxKills  = -1
+    local killer    = nil
+
+    local maxDeaths = -1
+    local dyer      = nil
+
+    local maxDamageDealt = -1
+    local damageDoer     = nil
+
+    local maxDamageTaken = -1
+    local damageTaker    = nil
+
+    --Update the max and min results for a given ball
+    local function updateResults(ball)
+        if not ball.playerID then return end
+        if ball.stats["kills"] > maxKills              then maxKills = ball.stats["kills"]; killer = ball.playerID end
+        if ball.stats["deaths"] > maxDeaths            then maxDeaths = ball.stats["deaths"]; dyer = ball.playerID end
+        if ball.stats["damage dealt"] > maxDamageDealt then maxDamageDealt = ball.stats["damage dealt"]; damageDoer = ball.playerID end
+        if ball.stats["damage taken"] > maxDamageTaken then maxDamageTaken = ball.stats["damage taken"]; damageTaker = ball.playerID end
+    end
+
+    --Update the max and min results for every player controlled ball
+    for i,ball in self.ballsList:iterator() do
+        updateResults(ball)
+    end
+
+    self.gameResults["kills"] = {killer,maxKills}
+    self.gameResults["deaths"] = {dyer,maxDeaths}
+    self.gameResults["damage dealt"] = {damageDoer,maxDamageDealt}
+    self.gameResults["damage taken"] = {damageTaker,maxDamageTaken}
+
+    --Puts the dictionary in a fixed order
+    return {
+        self.gameResults["winner"],
+        self.gameResults["kills"],
+        self.gameResults["deaths"],
+        self.gameResults["damage dealt"],
+        self.gameResults["damage taken"]
+    }
 end
 
 --Iterator for rope messages
