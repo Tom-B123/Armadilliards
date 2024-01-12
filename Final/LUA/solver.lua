@@ -1225,6 +1225,16 @@ function World:drawParticles(offsetX,offsetY)
     end
 end
 
+function World:drawVictoryProgress()
+    local goal   = objective:getGoal()
+    local target = goal[1]
+    local event  = goal[2]
+
+    for team,score in objective:getAllScores(event) do
+        bar:draw(score/target,100,25*team,400,20,{0,0,1},{0,0,1})
+    end
+end
+
 --Populates the grid for optimised collisons
 function World:populate()
     track:start("grid clear")
@@ -1467,6 +1477,8 @@ function World:draw()
 
     track:start("other debugs")
     self:drawRespawnTime()
+
+    self:drawVictoryProgress()
 
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
     if self.debugChecks then love.graphics.print("manhattan checks: "..manhattanChecks,0,220) end

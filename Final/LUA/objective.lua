@@ -27,6 +27,20 @@ function objective:getScore(event,team)
     end
 end
 
+function objective:getAllScores(event)
+    local teams = {}
+    for team,v in pairs(teamDict) do teams[#teams+1] = team end
+
+    local ind = 1
+    return function()
+        if ind <= #teams then
+            local team = teams[ind]
+            ind = ind + 1
+            return ind,teamDict[team][event]
+        end
+    end
+end
+
 --Sets the score corresponding to the team and event
 function objective:setScore(event,team,nScore)
     teamDict[team][event] = nScore
