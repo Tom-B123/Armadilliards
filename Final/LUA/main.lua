@@ -1524,10 +1524,10 @@ netSwitch:addCase("endgm",function(args)
     local splitData   = Util:split(args,"_")
     
     World.gameResults["winner"]  = splitData[1]
-    World.gameResults["kills"]   = {splitData[2],splitData[3]}
-    World.gameResults["deaths"]  = {splitData[4],splitData[5]}
-    World.gameResults["damage dealt"]   = {splitData[6],splitData[7]}
-    World.gameResults["damage taken"]   = {splitData[8],splitData[9]}
+    World.gameResults["kills"]   = {splitData[2],tonumber(splitData[3])}
+    World.gameResults["deaths"]  = {splitData[4],tonumber(splitData[5])}
+    World.gameResults["damage dealt"]   = {splitData[6],tonumber(splitData[7])}
+    World.gameResults["damage taken"]   = {splitData[8],tonumber(splitData[9])}
 
     state[2]  = "end screen"
     lState[2] = nil
