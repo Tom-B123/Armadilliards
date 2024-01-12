@@ -754,7 +754,6 @@ function World:clear()
     self.holes         = {}
     self.holesSet:  clear()
     self.multiSet:  clear()
-    self.allTeams:       clear()
     self.eliminatedTeams:clear()
     self.playableBalls = {}
     self.ballIDDict    = {}
@@ -773,12 +772,21 @@ function World:updateEliminations()
         --Add the team to the eliminated and regular teams sets
         if ball.playerID then
             local team = LobbyPlayer:getTeam(ball.playerID)
-            self.allTeams:add(team)
             if ball.eliminated then self.eliminatedTeams:add(team) end
         end
     end
     
     if self.allTeams.length <= self.eliminatedTeams.length + 1 then
+        local union = {}
+        for team,v in self.allTeams:pairs() do
+            union[team] = true
+        end
+        for team,v in self.eliminatedTeams:pairs() do
+            union[team] = nil
+        end
+        for team,v in pairs(union) do
+            print(team)
+        end
         self.atGoal = true
         self.gameResults["winner"] = "surviving team"
     end
@@ -1495,6 +1503,7 @@ function World:getGoal()
 end
 
 function World:setActiveTeams(nActiveTeams)
+    self.allTeams = nActiveTeams
     objective:setActiveTeams(nActiveTeams)
 end
 
