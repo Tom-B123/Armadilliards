@@ -88,15 +88,19 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,bar,health,showCollisions
         if style ~= debug then
             love.graphics.setColor(1,1,1)
             if name then
-                love.graphics.print(name,x - (4.5 * #name),y-42)
+                love.graphics.print(name,x - (4.5 * #name),y-48)
             end
             if health then
                 local ballHealth = health[1]
                 local maxHealth  = health[2]
 
-                -- bar:update(1,100,100)
+                bar.x = x-30
+                bar.y = y-28
+                bar.target = ballHealth / maxHealth
 
-                -- bar:draw()
+                bar:update()
+
+                bar:draw()
             end
         end
     end

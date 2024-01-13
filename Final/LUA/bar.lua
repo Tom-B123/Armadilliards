@@ -6,14 +6,14 @@ bar.__index = bar
 function bar:new(x,y,w,h,base,filled)
     local object = {}
     setmetatable(object,bar)
-    self.x = x
-    self.y = y
-    self.w = w
-    self.h = h
-    self.base     = base
-    self.filled   = filled
-    self.target   = 0
-    self.fraction = 0
+    object.x = x
+    object.y = y
+    object.w = w
+    object.h = h
+    object.base     = base
+    object.filled   = filled
+    object.target   = 0
+    object.fraction = 0
 
     return object
 end

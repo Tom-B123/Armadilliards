@@ -64,7 +64,8 @@ function Ball:new(x,y)
 
     object.eliminated = false
 
-    -- object.healthBar = bar:new(x,y,60,10,{1,0,0},{0,1,0})
+    object.healthBar = bar:new(x,y,60,10,{1,0,0},{0,1,0})
+
     return object
 end
 
@@ -185,7 +186,7 @@ function Ball:draw(offsetX,offsetY)
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        name,self.bar,health,World.debugChecks,
+        name,self.healthBar,health,World.debugChecks,
         style,self.radius
     )
 end
