@@ -519,10 +519,6 @@ World = {
     gameResults    = {}
 }
 
-for i = 1,8 do
-    World.bars[i] = bar:new(100,20 * i,400,20,{0,0,1},{0,0,1})
-end
-
 function World:drawRespawnTime()
     if not self.focus then return end
     if World.focus.eliminated then love.graphics.print("your team has been eliminated!",0,400) return end
@@ -911,15 +907,23 @@ function World:generateIDs()
     end
 end
 
+local teamColourTable = {
+    {1,0,0},
+    {0,1,0},
+    {0,0,1},
+    {0,1,1},
+    {1,0,1},
+    {1,1,0},
+    {1,1,1},
+    {0,0,0}
+}
+
 local teamColour = {}
-teamColour["team 1"] = {1,0,0}
-teamColour["team 2"] = {0,1,0}
-teamColour["team 3"] = {0,0,1}
-teamColour["team 4"] = {0,1,1}
-teamColour["team 5"] = {1,0,1}
-teamColour["team 6"] = {1,1,0}
-teamColour["team 7"] = {1,1,1}
-teamColour["team 8"] = {0,0,0}
+
+for i = 1,8 do
+    teamColour["team "..i] = teamColourTable[i]
+    World.bars["team "..i] = bar:new(100,20 * i,400,20,teamColourTable[i],teamColourTable[i])
+end
 
 --Assigns playerIDs to the ball
 function World:assignAll(playerIDs)
@@ -1310,10 +1314,10 @@ function World:drawVictoryProgress()
     for ind,team,score in objective:getAllScores(event) do
         love.graphics.setColor(1,1,1)
         love.graphics.print(team,100,50*ind - 25)
-        self.bars[ind].target = score/target
-        self.bars[ind]:update()
-        self.bars[ind].y = 50*ind
-        self.bars[ind]:draw()
+        self.bars[team].target = score/target
+        self.bars[team]:update()
+        self.bars[team].y = 50*ind
+        self.bars[team]:draw()
     end
 end
 
