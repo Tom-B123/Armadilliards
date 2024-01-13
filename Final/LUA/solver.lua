@@ -942,6 +942,8 @@ function World:assign(playerID,ballID)
     local ball = self:getByID(ballID)
     if ball then
         ball.playerID = playerID
+        local team = LobbyPlayer:getTeam(playerID)
+        if team then ball.colour = teamColour[team] end
         LobbyPlayer:setBallID(playerID,ball.ID)
     end
 end
