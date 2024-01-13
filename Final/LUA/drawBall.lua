@@ -1,5 +1,5 @@
 require("switch")
--- local bar = require("bar")
+-- require("bar")
 local drawBall = {}
 
 local ball       = love.graphics.newImage("Assets/ball.png")
@@ -94,9 +94,9 @@ function drawBall:draw(x,y,yaw,pitch,colour,scale,name,bar,health,showCollisions
                 local ballHealth = health[1]
                 local maxHealth  = health[2]
 
-                bar:update(ballHealth/maxHealth,x-30,y-26)
+                -- bar:update(1,100,100)
 
-                bar:draw()
+                -- bar:draw()
             end
         end
     end

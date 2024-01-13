@@ -15,16 +15,11 @@ function bar:new(x,y,w,h,base,filled)
     self.target   = 0
     self.fraction = 0
 
-    return bar
+    return object
 end
 
-function bar:update(target,x,y)
-    if x and y then
-        self.x = x
-        self.y = y
-    end
-    self.target = target
-    self.fraction = target
+function bar:update()
+    self.fraction = self.fraction + (self.target - self.fraction) / 10
 end
 
 --Draws a bar, filled fully with filled colour with fraction = 1

@@ -64,7 +64,7 @@ function Ball:new(x,y)
 
     object.eliminated = false
 
-    object.healthBar = bar:new(x,y,60,10,{1,0,0},{0,1,0})
+    -- object.healthBar = bar:new(x,y,60,10,{1,0,0},{0,1,0})
     return object
 end
 
@@ -185,7 +185,7 @@ function Ball:draw(offsetX,offsetY)
         self.y + offsetY,
         self.yaw,self.pitch,
         self.colour,1,
-        name,health,self.bar,World.debugChecks,
+        name,self.bar,health,World.debugChecks,
         style,self.radius
     )
 end
@@ -519,7 +519,7 @@ World = {
 }
 
 for i = 1,8 do
-    World.bars[i] = bar:new(0,20 * i,400,20,{0,0,1},{0,0,1})
+    World.bars[i] = bar:new(100,20 * i,400,20,{0,0,1},{0,0,1})
 end
 
 function World:drawRespawnTime()
@@ -1309,7 +1309,9 @@ function World:drawVictoryProgress()
     for ind,team,score in objective:getAllScores(event) do
         love.graphics.setColor(1,1,1)
         love.graphics.print(team,100,50*ind - 25)
-        self.bars[ind]:update(score/target,100,50*ind)
+        self.bars[ind].target = score/target
+        self.bars[ind]:update()
+        self.bars[ind].y = 50*ind
         self.bars[ind]:draw()
     end
 end
