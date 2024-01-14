@@ -1,4 +1,3 @@
-local track = require("performance")
 Util        = {}
 --Splits a string by the seperator into a table of substrings
 function Util:split (inputstr, sep)
