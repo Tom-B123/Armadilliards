@@ -1,0 +1,163 @@
+Lists:
+
+//node class defines each element within the list
+class Node
+    private val
+    private next
+    private prev
+
+    public procedure new(nVal)
+        val = nVal
+        next = null
+        prev = null
+    endprocedure
+endclass
+
+//List class holds many nodes
+class List
+    private head
+    private length
+
+    public procedure new()
+        head = null
+        length = 0
+    endprocedure
+
+    public procedure clear()
+        head   = null
+        length = 0
+    endprocedure
+
+    public procedure getVal()
+        if not head then return null endif
+        return head.val
+    endprocedure
+
+    public procedure getVal(nVal)
+        if not head then return null endif
+        head.val = nVal
+    endprocedure
+
+    public procedure getLength()
+        return length
+    endprocedure
+
+    public procedure next()
+        if not head then return null endif
+        head = head.next
+    endprocedure
+
+    public procedure prev(prev)
+        if not head then return null endif
+        head = head.prev
+    endprocedure
+
+    //Creates a new node object at the front of the list
+    public procedure push(val)
+        if length == 0 then
+            head      = new Node(val)
+            head.next = head
+            head.prev = head
+        else
+            nNode = new Node(val)
+            nNode.next = head
+            nNode.prev = head.prev
+            head.prev.next = nNode
+            head.prev = nNode
+            head = nNode
+        endif
+
+        length ++
+
+    endprocedure
+
+    //Creates a new node object at the back of the list
+    public procedure append(val)
+        if length == 0 then
+            head      = new Node(val)
+            head.next = head
+            head.prev = head
+        else
+            nNode = new Node(val)
+            nNode.next = head
+            nNode.prev = head.prev
+            head.prev.next = nNode
+            head.prev = nNode
+        endif
+
+        length ++
+
+    endprocedure
+
+    //Pops off the head value of the list and moves the head to the next value
+    public procedure pop()
+        if length <= 0 return "underflow error" endif
+
+        if length == 1 then
+            length --
+            val = head.val
+            head = null
+            return val
+        elseif length >= 2 then
+            length --
+            val = head.val
+            head.prev.next = head.next
+            head.next.prev = head.prev
+            head = head.next
+            return val
+        endif
+    endprocedure
+
+    //Dequeues the end value of the list
+    public procedure dequeue()
+        if length <= 0 return "underflow error" endif
+
+        if length == 1 then
+            length --
+            val = head.val
+            head = null
+            return val
+        elseif length >= 2 then
+            length --
+            val = head.prev.val
+            head.prev.prev.next = head
+            head.prev = head.prev.prev
+            head = head.next
+            return val
+        endif
+    endprocedure
+
+    //Removes an item at the given index
+    public procedure removeInd(ind)
+        for i = 1 to ind-1 do
+            next()
+        end
+        pop()
+        for i = 1 to ind-1 do
+            prev()
+        end
+    endprocedure
+
+    //Iterates through the list until the value is found,
+    //Returns -1 if the item is not in the list
+    public procedure find(val)
+        if not head then return -1 endif
+        temp = head
+        
+        ind  = 1
+        for i = 1 to length do
+            if temp.val == val then return ind endif
+            temp = temp.next
+            ind = ind + 1
+        end
+        return -1
+    endprocedure
+
+    //Get the index of the item, then remove it
+    public procedure removeItem(item)
+        ind = find(item)
+        if ind > -1 then removeInd(ind) endif
+    endprocedure
+end
+
+return List
