@@ -1,5 +1,5 @@
 require("switch")
--- require("bar")
+
 local drawBall = {}
 
 local ball       = love.graphics.newImage("Assets/ball.png")

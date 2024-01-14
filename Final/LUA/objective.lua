@@ -1,4 +1,3 @@
-require("lists")
 require("sets")
 --Holds multiple teams, each of which holds a dictionary of events and scores
 local teamDict  = {}
