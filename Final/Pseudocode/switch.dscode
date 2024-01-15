@@ -1,0 +1,27 @@
+Switch:
+
+class Switch
+    private cases
+
+    public procedure new()
+        cases = {}
+    endprocedure
+
+    //'result' is a function called when the key of 'value' is used.
+    public procedure addCase(value,result)
+        cases[value] = result
+    endprocedure
+
+    public procedure isCase(value)
+        return not (self.cases == null)
+    endprocedure
+
+    //The case is called, using the given arguments.
+    public procedure case(value,args)
+        if not isCase(value) then return endif
+
+        return cases[value](args)
+    endprocedure
+endclass
+
+return Switch

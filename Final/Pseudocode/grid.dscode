@@ -1,0 +1,156 @@
+Grid:
+
+//Creates a grid with multiple resolutions, allowing for
+//2D binary searching
+class Grid
+    private size
+    private resolution
+    private levels
+    private grid
+
+    public procedure new(nsize,nresolution)
+        size = nsize
+        resolution = nresolution
+
+        //2^levels * size = resolution
+        levels = floor(log2(size/resolution))
+
+        //Initialises a new, empty grid
+        grid = getEmpty(levels)
+    endprocedure
+
+    //Generates a new empty grid
+    public procedure getEmpty(levels)
+        ngrid = []
+        for level = 1 to levels do
+            extraX = 2^(level-1)-1
+            for x = 1 to 2^(level-1)+1 do
+                grid[x + extraX] = []
+                for y = 1 to 2^(level-1)+1 do
+                    if level == levels then
+                        grid[x + extraX][y] = []
+                    else
+                        grid[x + extraX][y] = 0
+                    endif
+                end
+            end
+        end
+        return ngrid
+    endprocedure
+
+    //Draws the grid, used for debugging purposes
+    public procedure draw(offsetX,offsetY)
+        for level = 1 to levels-1 do
+            if level == 1 then drawColour(1,0,0,1)
+            else drawColour(1,1,0,0.1) endif
+
+            for i = 1 to 2^level do
+                point = resolution * 2^(levels-1-level)
+                drawLine(offsetX + (i-1)*point,offsetY,offsetX + (i-1)*point,offsetY + 4096)
+                drawLine(offsetX ,offsetY+ (i-1)*point,offsetX + 4096,offsetY + (i-1)*point)
+            end
+        end
+    endprocedure
+
+    //Resets the grid to be empty
+    public procedure reset()
+        for rowInd = 0 to row.length - 1 do
+            row = grid[rowInd]
+            for valueInd = 0 to row.length - 1 do
+                value = row[valueInd]
+                if value.type == "int" then grid[rowInd][valueInd] = 0 endif
+                if value.type == "table" then grid[rowInd][valueInd] = {} endif
+            end
+        end
+    endprocedure
+
+    //Looks up a value from the grid
+    public procedure lookup(x,y,level)
+        if x < 0 or y < 0 or level < 0 then
+            return "invalid position"
+        endif
+        if y > 2^(level-1) or x > 2^(level-1) or level > levels then
+            return "invalid position"
+        endif
+
+        nx = x + 2^(level-1) -1
+        ny = y
+        
+        return grid[nx][ny]
+    endprocedure
+
+    //Stores a new value to the grid
+    public procedure store(x,y,level,val)
+        if x < 0 or y < 0 or level < 0 then
+            return "invalid position"
+        endif
+        if y > 2^(level-1) or x > 2^(level-1) or level > levels then
+            return "invalid position"
+        endif
+
+        nx = x + 2^(level-1) -1
+        ny = y
+
+        grid[nx][ny] = val
+    endprocedure
+
+    //Recursivly finds all IDs stored in the grid
+    public procedure search()
+        out = []
+        procedure recSearch(x,y,level)
+            if lookup(x,y,level) == 0 then return endif
+
+            if level >= levels then
+                found = lookup(x,y,level)
+                if found.type == table then
+                    for i = 0,found.length do
+                        ID = found[ID]
+                        out.push([x,y,ID])
+                    end
+                endif
+                return
+            endif
+
+            gx = 2 * x - 1
+            gy = 2 * y - 1
+
+            for lx = 0 to 1 do
+                for ly = 0 to 1 do
+                    recSearch(gx + lx,gy + ly,level + 1)
+                end
+            end
+        endprocedure
+        recSearch(1,1,1)
+        return out
+    endprocedure
+
+    //Populates each level of the grid based on the true position of an object,
+    //for example 10.4,15.3 would be in the top left quadrant of the World, so
+    //would be placed in 0,0 for level 1.
+    //The finest layer holds a list of all IDs in that cell, each other level
+    //stores the number of items within that level
+    public procedure populate(x,y,ID)
+        if x < 0 or x > self.size or y < 0 or y > self.size then
+            return "invalid position"
+        endif
+
+        for level = 1 to self.levels do
+            local cells = 2^(level-1)
+            local div = self.size / cells
+            local nx = floor(x / div) + 1
+            local ny = floor(y / div) + 1
+            local val
+            if level < levels then
+                val = lookup(nx,ny,level) + 1
+            else
+                val = lookup(nx,ny,level)
+                if type(val) == "table" then
+                    val.pus(ID)
+                endif
+            endif
+            store(nx,ny,level,val)
+        end
+    endprocedure
+endclass
+
+return Grid

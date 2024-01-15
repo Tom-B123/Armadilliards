@@ -1,0 +1,34 @@
+Sets:
+
+class Set
+    private dict
+    private length
+
+    public procedure new()
+        dict = {}
+        length = 0
+    endprocedure
+
+    public procedure clear()
+        dict = {}
+        length = 0
+    endprocedure
+
+    public procedure has(value)
+        return dict[value]
+    endprocedure
+
+    public procedure add(value)
+        if has(value) then return endif
+        dict[value] = true
+        length ++
+    endprocedure
+
+    public procedure remove(value)
+        if not has(value) then return endif
+        dict[value] = null
+        length --
+    endprocedure
+endclass
+
+return Set

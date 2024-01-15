@@ -1,0 +1,71 @@
+Bar:
+
+//PseudoCode equivilat to lua love.graphics.setColor(r,g,b,a) and 
+//love.graphics.rectangle("fill",x1,y2,w,h)
+
+//drawColour -> Takes an array, sets the draw colour to the
+//RGBA values, from 0-1.
+
+//drawFilledRectangle -> Draws a filled rectangle in the
+//draw colour. Takes x,y,width and height.
+
+class bar
+    public x
+    public y
+    public target
+    private w
+    private h
+    private base
+    private filled
+    private target
+    private fraction
+
+    public procedure new(nx,ny,nw,nh,nbase,nfilled)
+        x        = nx
+        y        = ny
+        w        = nw
+        h        = nh
+        base     = nbase
+        filled   = nfilled
+        target   = ntarget
+        fraction = nfraction
+    endprocedure
+
+    public procedure update()
+        fraction = fraction + ((target - fraction) / 10)
+        if fraction < 0 then 
+            fraction = 0
+            target = 0
+        endif
+        if fraction > 1 then
+            fraction = 1
+            target = 1
+        endif
+    endprocedure
+
+    public procedure draw()
+        //RGBA = 0% red, 0% green, 0% blue, 100% Alpha (no transparency)
+        colour = [0,0,0,1]
+
+        colour[0] = base[0] * (1-fraction) + filled[0] * fraction
+        colour[1] = base[1] * (1-fraction) + filled[1] * fraction
+        colour[2] = base[2] * (1-fraction) + filled[2] * fraction
+        colour[3] = 0.4
+
+        //RGBA = blend between base colour and filled colour, based on the fraction.
+        //Alpha set to 0.4 (40%) for partial transparency
+
+        drawColour(colour)
+
+        //Draws the outline of the bar, showing its origional, filled length.
+
+        drawFiledRectangle(x-2,y-2,w+4,h+4)
+
+        colour[3] = 1
+
+        //Draws the filled section of the bar, showing the current value.
+
+        drawFilledRectangle(x,y,w*fraction,h)
+        
+    endprocedure
+endclass
