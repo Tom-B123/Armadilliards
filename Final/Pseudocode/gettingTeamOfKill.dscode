@@ -1,0 +1,102 @@
+To get the correct team for a kill, many cases should be considered to make the game
+feel fair.
+
+Cases:
+    A player kills a ball directly
+    A player shoots a ball
+    A player kills a ball with a roped ball
+    A player hits a ball into another player
+    Any combination, i.e hits a roped ball into a ball which kills a player
+
+Rules:
+    When a neutral ball is hit by another faster moving ball, it takes the team of
+    that ball temperarily. /
+
+
+    A neutral ball with no temporary team will always be overwritten. /
+
+
+    A neutral ball will take the temporary team of another neutral ball,
+    but will not hold the team longer than the other ball. /
+
+
+    A player ball will hold a temporary team for a shorter length of time than a neutral  /
+
+
+    A bullet will always hold the team of the ball that shot it. /
+
+
+    A bullets act the same as balls. /
+
+
+    When a ball is pulled by a rope, the force is treated like a collision and the
+    ball's team will change. 
+
+
+pseudocode:
+    tempTeam is stored as a table
+    [
+        team,
+        tick that the team changed
+    ]
+
+    //Returns the tick the team changed, or the current tick if no tempTeam exists
+    function getTeam(ball)
+        tempLength = 120
+        if playerBalls:has(ball) then tempLength = 30 endif
+
+        if tick - ball.tempTeam[2] < tempLength then 
+            return [ball.tempTeam[1],ball.tempTeam[2]] 
+        endif
+
+        return [ball.innateTeam,tick]
+    endfunction
+
+    aggressor = faster ball, defender = slower ball.
+    if the speeds are too similar, neither changes team
+
+    //If the aggressor is neutral, its team changes, as neutral balls always change team.
+    //Else, the defender always changes team to the aggressors team 
+    //Takes aggressorTeam to manually overwrite the tempTeam
+    procedure teamChange(aggressor,defender,aggressorTeam)
+        if aggressorTeam == nil then aggressorTeam = getTeam(aggressor) endif
+
+        if aggressorTeam == neutral then 
+            aggressor.tempTeam = getTeam(defender) 
+            return 
+        endif
+        defender.tempTeam = aggressorTeam
+    endprocedure
+
+    //setting the innate team of bullets to the player's team,
+    //as bullets are destroyed on collision, the tempTeam will not interfere.
+    class ball
+        ...
+        public procedure shoot(angle,velocity)
+            ...
+            nBall.innateTeam = innateTeam
+        endprocedure
+        ...
+    endclass
+
+
+    //Changes to updateRopes to allow for the correct team to be calculated
+    class World
+        ...
+        public procedure updateRopes()
+            ...
+            procedure process(balls,centre,length,elasticity)
+                ...
+                speed1 = Util:findDistance(ball1.vx,ball1.vy)
+                speed2 = Util:findDistance(ball2.vx,ball2.vy)
+                
+                //Use the innate team rather than possibility of temp team, as ropes
+                //always come from the innate player team
+                if speed1 >= speed2 then teamChange(ball1,ball2,ball1.innateTeam) endif
+                if speed2 > speed1 then  teamChange(ball2,ball1,ball2.innateTeam) endif
+                ...
+            endprocedure
+            ...
+        endprocedure
+        ...
+    endclass
