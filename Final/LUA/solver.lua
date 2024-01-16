@@ -552,7 +552,7 @@ end
 
 function World:getTeam(ball)
     local tempLength = 120
-    if self.playerBalls:has(ball) then tempLength = 30 end
+    if self.playableBalls:has(ball) then tempLength = 30 end
 
     if tick - ball.tempTeam[2] < tempLength then 
         return {ball.tempTeam[1],ball.tempTeam[2]}
@@ -941,8 +941,8 @@ function World:assignAll(playerIDs)
     local playableBallsTable = {}
 
     local ind = 1
-    for ball,i in self.playableBalls:pairs() do
-        playableBallsTable[ind] = ball
+    for i,ball in self.ballsList:iterator() do
+        if self.playableBalls:has(ball) then table.insert(playableBallsTable,ball) end
         ind = ind + 1
     end
 
