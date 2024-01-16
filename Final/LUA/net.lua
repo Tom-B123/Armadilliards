@@ -132,10 +132,10 @@ function Lobby:endConnection(ID)
     end
 end
 
-function Lobby:hostMain()
-    local nLobby = Lobby:new("__main lobby__", mainPort, mainIP,"main host",-1)
-    return nLobby
-end
+-- function Lobby:hostMain()
+--     local nLobby = Lobby:new("__main lobby__", mainPort, mainIP,"main host",-1)
+--     return nLobby
+-- end
 
 function Lobby:send(clients,message)
     self.server:send(clients,message)

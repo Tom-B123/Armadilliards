@@ -1,3 +1,5 @@
+--Switch:
+
 Switch = {}
 Switch.__index = Switch
 

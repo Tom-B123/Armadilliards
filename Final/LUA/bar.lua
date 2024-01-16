@@ -1,3 +1,5 @@
+--Bar:
+
 --Draws a bar with a given x,y,maximum width, height, and full vs nearly empty colour
 local bar = {}
 
