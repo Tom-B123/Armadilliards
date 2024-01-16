@@ -52,6 +52,8 @@ function Ball:new(x,y)
     object.health   = World.maxHealth
     object.mass     = 10
     object.death    = nil
+    object.innateTeam = ""
+    object.tempTeam   = {nil,0}
 
     --Stats per ball, used to get the MVP stats
     object.stats    = {
@@ -554,19 +556,30 @@ function World:getTeam(ball)
     local tempLength = 120
     if self.playableBalls:has(ball) then tempLength = 30 end
 
-    if tick - ball.tempTeam[2] < tempLength then 
+    if tick - ball.tempTeam[2] < tempLength then
         return {ball.tempTeam[1],ball.tempTeam[2]}
     end
 
     return {ball.innateTeam,tick}
 end
 
+function World:teamChange(aggressor,defender,aggressorTeam)
+    if aggressorTeam == nil then aggressorTeam = self:getTeam(aggressor) end
+    if aggressorTeam == "" then
+        aggressor.tempTeam = self:getTeam(defender)
+        return
+    end
+    defender.tempTeam = aggressorTeam
+end
+
+
 function World:updateDeath(balls,kill,isClient)
     if not isClient and kill and #balls == 2 then
         --Logic for detecting which team got a kill
         if balls[1].health <= 0 then
-            if balls[2].playerID then
-                local team2 = LobbyPlayer:getTeam(balls[2].playerID)
+            if self:getTeam(balls[2])[1] then
+                local team2 = self:getTeam(balls[2])[1]
+                print(team2.." got a kill")
                 if team2 then
                     balls[2].stats["kills"] = balls[2].stats["kills"] + 1
                     if objective:addScore("kills",team2,1) then
@@ -579,8 +592,8 @@ function World:updateDeath(balls,kill,isClient)
             end
         end
         if balls[2].health <= 0 then
-            if balls[1].playerID then
-                local team1 = LobbyPlayer:getTeam(balls[1].playerID)
+            if self:getTeam(balls[1])[1] then
+                local team1 = self:getTeam(balls[1].playerID)
                 if team1 then
                     balls[1].stats["kills"] = balls[1].stats["kills"] + 1
                     if objective:addScore("kills",team1,1) then
@@ -708,6 +721,7 @@ function World:updateRopes()
         return distance
     end
     local function process(balls,centre,length,elasticity)
+        self:teamChange(balls[1],balls[2],{balls[1].team,tick})
         for i = 1,2 do
             local ball = balls[i]
             local toObj = {x=0,y=0}
@@ -951,6 +965,8 @@ function World:assignAll(playerIDs)
         if ball then
             ball.playerID = playerID
             local team = LobbyPlayer:getTeam(playerID)
+            ball.innateTeam = team
+
             ball.colour = teamColour[team]
             LobbyPlayer:setBallID(playerID,ball.ID)
         end
@@ -963,6 +979,7 @@ function World:assign(playerID,ballID)
         ball.playerID = playerID
         local team = LobbyPlayer:getTeam(playerID)
         if team then ball.colour = teamColour[team] end
+        if team then ball.innateTeam = team end
         LobbyPlayer:setBallID(playerID,ball.ID)
     end
 end
@@ -1124,11 +1141,15 @@ function World:expensiveCollisions(ballIDs)
             nHealth2 = ball2.health - (dSpeed * dSpeed / 10)
 
         --If the speeds are unequal, the faster ball receives and deals more damage
-        elseif speed1 > speed2 then
+        elseif speed1 >= speed2 then
+            self:teamChange(ball1,ball2)
+            print(ball2.tempTeam[1],ball2.tempTeam[2])
             nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)
             nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult)
 
         elseif speed2 > speed1 then
+            self:teamChange(ball2,ball1)
+            print(ball1.tempTeam[1],ball1.tempTeam[2])
             nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult)
             nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
 
@@ -1147,7 +1168,7 @@ function World:expensiveCollisions(ballIDs)
 
         --Update the damage dealt scores, adding scores to objectiveMessages
         if team1 then
-            if objective:addScore("damage dealt",team1,damage2) then 
+            if objective:addScore("damage dealt",team1,damage2) then
                 self.atGoal = true
                 self.gameResults["winner"] = team1
             end
