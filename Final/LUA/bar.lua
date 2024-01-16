@@ -22,6 +22,14 @@ end
 
 function bar:update()
     self.fraction = self.fraction + (self.target - self.fraction) / 10
+    if self.fraction < 0 then 
+        self.fraction = 0
+        self.target = 0
+    end
+    if self.fraction > 1 then
+        self.fraction = 1
+        self.target = 1
+    end
 end
 
 --Draws a bar, filled fully with filled colour with fraction = 1
