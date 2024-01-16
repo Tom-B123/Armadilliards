@@ -610,7 +610,8 @@ function World:updateDeath(balls,kill,isClient)
         end
         if balls[2].health <= 0 then
             if self:getTeam(balls[1])[1] then
-                local team1 = self:getTeam(balls[1])
+                local team1 = self:getTeam(balls[1])[1]
+                print(team1.." got a kill")
                 if team1 then
                     balls[1].stats["kills"] = balls[1].stats["kills"] + 1
                     if objective:addScore("kills",team1,1) then
@@ -1560,7 +1561,12 @@ function World:getObjv()
         if objectiveMessages[ind+1] then
             ind = ind + 1
             local message = objectiveMessages[ind]
-            return "objv:"..message[1].."_"..message[2].."_"..message[3].."_\n"
+            if not(message[1] and message[2] and message[3]) then
+                print("invaid message",message[1],message[2],message[3])
+                return
+            else
+                return "objv:"..message[1].."_"..message[2].."_"..message[3].."_\n"
+            end
         end
     end
 end
