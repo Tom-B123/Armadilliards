@@ -157,7 +157,7 @@ function Ball:draw(offsetX,offsetY)
 
     local debugBall = false
     local style = "ball"
-    for i,ball in ipairs(World.playableBalls) do
+    for ball,v in World.playableBalls:pairs() do
         if ball.ID == self.ID then
             style = "armadillo"
         end
@@ -484,7 +484,7 @@ World = {
     bulletsSet    = Set: new(),
 
     --Holds all balls that could be controlled by a player
-    playableBalls = {},
+    playableBalls = Set: new(),
     --Converts a ball ID into a ball object
     ballIDDict    = {},
 
@@ -548,6 +548,17 @@ end
 
 function World:getOffset()
     return camera:getOffset()
+end
+
+function World:getTeam(ball)
+    local tempLength = 120
+    if self.playerBalls:has(ball) then tempLength = 30 end
+
+    if tick - ball.tempTeam[2] < tempLength then 
+        return {ball.tempTeam[1],ball.tempTeam[2]}
+    end
+
+    return {ball.innateTeam,tick}
 end
 
 function World:updateDeath(balls,kill,isClient)
@@ -760,7 +771,7 @@ function World:clear()
     self.holesSet:  clear()
     self.multiSet:  clear()
     self.eliminatedTeams:clear()
-    self.playableBalls = {}
+    self.playableBalls:  clear()
     self.ballIDDict    = {}
     self.ropes         = {}
     camera.focus       = nil
@@ -825,7 +836,7 @@ function World:newBall(x,y,playable)
     local nBall = Ball:new(x,y)
     self.ballsList:push(nBall)
     if playable then
-        table.insert(self.playableBalls,nBall)
+        self.playableBalls:add(nBall)
     end
     return nBall
 end
@@ -927,8 +938,16 @@ end
 
 --Assigns playerIDs to the ball
 function World:assignAll(playerIDs)
+    local playableBallsTable = {}
+
+    local ind = 1
+    for ball,i in self.playableBalls:pairs() do
+        playableBallsTable[ind] = ball
+        ind = ind + 1
+    end
+
     for i,playerID in ipairs(playerIDs) do
-        local ball = self.playableBalls[i]
+        local ball = playableBallsTable[i]
         if ball then
             ball.playerID = playerID
             local team = LobbyPlayer:getTeam(playerID)
