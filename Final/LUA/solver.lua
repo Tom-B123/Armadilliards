@@ -553,6 +553,15 @@ function World:getOffset()
 end
 
 function World:getTeam(ball)
+    if not ball then
+        print("null ball")
+        return {"team 1",0}
+    end
+
+    if not ball.tempTeam[2] then
+        print("temp team error")
+        return {"team 1",0}
+    end
     local tempLength = 120
     if self.playableBalls:has(ball) then tempLength = 30 end
 
@@ -564,7 +573,15 @@ function World:getTeam(ball)
 end
 
 function World:teamChange(aggressor,defender)
+    if not aggressor or not defender then return end
+
     local aggressorTeam = self:getTeam(aggressor)
+
+    if not aggressorTeam then
+        print("error changing team")
+        return
+    end
+
     if aggressorTeam[1] == "" then
         aggressor.tempTeam = self:getTeam(defender)
         return
@@ -577,7 +594,7 @@ function World:updateDeath(balls,kill,isClient)
     if not isClient and kill and #balls == 2 then
         --Logic for detecting which team got a kill
         if balls[1].health <= 0 then
-            if self:getTeam(balls[2])[1] then
+            if balls[2] and self:getTeam(balls[2])[1] then
                 local team2 = self:getTeam(balls[2])[1]
                 print(team2.." got a kill")
                 if team2 then
@@ -593,7 +610,7 @@ function World:updateDeath(balls,kill,isClient)
         end
         if balls[2].health <= 0 then
             if self:getTeam(balls[1])[1] then
-                local team1 = self:getTeam(balls[1].playerID)
+                local team1 = self:getTeam(balls[1])
                 if team1 then
                     balls[1].stats["kills"] = balls[1].stats["kills"] + 1
                     if objective:addScore("kills",team1,1) then
