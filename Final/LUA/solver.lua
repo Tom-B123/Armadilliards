@@ -563,8 +563,8 @@ function World:getTeam(ball)
     return {ball.innateTeam,tick}
 end
 
-function World:teamChange(aggressor,defender,aggressorTeam)
-    if aggressorTeam == nil then aggressorTeam = self:getTeam(aggressor) end
+function World:teamChange(aggressor,defender)
+    local aggressorTeam = self:getTeam(aggressor)
     if aggressorTeam[1] == "" then
         aggressor.tempTeam = self:getTeam(defender)
         return
@@ -729,7 +729,7 @@ function World:updateRopes()
             
             local distance = findDistance(ball,centre,length)
             if distance then
-                self:teamChange(balls[1],balls[2],{balls[1].team,tick})
+                self:teamChange(balls[1],balls[2])
                 if elasticity == 0 then
                     local new = {}
                     new[1] = toObj.x / distance
