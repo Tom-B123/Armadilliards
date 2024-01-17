@@ -503,7 +503,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = false,
+    debugTracking = true,
 
     --Globals, gameplay settings
     respawnTime   = 240,
@@ -683,7 +683,7 @@ function World:newRope(ID1,ID2,length,elasticity)
 
 
     --Create an ID for the rope unique to the two connected balls. creating a new rope with the same ID will alter the existing rope connection
-    local hashedID       = Util:hashIDs({ID1,ID2})
+    local hashedID       = Util:hashIDs({ID1,ID2},self.ballsList.length)
     local nRope          = {ID1,ID2,length,elasticity}
 
     local function isSameRope(rope1,rope2)
@@ -719,7 +719,7 @@ function World:removeRopes(ID)
     for ballID,val in self.ropedBalls:pairs() do
         --Loop through every ball that is roped, if that ID combined with the removing ball's ID exists, they must be roped. Remove all
         --rope connections found
-        hashedID = Util:hashIDs({ID,ballID})
+        hashedID = Util:hashIDs({ID,ballID},self.ballsList.length)
         if self.ropes[hashedID] then self.ropes[hashedID] = nil end
     end
     self.ropedBalls:remove(ID)
@@ -1328,7 +1328,7 @@ function World:expensiveCollisions(ballIDs)
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
-                local sum = Util:hashIDs({ID1,ID2})
+                local sum = Util:hashIDs({ID1,ID2},self.ballsList.length)
                 if not collisionCache[sum] then
                     collision(ID1,ID2,sum)
                     collisionCache[sum] = true
@@ -1417,9 +1417,10 @@ function World:optimisedCollisions()
             end
         end
         if #neighbors > 1 then
-            local sum = Util:hashIDs(neighbors)
+            local sum = Util:hashIDs(neighbors,self.ballsList.length)
 
             if not existingNeighbours[sum] then
+                -- print(sum)
                 self:expensiveCollisions(neighbors)
                 existingNeighbours[sum] = true
             end

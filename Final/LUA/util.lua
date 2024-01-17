@@ -167,13 +167,73 @@ function Util:toBool(string)
     return toBoolDict[string]
 end
 
-function Util:hashIDs(IDs)
+local primesTable = {2}
+
+local function canBePrime(num)
+    local mod6 = num % 6
+    return num < 6 or mod6 == 1 or mod6 == 5
+end
+
+local function expensivePrimeCheck(num)
+    if not canBePrime(num) then
+        return false
+    end
+    for check = 2,num-1 do
+        if num % check == 0 then
+            return false
+        end
+    end
+    return true
+end
+
+local function generatePrimes(n)
+    local start = primesTable[#primesTable]
+    --If n is already generated, return
+    if start > n then return end
+    
+
+    --Checks the primeness of every number between the largest generated prime
+    --and the given number.
+    for candidate = start + 1,n do
+        if expensivePrimeCheck(candidate) then
+            primesTable[#primesTable+1] = candidate
+        end
+    end
+end
+
+function Util:fastPrimeCheck(num)
+    if not canBePrime(num) then return false end
+    if num > primesTable[#primesTable] then generatePrimes(num) end
+    for i,prime in ipairs(primesTable) do
+        if num % prime == 0  and prime < num then
+            return false
+        end
+    end
+    return true
+end
+
+local function getNearPrimes(num)
+    if not Util:fastPrimeCheck(num) then
+        return getNearPrimes(num+1)
+    else
+        return num
+    end
+end
+function Util:nearPrime(num)
+    return getNearPrimes(num)
+end
+
+for i = 1,1000 do 
+    print(i.."'s nearest prime is: "..Util:nearPrime(i))
+end
+
+function Util:hashIDs(IDs,ballCount)
     local sum = 0
     for i,ID in ipairs(IDs) do
         local numID = tonumber(ID)
         sum = sum + (numID * numID)
     end
-    return sum
+    return (ballCount^2)*5
 end
 
 function Util:fastSqrt(num,steps)
