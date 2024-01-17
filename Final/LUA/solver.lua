@@ -534,6 +534,10 @@ function World:drawRespawnTime()
     end
 end
 
+function World:updateBallPrime()
+    if self.ballsList.length^2 > ballCountPrime then ballCountPrime = Util:nearPrime(self.ballsList.length^2) end
+end
+
 function World:updateFPS()
     local resolution = 60
     local curFrame = Socket.gettime()
@@ -1540,7 +1544,7 @@ function World:update(dt,isClient)
     track:finish("verlet")
 
     track:start("priming")
-    ballCountPrime = Util:nearPrime(self.ballsList.length^2)
+    self:updateBallPrime()
     track:finish("priming")
 
     track:start("collisions")
