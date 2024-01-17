@@ -223,17 +223,14 @@ function Util:nearPrime(num)
     return getNearPrimes(num)
 end
 
-for i = 1,1000 do 
-    print(i.."'s nearest prime is: "..Util:nearPrime(i))
-end
-
-function Util:hashIDs(IDs,ballCount)
+function Util:hashIDs(IDs,ballCountPrime)
     local sum = 0
     for i,ID in ipairs(IDs) do
         local numID = tonumber(ID)
         sum = sum + (numID * numID)
     end
-    return (ballCount^2)*5
+    if sum % ballCountPrime == 0 then return 1 end
+    return sum % ballCountPrime
 end
 
 function Util:fastSqrt(num,steps)
