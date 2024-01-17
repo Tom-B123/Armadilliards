@@ -21,15 +21,8 @@ function bar:new(x,y,w,h,base,filled)
 end
 
 function bar:update()
-    self.fraction = self.fraction + (self.target - self.fraction) / 10
-    if self.fraction < 0 then 
-        self.fraction = 0
-        self.target = 0
-    end
-    if self.fraction > 1 then
-        self.fraction = 1
-        self.target = 1
-    end
+    self.fraction = math.max(math.min(self.fraction + (self.target - self.fraction) / 10,1),0)
+    self.target   = math.max(math.min(self.target,1),0)
 end
 
 --Draws a bar, filled fully with filled colour with fraction = 1
