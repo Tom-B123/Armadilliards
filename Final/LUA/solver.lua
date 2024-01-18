@@ -485,7 +485,7 @@ World = {
     holesSet      = Set: new(),
     multi         = {},
     multiSet      = Set: new(),
-    ropes         = {},
+    ropes         = hashMap:new(),
     ropedBalls    = Set: new(),
     bulletsSet    = Set: new(),
 
@@ -662,7 +662,7 @@ function World:updateDeath(balls,kill,isClient)
 end
 
 function World:withinRopeDistance(hashedID)
-    local rope = self.ropes[hashedID]
+    local rope = self.ropes:get(hashedID)[1]
     if not rope then return false end
 
     local ID1        = rope[1]
@@ -705,15 +705,16 @@ function World:newRope(ID1,ID2,length,elasticity)
         return true
     end
 
-    --delete the rope if the same rope already exists
-    if isSameRope(self.ropes[hashedID],nRope) then
-        self.ropes[hashedID] = nil
-        self.ropedBalls:remove(ID1)
-        self.ropedBalls:remove(ID2)
-        return
+    for i, rope in self.ropes:get(hashedID) do
+        --delete the rope if the same rope already exists
+        if isSameRope(rope,nRope) then
+            self.ropes:remove(hashedID,rope)
+            self.ropedBalls:remove(ID1)
+            self.ropedBalls:remove(ID2)
+            return
+        end
     end
-
-    self.ropes[hashedID] = nRope
+    self.ropes:add(hashedID,nRope)
 
     self.ropedBalls:add(ID1)
     self.ropedBalls:add(ID2)
@@ -729,7 +730,7 @@ function World:removeRopes(ID)
         --Loop through every ball that is roped, if that ID combined with the removing ball's ID exists, they must be roped. Remove all
         --rope connections found
         hashedID = Util:hashIDs({ID,ballID},ballCountPrime)
-        if self.ropes[hashedID] then self.ropes[hashedID] = nil end
+        if self.ropes:get(hashedID)[1] then self.ropes:get(hashedID)[1] = nil end
     end
     self.ropedBalls:remove(ID)
 end
@@ -771,7 +772,7 @@ function World:updateRopes(dt)
             end
         end
     end
-    for hashedID,rope in pairs(self.ropes) do
+    for hashedID,rope in self.ropes:pairs() do
         local ID1        = rope[1]
         local ID2        = rope[2]
         local rope1      = self:getByID(ID1)
@@ -809,12 +810,12 @@ function World:clear()
     self.ballsList     = List:new()
     self.shapes        = {}
     self.holes         = {}
-    self.holesSet:  clear()
-    self.multiSet:  clear()
+    self.holesSet:       clear()
+    self.multiSet:       clear()
     self.eliminatedTeams:clear()
     self.playableBalls:  clear()
     self.ballIDDict    = {}
-    self.ropes         = {}
+    self.ropes:          clear()
     camera.focus       = nil
     damageCooldowns    = {}
     tick               = 0
