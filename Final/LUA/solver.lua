@@ -6,6 +6,7 @@ local drawBall  = require("drawBall")
 local track     = require("performance")
 local objective = require("objective")
 local bar       = require("bar")
+local hashMap   = require("hashMap")
 
 local tick            = 0
 local lastFrame       = Socket.gettime() * 10000
@@ -95,8 +96,8 @@ end
 
 --Physics solving for ball objects
 function Ball:verlet(dt)
-    local nextVX = (self.ax * dt * dt) + (self.x - self.lx)/dt
-    local nextVY = (self.ay * dt * dt) + (self.y - self.ly)/dt
+    local nextVX = (self.ax * dt * dt) + (self.x - self.lx) / dt
+    local nextVY = (self.ay * dt * dt) + (self.y - self.ly) / dt
 
     self.vx = (self.vx + self.lvx) / 2
     self.vy = (self.vy + self.lvy) / 2
@@ -109,11 +110,11 @@ function Ball:verlet(dt)
 
     self:move(self.vx * dt,self.vy * dt)
 
-    self.lvx = self.vx * 0.99
-    self.lvy = self.vy * 0.99
+    self.lvx = self.vx
+    self.lvy = self.vy
 
-    self.vx = nextVX
-    self.vy = nextVY
+    self.vx = nextVX * 0.99
+    self.vy = nextVY * 0.99
 
     self.ax = 0
     self.ay = 0
@@ -536,7 +537,7 @@ function World:drawRespawnTime()
 end
 
 function World:updateBallPrime()
-    if self.ballsList.length^2 > ballCountPrime then ballCountPrime = Util:nearPrime(self.ballsList.length^2) end
+    if self.ballsList.length^2 > ballCountPrime then ballCountPrime = Util:nearPrime(3 * self.ballsList.length^2) end
 end
 
 function World:updateFPS()
