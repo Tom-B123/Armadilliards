@@ -12,6 +12,7 @@ local lastFrame       = Socket.gettime() * 10000
 local checks          = 0
 local manhattanChecks = 0
 local fpsList         = List:new()
+local FPS             = 60
 local timeToRespawn   = 0
 
 local ballCountPrime  = 1
@@ -551,7 +552,8 @@ function World:updateFPS()
     end
     averageFPS = averageFPS / fpsLen
     lastFrame = curFrame
-    return tostring(math.floor(averageFPS))
+
+    FPS = math.floor(averageFPS)
 end
 
 function World:getOffset()
@@ -1691,11 +1693,13 @@ function World:draw()
 
     self:drawVictoryProgress()
 
+    World:updateFPS()
+
     love.graphics.setColor(1,1,1)
 
     if self.debugChecks then love.graphics.print("collision checks: "..checks,0,200) end
     if self.debugChecks then love.graphics.print("manhattan checks: "..manhattanChecks,0,220) end
-    if World.showFPS then love.graphics.print(World:updateFPS()) end
+    if World.showFPS then love.graphics.print(tostring(FPS)) end
     track:finish("other debugs")
 
     track:finish("draw")
