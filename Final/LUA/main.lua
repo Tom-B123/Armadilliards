@@ -286,7 +286,7 @@ end
 
 -- Applies vx and vy to the ball, at a set speed.
 local function applyMove(ball,vx,vy)
-    local speed = 0.4
+    local speed = 40
     if ball then
         ball.vx = ball.vx + vx * speed
         ball.vy = ball.vy + vy * speed
@@ -439,7 +439,7 @@ stateSwitch:addCase("hosting game",function(dt)
             local offsetX,offsetY = World:getOffset()
             local bx,by = offsetX+ball.x,offsetY+ball.y
             local angle = Util:yawAngle(mx-bx,my-by)
-            ball:dash(angle,20)
+            ball:dash(angle,1000)
         end
         if b == -1 then
             local mx,my = love.mouse.getPosition()

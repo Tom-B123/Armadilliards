@@ -14,7 +14,7 @@ local manhattanChecks = 0
 local fpsList         = List:new()
 local timeToRespawn   = 0
 
-local ballCountPrime  = 0
+local ballCountPrime  = 1
 
 local grid = Grid:new(4098,32)
 
@@ -94,8 +94,8 @@ end
 
 --Physics solving for ball objects
 function Ball:verlet(dt)
-    local nextVX = (self.ax * dt * dt) + self.x - self.lx
-    local nextVY = (self.ay * dt * dt) + self.y - self.ly
+    local nextVX = (self.ax * dt * dt) + (self.x - self.lx)/dt
+    local nextVY = (self.ay * dt * dt) + (self.y - self.ly)/dt
 
     self.vx = (self.vx + self.lvx) / 2
     self.vy = (self.vy + self.lvy) / 2
@@ -106,10 +106,10 @@ function Ball:verlet(dt)
     self.lx = self.x
     self.ly = self.y
 
-    self:move(self.vx,self.vy)
+    self:move(self.vx * dt,self.vy * dt)
 
-    self.lvx = self.vx * 0.99
-    self.lvy = self.vy * 0.99
+    self.lvx = self.vx
+    self.lvy = self.vy
 
     self.vx = nextVX
     self.vy = nextVY
