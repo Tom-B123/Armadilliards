@@ -1031,7 +1031,7 @@ end
 local collisionCache = {}
 
 --Collisions with no optimisation
-function World:expensiveCollisions(ballIDs)
+function World:expensiveCollisions(ballIDs,dt)
     local bounce = 1
     local function calculateDamage(ID1,ID2,hashSum)
 
@@ -1124,8 +1124,8 @@ function World:expensiveCollisions(ballIDs)
         --Update the damageCooldowns
         damageCooldowns[hashSum] = tick
 
-        local dvx = ball1.vx - ball2.vx
-        local dvy = ball1.vy - ball2.vy
+        local dvx = ball1.vx*dt - ball2.vx*dt
+        local dvy = ball1.vy*dt - ball2.vy*dt
 
         --Using manhattan distance to check the speed isn't too low, without needing a sqrt
         local manhattan = Util:manhattanDistance(dvx,dvy)
@@ -1401,7 +1401,7 @@ function World:populate()
 end
 
 --Optimised collisions to only check nearby balls
-function World:optimisedCollisions()
+function World:optimisedCollisions(dt)
     local found = grid:search()
     --Stores a dictionary of the sum of ball IDs. Should prevent double entry of IDs.
     --The IDs are mutliplied by 17 to avoid collisions
@@ -1427,7 +1427,7 @@ function World:optimisedCollisions()
 
             if not existingNeighbours[sum] then
                 -- print(sum)
-                self:expensiveCollisions(neighbors)
+                self:expensiveCollisions(neighbors,dt)
                 existingNeighbours[sum] = true
             end
         end
@@ -1549,7 +1549,7 @@ function World:update(dt,isClient)
 
     track:start("collisions")
     -- self:expensiveCollisions(World:getBallIDs())
-    self:optimisedCollisions()
+    self:optimisedCollisions(dt)
     track:finish("collisions")
     self:updateBullets()
     track:finish("solver")
