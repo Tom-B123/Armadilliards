@@ -108,8 +108,8 @@ function Ball:verlet(dt)
 
     self:move(self.vx * dt,self.vy * dt)
 
-    self.lvx = self.vx
-    self.lvy = self.vy
+    self.lvx = self.vx * 0.99
+    self.lvy = self.vy * 0.99
 
     self.vx = nextVX
     self.vy = nextVY
@@ -731,7 +731,7 @@ function World:removeRopes(ID)
     self.ropedBalls:remove(ID)
 end
 
-function World:updateRopes()
+function World:updateRopes(dt)
     local function findDistance(ball,centre,length)
         local toObj = {x=0,y=0}
         toObj.x = ball.x - centre.x
@@ -762,8 +762,8 @@ function World:updateRopes()
                     ball.y = centre.y + new[2] * (length - ball.radius)
                 else
                     local forceMult = elasticity * i^2
-                    ball.vx = ball.vx + (centre.x - ball.x) / (50 / forceMult)
-                    ball.vy = ball.vy + (centre.y - ball.y) / (50 / forceMult)
+                    ball.vx = ball.vx + ((centre.x - ball.x) / (50 / forceMult)) / dt
+                    ball.vy = ball.vy + ((centre.y - ball.y) / (50 / forceMult)) / dt
                 end
             end
         end
@@ -1528,7 +1528,7 @@ function World:update(dt,isClient)
     self:updateEliminations()
 
     track:start("ropes")
-    self:updateRopes()
+    self:updateRopes(dt)
     track:finish("ropes")
     
     track:start("verlet")
