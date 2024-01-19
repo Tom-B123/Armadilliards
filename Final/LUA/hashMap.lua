@@ -58,22 +58,30 @@ function hashMap:remove(hash)
     self.keys = nKeys
 end
 
-function hashMap:removeValue(hash,value)
-    if not self:contains(hash,value) then return end
+function hashMap:removeBySum(hash,sum)
+    if not self:hasKey(hash) then return end
 
     local values = self:get(hash)
 
-    local toClear = {}
+    local indVal = 0
 
     for i, foundValue in ipairs(values) do
-        if value == foundValue then
-            toClear[#toClear+1] = i
+        if foundValue then
+            if foundValue[2] == sum then
+                indVal = i
+            end
         end
     end
-    for i,index in ipairs(toClear) do
-        print("removed "..value.." from index "..index)
-        values[index] = nil
+    
+    if indVal == 0 then return end
+    local nValues = {}
+    for i,val in values do
+        if val then
+            if val[2] ~= sum then nValues[#nValues+1] = val end
+        end
     end
+
+    values = nValues
 end
 
 function hashMap:get(hash)
@@ -111,9 +119,18 @@ end
 --Returns the values of a specific key
 function hashMap:keyPairs(hashKey)
     local values = self:get(hashKey)
-    if values == nil then return nil,nil end
-    local indVal = #values + 1
     local ind    = 0
+    --return a generator for just one value
+    if values == nil then 
+        return function()
+            if ind == 0 then
+                ind = ind + 1
+                return nil,nil
+            end
+        end
+    end
+    local indVal = #values + 1
+    --return a generator for all values
     return function()
         if indVal > 0 then
             indVal = indVal - 1

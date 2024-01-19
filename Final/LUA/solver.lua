@@ -728,13 +728,15 @@ end
 local function removeRope(hashedID,sum)
     if not World.ropes:hasKey(hashedID) then print("key not a rope!"); return end
     local ropeInd = 0
+    print("trying key: "..hashedID.." ("..sum..")")
     for i,cvalue,csum in World.ropes:keyPairs(hashedID) do
         if csum == sum then ropeInd = i end
     end
 
     print("to remove at: "..ropeInd.." with key: "..hashedID)
 
-    if ropeInd > 0 and World.ropes:get(hashedID)[ropeInd] then World.ropes:get(hashedID)[ropeInd] = nil end
+    if ropeInd <= 0 then return end
+    if World.ropes:get(hashedID)[ropeInd] then World.ropes:get(hashedID)[ropeInd] = nil end
 end
 
 --Removes all ropes connected to a ballID
@@ -746,18 +748,7 @@ function World:removeRopes(ID)
         --rope connections found
         hashedID,sum = Util:hashIDs({ID,ballID},ballCountPrime)
 
-        local ropeInd = 0
-
-        print("removing: "..hashedID.." ("..sum..")")
-
-        --Loop through each collision value
-        for i,cvalue,csum in self.ropes:keyPairs(hashedID) do
-            if csum == sum then ropeInd = i end
-        end
-
-        print("to remove at: "..ropeInd.." with key: "..hashedID)
-
-        if ropeInd > 0 and self.ropes:get(hashedID)[ropeInd] then self.ropes:get(hashedID)[ropeInd] = nil end
+        removeRope(hashedID,sum)
     end
     self.ropedBalls:remove(ID)
 end
