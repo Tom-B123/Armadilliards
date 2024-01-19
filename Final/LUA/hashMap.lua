@@ -57,7 +57,7 @@ function hashMap:get(hash)
 end
 
 function hashMap:pairs()
-    local indKey = #self.keys
+    local indKey = #self.keys + 1
     local indVal = 0
     local ind    = 0
     local values = {}
@@ -66,15 +66,16 @@ function hashMap:pairs()
         if indKey > 0 then
             ind = ind + 1
             indVal = indVal - 1
-            if indVal <= 0 and indKey > 0 then
+            if indVal <= 0 then
+                indKey = indKey - 1
+                if indKey == 0 then return end
                 key = self.keys[indKey]
-                print("getting values from key index: "..indKey)
                 values = self:get(key)
                 indVal = 1
                 if values then indVal = #values end
-                indKey = indKey - 1
             end
-            return ind, indKey,indVal,values[indVal]
+            local value = values[indVal]
+            return key, value
         end
     end
 end
@@ -89,12 +90,14 @@ end
 
 local map = hashMap:new()
 
-map:add(1,10)
-map:add(1,20)
-map:add(2,10)
+for i = 1,10 do
+    for j = i,15 do
+        map:add(i,j)
+    end
+end
 
-for a,b,c,d in map:pairs() do
-    -- print(a,b,c,d)
+for k,v in map:pairs() do
+    print(k,v)
 end
 
 return hashMap
