@@ -495,7 +495,7 @@ World = {
     ballIDDict    = {},
 
     --Stores every particle object in a table
-    particles     = {},
+    particles     = List:new(),
 
     --The ball the camera is centred on
     focus         = nil,
@@ -513,7 +513,6 @@ World = {
     respawnTime   = 240,
     maxHealth     = 50,
     particleLimit = 200,
-    particleCount = 0,
 
     --Used to calculate when only one team is left
     allTeams        = Set:new(),
@@ -538,8 +537,8 @@ end
 
 function World:updateBallPrime()
     if self.ballsList.length^2 > ballCountPrime then
-        ballCountPrime = Util:nearPrime(3 * self.ballsList.length^2)
-        print("changed ball prime")
+        ballCountPrime = Util:nearPrime(self.ballsList.length^2)
+        print("changed ball prime to: "..ballCountPrime)
     end
 end
 
@@ -608,7 +607,6 @@ function World:updateDeath(balls,kill,isClient)
         if balls[1].health <= 0 then
             if balls[2] and self:getTeam(balls[2])[1] then
                 local team2 = self:getTeam(balls[2])[1]
-                print(team2.." got a kill")
                 if team2 then
                     balls[2].stats["kills"] = balls[2].stats["kills"] + 1
                     if objective:addScore("kills",team2,1) then
@@ -623,7 +621,6 @@ function World:updateDeath(balls,kill,isClient)
         if balls[2].health <= 0 then
             if self:getTeam(balls[1])[1] then
                 local team1 = self:getTeam(balls[1])[1]
-                print(team1.." got a kill")
                 if team1 then
                     balls[1].stats["kills"] = balls[1].stats["kills"] + 1
                     if objective:addScore("kills",team1,1) then
@@ -1188,13 +1185,11 @@ function World:expensiveCollisions(ballIDs,dt)
         --If the speeds are unequal, the faster ball receives and deals more damage
         elseif speed1 >= speed2 then
             self:teamChange(ball1,ball2)
-            print(ball2.tempTeam[1],ball2.tempTeam[2])
             nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)
             nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult)
 
         elseif speed2 > speed1 then
             self:teamChange(ball2,ball1)
-            print(ball1.tempTeam[1],ball1.tempTeam[2])
             nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult)
             nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
 
@@ -1367,28 +1362,27 @@ end
 
 function World:newParticle(style,x,y,count,speed)
     for i = 1,count do
-        if self.particleCount > self.particleLimit then return end
-        self.particleCount = self.particleCount + 1
+        if self.particles.length > self.particleLimit then return end
         local colour = {1,1,1}
         if style == "spark" then colour = {1,0.5,0} end
         if style == "rainbow" then colour = {math.random(2,10)/10,math.random(2,10)/20,math.random(2,10)/10} end
         local nParticle = Particle:new(x,y,colour,5,math.random(0,628)/100,100 * speed)
-        table.insert(self.particles,nParticle)
+        self.particles:push(nParticle)
     end
 end
 
 function World:updateParticles(dt)
-    for i,particle in ipairs(self.particles) do
+    print("there are "..self.particles.length.." particles!")
+    for i,particle in self.particles:iterator() do
         particle:update(dt)
         if particle.life <= 0 then
-            particle = nil
-            self.particleCount = self.particleCount - 1
+            self.particles:removeInd(i)
         end
     end
 end
 
 function World:drawParticles(offsetX,offsetY)
-    for i,particle in ipairs(self.particles) do
+    for i,particle in self.particles:iterator() do
         particle:draw(offsetX,offsetY)
     end
 end
@@ -1426,7 +1420,7 @@ function World:optimisedCollisions(dt)
     local found = grid:search()
     --Stores a dictionary of the sum of ball IDs. Should prevent double entry of IDs.
     --The IDs are mutliplied by 17 to avoid collisions
-    local existingNeighbours = {}
+    local existingNeighbours = hashMap:new()
     for i,searchBall in ipairs(found) do
         local searchX   = searchBall[1]
         local searchY   = searchBall[2]
@@ -1444,12 +1438,11 @@ function World:optimisedCollisions(dt)
             end
         end
         if #neighbors > 1 then
-            local sum = Util:hashIDs(neighbors,ballCountPrime)
+            local hashedID,sum = Util:hashIDs(neighbors,ballCountPrime)
 
-            if not existingNeighbours[sum] then
-                -- print(sum)
+            if not existingNeighbours:getBySum(hashedID,sum) then
                 self:expensiveCollisions(neighbors,dt)
-                existingNeighbours[sum] = true
+                existingNeighbours:add(hashedID,sum,true) 
             end
         end
     end

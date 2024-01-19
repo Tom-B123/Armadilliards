@@ -15,11 +15,10 @@ function hashMap:add(hash,sum,value)
     if not self.values[hash] then
         --Stores the true sum to allow individual values to be distinguished
         self.values[hash] = {{value,sum}}
-        print("added "..hash.." ("..sum..") to keys.")
         self.keys[#self.keys+1] = hash
         return
     end
-    print("hashMap collision")
+    -- print("hashMap collision")
     self.values[hash][#self.values[hash]+1] = {value,sum}
 end
 
