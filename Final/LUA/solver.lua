@@ -726,9 +726,8 @@ function World:newRope(ID1,ID2,length,elasticity)
 end
 
 local function removeRope(hashedID,sum)
-    if not World.ropes:hasKey(hashedID) then print("key not a rope!"); return end
+    if not World.ropes:hasKey(hashedID) then return end
     local ropeInd = 0
-    print("trying key: "..hashedID.." ("..sum..")")
     for i,cvalue,csum in World.ropes:keyPairs(hashedID) do
         if csum == sum then ropeInd = i end
     end

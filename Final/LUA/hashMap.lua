@@ -52,7 +52,7 @@ function hashMap:remove(hash)
 
     --Removes the key
     local nKeys = {}
-    for i,key in self.keys do
+    for i,key in ipairs(self.keys) do
         if i ~= ind then nKeys[#nKeys+1] = key end
     end
     self.keys = nKeys
@@ -77,12 +77,21 @@ function hashMap:removeBySum(hash,sum)
     
     if indVal == 0 then return end
     
+    print("there are "..#values.." values")
+
     local nValues = {}
     for i,val in ipairs(values) do
         if val then
-            if val[2] ~= sum then nValues[#nValues+1] = val
+            if val[2] ~= sum then
+                print("adding "..val[2])
+                nValues[#nValues+1] = val
             else print("value was at: "..i) end
         end
+    end
+
+    if #nValues == 0 then
+        nValues = nil
+        self:remove(hash)
     end
 
     values = nValues
