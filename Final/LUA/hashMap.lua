@@ -61,6 +61,8 @@ end
 function hashMap:removeBySum(hash,sum)
     if not self:hasKey(hash) then return end
 
+    print("removing "..hash.." ("..sum..")")
+
     local values = self:get(hash)
 
     local indVal = 0
@@ -74,10 +76,12 @@ function hashMap:removeBySum(hash,sum)
     end
     
     if indVal == 0 then return end
+    
     local nValues = {}
-    for i,val in values do
+    for i,val in ipairs(values) do
         if val then
-            if val[2] ~= sum then nValues[#nValues+1] = val end
+            if val[2] ~= sum then nValues[#nValues+1] = val
+            else print("value was at: "..i) end
         end
     end
 

@@ -733,10 +733,10 @@ local function removeRope(hashedID,sum)
         if csum == sum then ropeInd = i end
     end
 
-    print("to remove at: "..ropeInd.." with key: "..hashedID)
-
     if ropeInd <= 0 then return end
-    if World.ropes:get(hashedID)[ropeInd] then World.ropes:get(hashedID)[ropeInd] = nil end
+    if World.ropes:get(hashedID)[ropeInd] then
+        World.ropes:removeBySum(hashedID,sum)
+    end
 end
 
 --Removes all ropes connected to a ballID
