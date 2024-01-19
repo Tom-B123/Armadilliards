@@ -38,6 +38,10 @@ local messageLog  = {}
 local monoSpace   = love.graphics.newFont("cour.ttf",15)
 love.graphics.setFont(monoSpace)
 
+local dashIcon     = love.graphics.newImage("Assets/dashIcon.png")
+local ropeIcon     = love.graphics.newImage("Assets/ropeIcon.png")
+local shootIcon    = love.graphics.newImage("Assets/shootIcon.png")
+
 local editingText  = nil
 local editingIndex = 1
 
@@ -297,7 +301,7 @@ local function applyMove(ball,vx,vy)
 end
 
 local function drawIcons()
-    
+
 end
 
 -- Returns true if the player is in a lobby / in game
