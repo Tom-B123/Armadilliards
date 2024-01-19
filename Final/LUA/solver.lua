@@ -116,8 +116,8 @@ function Ball:verlet(dt)
     self.vx = nextVX
     self.vy = nextVY
 
-    self.ax = 0
-    self.ay = 0
+    self.ax = -self.vx * 100
+    self.ay = -self.vy * 100
 
     if math.abs(self.vx) < 0.02 then self.vx = 0 end
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
