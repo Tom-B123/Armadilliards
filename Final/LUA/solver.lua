@@ -113,8 +113,8 @@ function Ball:verlet(dt)
     self.lvx = self.vx
     self.lvy = self.vy
 
-    self.vx = nextVX * 0.99
-    self.vy = nextVY * 0.99
+    self.vx = nextVX
+    self.vy = nextVY
 
     self.ax = 0
     self.ay = 0
