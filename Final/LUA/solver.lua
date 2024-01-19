@@ -773,6 +773,7 @@ function World:updateRopes(dt)
         end
     end
     for hashedID,rope in self.ropes:pairs() do
+        print(hashedID,rope)
         local ID1        = rope[1]
         local ID2        = rope[2]
         local rope1      = self:getByID(ID1)

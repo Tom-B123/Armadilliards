@@ -56,6 +56,8 @@ function hashMap:get(hash)
     return values
 end
 
+--Gets returns each key and the corresponding values, as k,v pairs.
+--Returns multiple values per key if collisions occur
 function hashMap:pairs()
     local indKey = #self.keys + 1
     local indVal = 0
@@ -86,18 +88,6 @@ function hashMap:clear()
         self.values[key] = nil
     end
     self.keys = {}
-end
-
-local map = hashMap:new()
-
-for i = 1,10 do
-    for j = i,15 do
-        map:add(i,j)
-    end
-end
-
-for k,v in map:pairs() do
-    print(k,v)
 end
 
 return hashMap
