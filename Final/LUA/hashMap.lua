@@ -102,6 +102,12 @@ function hashMap:get(hash)
     return values
 end
 
+function hashMap:getBySum(hash,sum)
+    for i,cval,csum in self:keyPairs(hash) do
+        if sum == csum then return cval end
+    end
+end
+
 --Gets returns each key and the corresponding values, as k,v pairs.
 --Returns multiple values per key if collisions occur
 function hashMap:pairs()
@@ -138,7 +144,7 @@ function hashMap:keyPairs(hashKey)
         return function()
             if ind == 0 then
                 ind = ind + 1
-                return nil,nil
+                return nil,nil,nil
             end
         end
     end

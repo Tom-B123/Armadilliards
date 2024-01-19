@@ -1049,7 +1049,7 @@ function World:updateBullets()
     end
 end
 
-local collisionCache = {}
+local collisionCache = hashMap:new()
 
 --Collisions with no optimisation
 function World:expensiveCollisions(ballIDs,dt)
@@ -1355,10 +1355,10 @@ function World:expensiveCollisions(ballIDs,dt)
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
-                local sum = Util:hashIDs({ID1,ID2},ballCountPrime)
-                if not collisionCache[sum] then
+                local hashedID, sum = Util:hashIDs({ID1,ID2},ballCountPrime)
+                if not collisionCache:getBySum(hashedID,sum) then
                     collision(ID1,ID2,sum)
-                    collisionCache[sum] = true
+                    collisionCache:add(hashedID,sum,true)
                 end
             end
         end
@@ -1539,7 +1539,7 @@ function World:update(dt,isClient)
     --Reset all per-tick variables
     checks            = 0
     manhattanChecks   = 0
-    collisionCache    = {}
+    collisionCache    = hashMap:new()
     damageMessages    = {}
     objectiveMessages = {}
     ropeMessages      = {}
