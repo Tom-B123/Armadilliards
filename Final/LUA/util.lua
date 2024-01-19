@@ -229,8 +229,9 @@ function Util:hashIDs(IDs,ballCountPrime)
         local numID = tonumber(ID)
         sum = sum + (numID * numID)
     end
-    if sum % ballCountPrime == 0 then return 1 end
-    return sum % ballCountPrime
+    --Returns the shortend index, then the true sum, to use in case of collisions
+    if sum % ballCountPrime == 0 then return 1,sum end
+    return sum % ballCountPrime,sum
 end
 
 function Util:fastSqrt(num,steps)

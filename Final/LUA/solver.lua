@@ -537,7 +537,10 @@ function World:drawRespawnTime()
 end
 
 function World:updateBallPrime()
-    if self.ballsList.length^2 > ballCountPrime then ballCountPrime = Util:nearPrime(3 * self.ballsList.length^2) end
+    if self.ballsList.length^2 > ballCountPrime then
+        ballCountPrime = Util:nearPrime(3 * self.ballsList.length^2)
+        print("changed ball prime")
+    end
 end
 
 function World:updateFPS()
@@ -692,7 +695,7 @@ function World:newRope(ID1,ID2,length,elasticity)
 
 
     --Create an ID for the rope unique to the two connected balls. creating a new rope with the same ID will alter the existing rope connection
-    local hashedID       = Util:hashIDs({ID1,ID2},ballCountPrime)
+    local hashedID,sum       = Util:hashIDs({ID1,ID2},ballCountPrime)
     local nRope          = {ID1,ID2,length,elasticity}
 
     local function isSameRope(rope1,rope2)
@@ -705,16 +708,16 @@ function World:newRope(ID1,ID2,length,elasticity)
         return true
     end
 
-    for i, rope in self.ropes:get(hashedID) do
-        --delete the rope if the same rope already exists
-        if isSameRope(rope,nRope) then
-            self.ropes:remove(hashedID,rope)
-            self.ropedBalls:remove(ID1)
-            self.ropedBalls:remove(ID2)
-            return
-        end
-    end
-    self.ropes:add(hashedID,nRope)
+    -- for i, rope in self.ropes:keyPairs(hashedID) do
+    --     --delete the rope if the same rope already exists
+    --     if isSameRope(rope,nRope) then
+    --         self.ropes:remove(hashedID,rope)
+    --         self.ropedBalls:remove(ID1)
+    --         self.ropedBalls:remove(ID2)
+    --         return
+    --     end
+    -- end
+    self.ropes:add(hashedID,sum,nRope)
 
     self.ropedBalls:add(ID1)
     self.ropedBalls:add(ID2)
@@ -722,15 +725,39 @@ function World:newRope(ID1,ID2,length,elasticity)
     return nRope
 end
 
+local function removeRope(hashedID,sum)
+    if not World.ropes:hasKey(hashedID) then print("key not a rope!"); return end
+    local ropeInd = 0
+    for i,cvalue,csum in World.ropes:keyPairs(hashedID) do
+        if csum == sum then ropeInd = i end
+    end
+
+    print("to remove at: "..ropeInd.." with key: "..hashedID)
+
+    if ropeInd > 0 and World.ropes:get(hashedID)[ropeInd] then World.ropes:get(hashedID)[ropeInd] = nil end
+end
+
 --Removes all ropes connected to a ballID
 function World:removeRopes(ID)
     if not self.ropedBalls:has(ID) then return end
-    local hashedID
+    local hashedID,sum
     for ballID,val in self.ropedBalls:pairs() do
         --Loop through every ball that is roped, if that ID combined with the removing ball's ID exists, they must be roped. Remove all
         --rope connections found
-        hashedID = Util:hashIDs({ID,ballID},ballCountPrime)
-        if self.ropes:get(hashedID)[1] then self.ropes:get(hashedID)[1] = nil end
+        hashedID,sum = Util:hashIDs({ID,ballID},ballCountPrime)
+
+        local ropeInd = 0
+
+        print("removing: "..hashedID.." ("..sum..")")
+
+        --Loop through each collision value
+        for i,cvalue,csum in self.ropes:keyPairs(hashedID) do
+            if csum == sum then ropeInd = i end
+        end
+
+        print("to remove at: "..ropeInd.." with key: "..hashedID)
+
+        if ropeInd > 0 and self.ropes:get(hashedID)[ropeInd] then self.ropes:get(hashedID)[ropeInd] = nil end
     end
     self.ropedBalls:remove(ID)
 end
@@ -773,7 +800,6 @@ function World:updateRopes(dt)
         end
     end
     for hashedID,rope in self.ropes:pairs() do
-        print(hashedID,rope)
         local ID1        = rope[1]
         local ID2        = rope[2]
         local rope1      = self:getByID(ID1)
@@ -1442,7 +1468,7 @@ end
 --Draw all ropes
 function World:drawRopes(offsetX,offsetY)
     love.graphics.setColor(1,1,0)
-    for hashedID, rope in pairs(self.ropes) do
+    for hashedID, rope in self.ropes:pairs() do
         local ball1 = self:getByID(rope[1])
         local ball2 = self:getByID(rope[2])
         love.graphics.line(ball1.x + offsetX,ball1.y + offsetY,ball2.x + offsetX,ball2.y + offsetY)
