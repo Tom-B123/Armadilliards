@@ -374,7 +374,7 @@ stateSwitch:addCase("in game",function(dt)
     World:update(dt,true)
 
     if order == 1 and not editingText then
-        local x,y,a,b = Util:processGameInputs()
+        local x,y,a,b = Util:processGameInputs(tick)
 
         inputSum.x = inputSum.x + x
         inputSum.y = inputSum.y + y
@@ -385,7 +385,7 @@ stateSwitch:addCase("in game",function(dt)
             local offsetX,offsetY = World:getOffset()
             local bx,by = offsetX+ball.x,offsetY+ball.y
             local angle = Util:yawAngle(mx-bx,my-by)
-            table.insert(inputSum.abilities,"plin:dash_"..ball.ID.."_"..angle.."_"..(20).."_\n")
+            table.insert(inputSum.abilities,"plin:dash"..ball.ID.."_"..angle.."_"..(1000).."_\n")
         end
         inputSum.bHeld = tonumber(b > 0)
         if b == -1 then
@@ -411,6 +411,9 @@ stateSwitch:addCase("in game",function(dt)
     end
 end)
 
+local aSuccess = false
+local bSuccess = false
+
 stateSwitch:addCase("hosting game",function(dt)
     if not server then return end
     server:send("all","no dat".."_\n")
@@ -432,20 +435,25 @@ stateSwitch:addCase("hosting game",function(dt)
 
     if order == 1 and not editingText then
         local ball = World.focus
-        local nx,ny,a,b = Util:processGameInputs()
+        local nx,ny,a,b = Util:processGameInputs(tick,aSuccess,bSuccess)
         applyMove(ball,nx,ny)
         if a == -1 then
             local mx,my = love.mouse.getPosition()
             local offsetX,offsetY = World:getOffset()
             local bx,by = offsetX+ball.x,offsetY+ball.y
             local angle = Util:yawAngle(mx-bx,my-by)
-            ball:dash(angle,1000)
+            
+            aSuccess = ball:dash(angle,1000)
+        else
+            aSuccess = false
         end
         if b == -1 then
             local mx,my = love.mouse.getPosition()
             local offsetX,offsetY = World:getOffset()
             local rx,ry = mx - offsetX, my - offsetY
-            ball:rope(rx,ry)
+            bSuccess = ball:rope(rx,ry)
+        else
+            bSuccess = false
         end
     end
 

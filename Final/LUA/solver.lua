@@ -229,10 +229,13 @@ function Ball:dash(angle,velocity)
     self.lvx = vx
     self.vy  = vy
     self.lvy = vy
+
+    return true
 end
 
 function Ball:shoot(angle,velocity)
-    World:newBullet(self.ID,self.x,self.y,angle,velocity)
+    World:newBullet(self.innateTeam,self.x,self.y,angle,velocity)
+    return true
 end
 
 --Rope a ball at the given position
@@ -273,12 +276,17 @@ function Ball:rope(rx,ry)
 
     local neighbors = getNeighbours(searchX,searchY)
 
+    local success = false
+
     for i,ID in ipairs(neighbors) do
         if isClicked(ID,rx,ry) then
+            success = true
             World:newRope(self.ID,ID,100,1)
             table.insert(ropeMessages,"nrope:"..self.ID.."_"..ID.."_\n")
         end
     end
+
+    return success
 end
 
 Shape = {}
@@ -649,6 +657,10 @@ function World:updateDeath(balls,kill,isClient)
                 table.insert(objectiveMessages,{"deaths",team,objective:getScore("deaths",team)})
             end
 
+            if self.bulletsSet:has(ball.ID) then
+                self.ballsList:removeItem(ball)
+                self.bulletsSet:remove(ball.ID)
+            end
             if not self.bulletsSet:has(ball.ID) then
                 for j = 1,15 do
                     self:newParticle("rainbow",ball.x,ball.y,5,j)
@@ -906,15 +918,15 @@ function World:newHole(x,y)
 end
 
 --Creates a new ball in the world
-function World:newBullet(owner,x,y,angle,velocity)
+function World:newBullet(team,x,y,angle,velocity)
     local nBall = Ball:new(x,y)
     --The player that shot the bullet, used to prevent shooting yourself
-    nBall.owner  = owner
     nBall.vx     = velocity * math.cos(angle)
     nBall.vy     = velocity * math.sin(angle)
     nBall.radius = 8
     local salt   = x+y+angle+velocity
     local ID     = self:assignID(nBall,Util:calculateID(6,salt))
+    nBall.innateTeam = team
     self.ballsList:push(nBall)
     self.bulletsSet:add(ID)
     return nBall
@@ -1114,15 +1126,22 @@ function World:expensiveCollisions(ballIDs,dt)
             return
         end
 
+        local team1 = ball1.innateTeam
+        local team2 = ball2.innateTeam
+
         local bullet1 = self.bulletsSet:has(ID1)
         local bullet2 = self.bulletsSet:has(ID2)
 
+        
+
         if bullet1 then
-            if ball1.owner == ID2 then return end
+            print(team2,ball1.innateTeam)
+            if ball1.innateTeam == team2 then return end
         end
 
         if bullet2 then
-            if ball2.owner == ID1 then return end
+            print(team1,ball2.innateTeam)
+            if ball2.innateTeam == team1 then return end
         end
 
         if bullet1 then
@@ -1153,15 +1172,7 @@ function World:expensiveCollisions(ballIDs,dt)
         if dSpeed < 3 then return end
 
         --Get the teams of the two balls, or nil if they aren't player controlled.
-        local team1
-        local team2
-        if ball1.playerID then
-            team1  = LobbyPlayer:getTeam(ball1.playerID)
-        end
-
-        if ball2.playerID then
-            team2  = LobbyPlayer:getTeam(ball2.playerID)
-        end
+        
 
         --Get the true speed of the balls
         local speed1 = Util:findDistance(ball1.vx,ball1.vy)
@@ -1321,13 +1332,13 @@ function World:expensiveCollisions(ballIDs,dt)
             --If one ball is a bullet, move the non-bullet ball
             if self.bulletsSet:has(ID1) then
                 --If the bullet hits it's owner, don't collide them
-                if self:getByID(ID1).owner == ID2 then return false,false end
+                if self:getByID(ID1).innateTeam == self:getByID(ID2).innateTeam then return false,false end
                 offset2 = offset2 * 5
                 return false,true
             end
             if self.bulletsSet:has(ID2) then
                 --If the bullet hits it's owner, don't collide them
-                if self:getByID(ID2).owner == ID1 then return false,false end
+                if self:getByID(ID2).innateTeam == self:getByID(ID1).innateTeam then return false,false end
                 offset1 = offset1 * 5
                 return true,false end
 

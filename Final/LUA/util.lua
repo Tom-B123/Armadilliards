@@ -107,10 +107,18 @@ end
 local a = 0
 local b = 0
 
-function Util:processGameInputs()
+local aCooldown = 60
+local aTick     = 0
+local bCooldown = 120
+local bTick     = 0
+
+function Util:processGameInputs(tick,aSuccess,bSuccess)
     local x = 0
     local y = 0
     
+    if aSuccess then aTick = tick end
+    if bSuccess then bTick = tick end
+
     --a and b are set to -1 for 1 tick
     if a < 0 then a = 0 end
     if b < 0 then b = 0 end
@@ -122,9 +130,13 @@ function Util:processGameInputs()
 
     --a and b incriment while they are held, then set to -1 for 1 tick.
     if love.mouse.isDown(1)      then a = a + 1
-    elseif a > 0 then a = -1 end
+    elseif a > 0 and tick - aTick >= aCooldown then
+        a = -1
+    end
     if love.mouse.isDown(2)      then b = b + 1
-    elseif b > 0 then b = -1 end
+    elseif b > 0 and tick - bTick >= bCooldown then
+        b = -1
+    end
 
     return x,y,a,b
 end
