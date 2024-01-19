@@ -109,8 +109,10 @@ local b = 0
 
 local aCooldown = 60
 local aTick     = 0
+local aPercentage = 0
 local bCooldown = 120
 local bTick     = 0
+local bPercentage = 0
 
 function Util:processGameInputs(tick,aSuccess,bSuccess)
     local x = 0
@@ -138,7 +140,7 @@ function Util:processGameInputs(tick,aSuccess,bSuccess)
         b = -1
     end
 
-    return x,y,a,b
+    return x,y,a,b,math.min(1,(tick-aTick) / aCooldown),math.min(1,(tick-bTick) / bCooldown)
 end
 
 function Util:findDistance(x,y)

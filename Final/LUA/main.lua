@@ -41,6 +41,9 @@ love.graphics.setFont(monoSpace)
 local editingText  = nil
 local editingIndex = 1
 
+local aPercentage = 0
+local bPercentage = 0
+
 local state    = {"main menu"}
 local lState   = {nil}
 -- Order of states, used to overlap menues ontop of eachother
@@ -293,6 +296,10 @@ local function applyMove(ball,vx,vy)
     end
 end
 
+local function drawIcons()
+    
+end
+
 -- Returns true if the player is in a lobby / in game
 local function inLobby()
     return (state[1] == "in lobby" or state[1] == "hosting lobby" or state[1] == "in game" or state[1] == "hosting game")
@@ -374,7 +381,10 @@ stateSwitch:addCase("in game",function(dt)
     World:update(dt,true)
 
     if order == 1 and not editingText then
-        local x,y,a,b = Util:processGameInputs(tick)
+        local x,y,a,b,ap,bp = Util:processGameInputs(tick)
+
+        aPercentage = ap
+        bPercentage = bp
 
         inputSum.x = inputSum.x + x
         inputSum.y = inputSum.y + y
@@ -435,7 +445,11 @@ stateSwitch:addCase("hosting game",function(dt)
 
     if order == 1 and not editingText then
         local ball = World.focus
-        local nx,ny,a,b = Util:processGameInputs(tick,aSuccess,bSuccess)
+        local nx,ny,a,b,ap,bp = Util:processGameInputs(tick,aSuccess,bSuccess)
+
+        aPercentage = ap
+        bPercentage = bp
+
         applyMove(ball,nx,ny)
         if a == -1 then
             local mx,my = love.mouse.getPosition()
@@ -1099,6 +1113,7 @@ drawStateSwitch:addCase("in game",function()
             love.graphics.polygon("fill",poly)
         end
     end
+    drawIcons()
     drawMessages()
 end)
 
