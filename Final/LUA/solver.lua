@@ -1372,7 +1372,6 @@ function World:newParticle(style,x,y,count,speed)
 end
 
 function World:updateParticles(dt)
-    print("there are "..self.particles.length.." particles!")
     for i,particle in self.particles:iterator() do
         particle:update(dt)
         if particle.life <= 0 then
