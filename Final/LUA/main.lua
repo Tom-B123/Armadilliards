@@ -303,10 +303,14 @@ local function applyMove(ball,vx,vy)
     end
 end
 
+local root2 = math.sqrt(2)
+
 local function drawIcons()
     local bright = {1,1,1}
-    local faded  = {0.6,0.6,0.6}
-    local scroll = {0,0,0,0.2}
+    local faded  = {0.8,0.8,0.8}
+    local scroll = {0,0,0,0.5}
+
+    local scrollAngle = 0
 
     local centreX = 0
     local centreY = 0
@@ -317,10 +321,41 @@ local function drawIcons()
     local scrollX = 0
     local scrollY = 0
 
-    love.graphics.setColor(bright)
-    if aPercentage < 1 then love.graphics.setColor(faded) end
+    local scrollPoints = {}
 
-    love.graphics.draw(aIcon,300,500,0,1,1,32,32)
+    if aPercentage < 1 then
+
+        love.graphics.setColor(faded)
+        love.graphics.draw(aIcon,300,500,0,1,1,32,32)
+
+        scrollAngle = aPercentage * 2 * math.pi
+        centreX = 300
+        centreY = 500
+
+        scrollX = centreX + 32 * math.cos(scrollAngle)
+        scrollY = centreY + 32 * math.sin(scrollAngle)
+
+        --Always passes through the centre horizontally
+        scrollPoints = {centreX,centreY,centreX + 32,centreY}
+
+        local numCorners = math.floor(0.5 + (scrollAngle / math.pi) * 2)
+
+        for i = 1,numCorners do
+            local nAngle = math.pi * (i/2 - 0.25)
+            table.insert(scrollPoints,centreX + 32 * root2 * math.cos(nAngle))
+            table.insert(scrollPoints,centreY + 32 * root2 * math.sin(nAngle))
+        end
+
+        table.insert(scrollPoints,scrollX)
+        table.insert(scrollPoints,scrollY)
+
+        love.graphics.setColor(scroll)
+        love.graphics.polygon("fill",scrollPoints)
+
+    else
+        love.graphics.setColor(bright)
+        love.graphics.draw(aIcon,300,500,0,1,1,32,32)
+    end
 
     love.graphics.setColor(bright)
     if bPercentage < 1 then love.graphics.setColor(faded) end

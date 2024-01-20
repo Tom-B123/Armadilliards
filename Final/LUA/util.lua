@@ -107,7 +107,7 @@ end
 local a = 0
 local b = 0
 
-local aCooldown = 60
+local aCooldown = 240
 local aTick     = 0
 local aPercentage = 0
 local bCooldown = 120
