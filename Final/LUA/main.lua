@@ -48,6 +48,9 @@ local editingIndex = 1
 local aPercentage = 0
 local bPercentage = 0
 
+local aIcon       = dashIcon
+local bIcon       = ropeIcon
+
 local state    = {"main menu"}
 local lState   = {nil}
 -- Order of states, used to overlap menues ontop of eachother
@@ -301,7 +304,28 @@ local function applyMove(ball,vx,vy)
 end
 
 local function drawIcons()
+    local bright = {1,1,1}
+    local faded  = {0.6,0.6,0.6}
+    local scroll = {0,0,0,0.2}
 
+    local centreX = 0
+    local centreY = 0
+
+    local cornerX = {}
+    local cornerY = {}
+
+    local scrollX = 0
+    local scrollY = 0
+
+    love.graphics.setColor(bright)
+    if aPercentage < 1 then love.graphics.setColor(faded) end
+
+    love.graphics.draw(aIcon,300,500,0,1,1,32,32)
+
+    love.graphics.setColor(bright)
+    if bPercentage < 1 then love.graphics.setColor(faded) end
+
+    love.graphics.draw(bIcon,500,500,0,1,1,32,32)
 end
 
 -- Returns true if the player is in a lobby / in game
@@ -1123,6 +1147,7 @@ end)
 
 drawStateSwitch:addCase("hosting game",function()
     World:draw()
+    drawIcons()
     drawMessages()
 end)
 
