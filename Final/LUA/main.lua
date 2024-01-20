@@ -328,7 +328,7 @@ local function drawIcons()
         love.graphics.setColor(faded)
         love.graphics.draw(aIcon,300,500,0,1,1,32,32)
 
-        scrollAngle = aPercentage * 2 * math.pi
+        scrollAngle = (1 - aPercentage) * 2 * math.pi
         centreX = 300
         centreY = 500
 
