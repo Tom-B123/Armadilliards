@@ -1,0 +1,49 @@
+//Sets the angle based on the time remaining percentage (1 for ability ready and 0 for not ready)
+scrollAngle = 2 * math.pi - (percentage) * 2 * math.pi
+
+...
+
+//extra region to keep the scroll square
+alpha = 32 * (1 - root2)
+
+//If the angle is on the bottom left diagonal, alpha needs to be negative
+if not (3*math.pi/4 < scrollAngle or 7*math.pi/4 > scrollAngle) then
+    alpha = -alpha
+endif
+
+//Changes the face angle for moving the angle regions from -1/4 -> 0 -> 1/4 to -1/2 -> 0 -> 1/2
+local faceAngle = 0
+
+//Offsets the angle to give 0 to +- 1 to 0 along the edge of the square
+
+//If the wheel is on the 'top' face
+if scrollAngle < 7*math.pi/4 and scrollAngle >= 5*math.pi/4 then
+    faceAngle = 3/2 * math.pi
+
+//If the wheel is on the 'left' face
+elseif scrollAngle < 5*math.pi/4 and scrollAngle >= 3*math.pi/4 then
+    faceAngle = math.pi
+
+//If the wheel is on the 'bottom' face
+elseif scrollAngle < 3*math.pi/4 and scrollAngle >= 1*math.pi/4 then
+    faceAngle = 1/2 * math.pi
+
+endif
+
+//Set 'dAngle' to be the offset angle using the face angle
+dAngle = ((scrollAngle-faceAngle)*2)+faceAngle
+
+//The circle touching the sqaure's 4 corners is defined by:
+//  centreX + (32 * root2 * math.cos(scrollAngle))
+//  centreY + (32 * root2 * math.sin(scrollAngle))
+
+//For top and bottom edges, confine the y position of the circle to be ~straight
+if (math.pi/4 < scrollAngle and scrollAngle < 3*math.pi/4) or (5*math.pi/4 < scrollAngle and scrollAngle < 7*math.pi/4) then
+    scrollX = centreX + (32 * root2 * math.cos(scrollAngle))
+    scrollY = centreY + (32 * root2 * math.sin(scrollAngle)) + alpha * math.sin(dAngle)
+
+//For left and right edges, confine the x position of the circle to be ~straight
+else
+    scrollX = centreX + (32 * root2 * math.cos(scrollAngle)) + alpha * math.cos(dAngle)
+    scrollY = centreY + (32 * root2 * math.sin(scrollAngle))
+end

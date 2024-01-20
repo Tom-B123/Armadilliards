@@ -305,62 +305,80 @@ end
 
 local root2 = math.sqrt(2)
 
-local function drawIcons()
-    local bright = {1,1,1}
+local function drawIconCooldown(icon,x,y,percentage)
     local faded  = {0.8,0.8,0.8}
-    local scroll = {0,0,0,0.5}
+    local scroll = {0,0,0,0.7}
 
-    local scrollAngle = 0
+    love.graphics.setColor(faded)
+    love.graphics.draw(icon,x,y,0,1,1,32,32)
 
-    local centreX = 0
-    local centreY = 0
-
-    local cornerX = {}
-    local cornerY = {}
+    local scrollAngle = 2 * math.pi - (percentage) * 2 * math.pi
+    local centreX = x
+    local centreY = y
 
     local scrollX = 0
     local scrollY = 0
 
     local scrollPoints = {}
+    
+    --extra region to keep the scroll square
+    local alpha = 32 * (1 - root2)
+    --If the angle is on the bottom left diagonal, alpha needs to be negative
+    if not (3*math.pi/4 < scrollAngle or 7*math.pi/4 > scrollAngle) then alpha = -alpha end
+
+    --Changes the face angle for moving the angle regions from -1/4 -> 0 -> 1/4 to -1/2 -> 0 -> 1/2
+    local faceAngle = 0
+    if scrollAngle < 7*math.pi/4 and scrollAngle >= 5*math.pi/4 then
+        faceAngle = 3/2 * math.pi
+    elseif scrollAngle < 5*math.pi/4 and scrollAngle >= 3*math.pi/4 then
+        faceAngle = math.pi
+    elseif scrollAngle < 3*math.pi/4 and scrollAngle >= 1*math.pi/4 then
+        faceAngle = 1/2 * math.pi
+    end
+
+    local dAngle = ((scrollAngle-faceAngle)*2)+faceAngle
+
+    if (math.pi/4 < scrollAngle and scrollAngle < 3*math.pi/4) or (5*math.pi/4 < scrollAngle and scrollAngle < 7*math.pi/4) then
+        scrollX = centreX + (32 * root2 * math.cos(scrollAngle))
+        scrollY = centreY + (32 * root2 * math.sin(scrollAngle)) + alpha * math.sin(dAngle)
+    else
+        scrollX = centreX + (32 * root2 * math.cos(scrollAngle)) + alpha * math.cos(dAngle)
+        scrollY = centreY + (32 * root2 * math.sin(scrollAngle))
+    end
+    --Always passes through the centre horizontally
+    scrollPoints = {centreX,centreY,centreX + 32,centreY}
+
+    local numCorners = math.floor(0.5 + ((scrollAngle / math.pi) * 2))
+
+    for i = 1,numCorners do
+        local nAngle = math.pi * (i/2 - 0.25)
+        table.insert(scrollPoints,centreX + 32 * root2 * math.cos(nAngle))
+        table.insert(scrollPoints,centreY + 32 * root2 * math.sin(nAngle))
+    end
+
+    table.insert(scrollPoints,scrollX)
+    table.insert(scrollPoints,scrollY)
+
+    love.graphics.setColor(scroll)
+    love.graphics.polygon("fill",scrollPoints)
+end
+
+local function drawIcons()
+    local bright = {1,1,1}
 
     if aPercentage < 1 then
-
-        love.graphics.setColor(faded)
-        love.graphics.draw(aIcon,300,500,0,1,1,32,32)
-
-        scrollAngle = (1 - aPercentage) * 2 * math.pi
-        centreX = 300
-        centreY = 500
-
-        scrollX = centreX + 32 * root2 * math.cos(scrollAngle)
-        scrollY = centreY + 32 * root2 * math.sin(scrollAngle)
-
-        --Always passes through the centre horizontally
-        scrollPoints = {centreX,centreY,centreX + 32,centreY}
-
-        local numCorners = math.floor(0.5 + (scrollAngle / math.pi) * 2)
-
-        for i = 1,numCorners do
-            local nAngle = math.pi * (i/2 - 0.25)
-            table.insert(scrollPoints,centreX + 32 * root2 * math.cos(nAngle))
-            table.insert(scrollPoints,centreY + 32 * root2 * math.sin(nAngle))
-        end
-
-        table.insert(scrollPoints,scrollX)
-        table.insert(scrollPoints,scrollY)
-
-        love.graphics.setColor(scroll)
-        love.graphics.polygon("fill",scrollPoints)
-
+        drawIconCooldown(aIcon,300,500,aPercentage)
     else
         love.graphics.setColor(bright)
         love.graphics.draw(aIcon,300,500,0,1,1,32,32)
     end
 
-    love.graphics.setColor(bright)
-    if bPercentage < 1 then love.graphics.setColor(faded) end
-
-    love.graphics.draw(bIcon,500,500,0,1,1,32,32)
+    if bPercentage < 1 then
+        drawIconCooldown(bIcon,500,500,bPercentage)
+    else
+        love.graphics.setColor(bright)
+        love.graphics.draw(bIcon,500,500,0,1,1,32,32)
+    end
 end
 
 -- Returns true if the player is in a lobby / in game
