@@ -332,8 +332,8 @@ local function drawIcons()
         centreX = 300
         centreY = 500
 
-        scrollX = centreX + 32 * math.cos(scrollAngle)
-        scrollY = centreY + 32 * math.sin(scrollAngle)
+        scrollX = centreX + 32 * root2 * math.cos(scrollAngle)
+        scrollY = centreY + 32 * root2 * math.sin(scrollAngle)
 
         --Always passes through the centre horizontally
         scrollPoints = {centreX,centreY,centreX + 32,centreY}
