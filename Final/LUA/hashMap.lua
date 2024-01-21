@@ -18,7 +18,6 @@ function hashMap:add(hash,sum,value)
         self.keys[#self.keys+1] = hash
         return
     end
-    -- print("hashMap collision")
     self.values[hash][#self.values[hash]+1] = {value,sum}
 end
 
@@ -60,8 +59,6 @@ end
 function hashMap:removeBySum(hash,sum)
     if not self:hasKey(hash) then return end
 
-    print("removing "..hash.." ("..sum..")")
-
     local values = self:get(hash)
 
     local indVal = 0
@@ -75,16 +72,13 @@ function hashMap:removeBySum(hash,sum)
     end
     
     if indVal == 0 then return end
-    
-    print("there are "..#values.." values")
 
     local nValues = {}
     for i,val in ipairs(values) do
         if val then
             if val[2] ~= sum then
-                print("adding "..val[2])
                 nValues[#nValues+1] = val
-            else print("value was at: "..i) end
+            end
         end
     end
 
@@ -163,7 +157,6 @@ end
 
 function hashMap:clear()
     for i,key in ipairs(self.keys) do
-        print(self.values[key])
         self.values[key] = nil
     end
     self.keys = {}
