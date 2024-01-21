@@ -281,7 +281,7 @@ function Ball:rope(rx,ry)
     for i,ID in ipairs(neighbors) do
         if isClicked(ID,rx,ry) then
             success = true
-            World:newRope(self.ID,ID,100,1)
+            World:newRope(self.ID,ID,100,1,true)
             table.insert(ropeMessages,"nrope:"..self.ID.."_"..ID.."_\n")
         end
     end
@@ -689,7 +689,8 @@ function World:withinRopeDistance(hashedID)
 end
 
 --Create a new entry in the ropes dictionary using the 2 connected IDs
-function World:newRope(ID1,ID2,length,elasticity)
+--If the rope is player-made, delete an existing rope
+function World:newRope(ID1,ID2,length,elasticity,isPlayer)
     if ID1 == ID2 then return end
 
     --Holes can't be roped.
@@ -717,15 +718,18 @@ function World:newRope(ID1,ID2,length,elasticity)
         return true
     end
 
-    -- for i, rope in self.ropes:keyPairs(hashedID) do
-    --     --delete the rope if the same rope already exists
-    --     if isSameRope(rope,nRope) then
-    --         self.ropes:remove(hashedID,rope)
-    --         self.ropedBalls:remove(ID1)
-    --         self.ropedBalls:remove(ID2)
-    --         return
-    --     end
-    -- end
+    if isPlayer then
+        for i, rope in self.ropes:keyPairs(hashedID) do
+            --delete the rope if the same rope already exists
+            if isSameRope(rope,nRope) then
+                self.ropes:remove(hashedID,rope)
+                self.ropedBalls:remove(ID1)
+                self.ropedBalls:remove(ID2)
+                return
+            end
+        end
+    end
+    
     self.ropes:add(hashedID,sum,nRope)
 
     self.ropedBalls:add(ID1)
