@@ -729,7 +729,7 @@ function World:newRope(ID1,ID2,length,elasticity,isPlayer)
             end
         end
     end
-    
+
     self.ropes:add(hashedID,sum,nRope)
 
     self.ropedBalls:add(ID1)
@@ -1100,7 +1100,7 @@ function World:expensiveCollisions(ballIDs,dt)
                     self.atGoal = true
                     self.gameResults["winner"] = team2
                 end
-                table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage dealt",team2)})
+                table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
             end
 
             ball2.health = 0
@@ -1119,7 +1119,7 @@ function World:expensiveCollisions(ballIDs,dt)
             local team1 = LobbyPlayer:getTeam(ball1.playerID)
             if team1 then 
                 objective:addScore("damage taken",team1,ball1.health) 
-                table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage dealt",team1)})
+                table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
             end
 
             ball1.health = 0
@@ -1222,8 +1222,9 @@ function World:expensiveCollisions(ballIDs,dt)
 
 
         --Update the damage dealt scores, adding scores to objectiveMessages
-        if team1 then
+        if team1 and team1 ~= "" then
             if objective:addScore("damage dealt",team1,damage2) then
+               
                 self.atGoal = true
                 self.gameResults["winner"] = team1
             end
@@ -1236,8 +1237,10 @@ function World:expensiveCollisions(ballIDs,dt)
             table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
         end
 
-        if team2 then
-            if objective:addScore("damage dealt",team2,damage1) then 
+        if team2 and team2 ~= "" then
+
+            if objective:addScore("damage dealt",team2,damage1) then
+                
                 self.atGoal = true 
                 self.gameResults["winner"] = team2
             end
@@ -1603,7 +1606,7 @@ function World:getObjv()
             ind = ind + 1
             local message = objectiveMessages[ind]
             if not(message[1] and message[2] and message[3]) then
-                print("invaid message",message[1],message[2],message[3])
+                print("invalid message",message[1],message[2],message[3])
                 return
             else
                 return "objv:"..message[1].."_"..message[2].."_"..message[3].."_\n"
