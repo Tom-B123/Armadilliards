@@ -256,17 +256,18 @@ local function getNeighbours(searchX,searchY)
     end
     return neighbors
 end
+
+local function isClicked(ID,x,y)
+    local ball      = World:getByID(ID)
+
+    local manhattan = Util:manhattanDistance(ball.x - x,ball.y - y)
+    if manhattan > 2*ball.radius then return false end
+
+    return Util:findDistance(ball.x-x,ball.y-y) <= ball.radius
+end
+
 function Ball:rope(rx,ry)
     
-
-    local function isClicked(ID,x,y)
-        local ball      = World:getByID(ID)
-
-        local manhattan = Util:manhattanDistance(ball.x - x,ball.y - y)
-        if manhattan > 2*ball.radius then return false end
-
-        return Util:findDistance(ball.x-x,ball.y-y) <= ball.radius
-    end
     --Confine to within the game area
     rx = math.max(rx,0)
     rx = math.min(rx,4096)
@@ -692,6 +693,16 @@ end
 
 --Create a new entry in the ropes dictionary using the 2 connected IDs
 --If the rope is player-made, delete an existing rope
+local function isSameRope(rope1,rope2)
+    if not(rope1 and rope2) then return false end
+    for i = 1,#rope1 do
+        if rope1[i] ~= rope2[i] then
+            return false
+        end
+    end
+    return true
+end
+
 function World:newRope(ID1,ID2,length,elasticity,isPlayer)
     if ID1 == ID2 then return end
 
@@ -705,20 +716,9 @@ function World:newRope(ID1,ID2,length,elasticity,isPlayer)
 
     if self:getByID(ID1).death or self:getByID(ID2).death then return end
 
-
     --Create an ID for the rope unique to the two connected balls. creating a new rope with the same ID will alter the existing rope connection
     local hashedID,sum       = Util:hashIDs({ID1,ID2},ropeCountPrime)
     local nRope          = {ID1,ID2,length,elasticity}
-
-    local function isSameRope(rope1,rope2)
-        if not(rope1 and rope2) then return false end
-        for i = 1,#rope1 do
-            if rope1[i] ~= rope2[i] then
-                return false
-            end
-        end
-        return true
-    end
 
     if isPlayer then
         for i, rope in self.ropes:keyPairs(hashedID) do
@@ -767,43 +767,46 @@ function World:removeRopes(ID)
     self.ropedBalls:remove(ID)
 end
 
-function World:updateRopes(dt)
-    local function findDistance(ball,centre,length)
+local function findDistance(ball,centre,length)
+    local toObj = {x=0,y=0}
+    toObj.x = ball.x - centre.x
+    toObj.y = ball.y - centre.y
+    
+    local manhattan = Util:manhattanDistance(toObj.x,toObj.y)
+    
+    if manhattan <= length - ball.radius then return nil end
+    local distance = Util:findDistance(toObj.x, toObj.y)
+    if distance  <= length - ball.radius then return nil end
+    return distance
+end
+
+local function processRopes(balls,centre,length,elasticity,dt)
+    for i = 1,2 do
+        local ball = balls[i]
         local toObj = {x=0,y=0}
         toObj.x = ball.x - centre.x
         toObj.y = ball.y - centre.y
         
-        local manhattan = Util:manhattanDistance(toObj.x,toObj.y)
-        
-        if manhattan <= length - ball.radius then return nil end
-        local distance = Util:findDistance(toObj.x, toObj.y)
-        if distance  <= length - ball.radius then return nil end
-        return distance
-    end
-    local function process(balls,centre,length,elasticity)
-        for i = 1,2 do
-            local ball = balls[i]
-            local toObj = {x=0,y=0}
-            toObj.x = ball.x - centre.x
-            toObj.y = ball.y - centre.y
-            
-            local distance = findDistance(ball,centre,length)
-            if distance then
-                self:teamChange(balls[1],balls[2])
-                if elasticity == 0 then
-                    local new = {}
-                    new[1] = toObj.x / distance
-                    new[2] = toObj.y / distance
-                    ball.x = centre.x + new[1] * (length - ball.radius)
-                    ball.y = centre.y + new[2] * (length - ball.radius)
-                else
-                    local forceMult = elasticity * i^2
-                    ball.vx = ball.vx + ((centre.x - ball.x) / (50 / forceMult)) / dt
-                    ball.vy = ball.vy + ((centre.y - ball.y) / (50 / forceMult)) / dt
-                end
+        local distance = findDistance(ball,centre,length)
+        if distance then
+            World:teamChange(balls[1],balls[2])
+            if elasticity == 0 then
+                local new = {}
+                new[1] = toObj.x / distance
+                new[2] = toObj.y / distance
+                ball.x = centre.x + new[1] * (length - ball.radius)
+                ball.y = centre.y + new[2] * (length - ball.radius)
+            else
+                local forceMult = elasticity * i^2
+                ball.vx = ball.vx + ((centre.x - ball.x) / (50 / forceMult)) / dt
+                ball.vy = ball.vy + ((centre.y - ball.y) / (50 / forceMult)) / dt
             end
         end
     end
+end
+
+function World:updateRopes(dt)
+
     for hashedID,rope in self.ropes:pairs() do
         local ID1        = rope[1]
         local ID2        = rope[2]
@@ -816,7 +819,7 @@ function World:updateRopes(dt)
             y = (rope1.y + rope2.y) / 2
         }
         --manhattan distance is very cheap to calculate, so used to prevent exessive square root calculions when they aren't necessary
-        process({rope1,rope2},ropeCentre,ropeLength,elasticity)
+        processRopes({rope1,rope2},ropeCentre,ropeLength,elasticity,dt)
     end
 end
 
@@ -946,14 +949,16 @@ function World:newShape(circles,sides,length,circleRad)
 end
 
 --Create a new square object
+local function getDims(edge)
+    if edge < 1 then return end
+    local count = math.floor(edge / 32)+1
+    if count <= 1 then count = 2
+    elseif edge % 32 == 0 then count = count - 1 end
+    return count,edge/count
+end
+
 function World:square(x,y,length)
-    local function getDims(edge)
-        if edge < 1 then return end
-        local count = math.floor(edge / 32)+1
-        if count <= 1 then count = 2
-        elseif edge % 32 == 0 then count = count - 1 end
-        return count,edge/count
-    end
+    
     local count,circleSize = getDims(length)
     local circles = {}
     for circleY = 1,count do
@@ -1067,313 +1072,317 @@ end
 
 local collisionCache = hashMap:new()
 
---Collisions with no optimisation
-function World:expensiveCollisions(ballIDs,dt)
-    local bounce = 1
-    local function calculateDamage(ID1,ID2,hashSum)
+--Collisions with full O(n^2)
 
-        --The tick of the last collision of ball1 and ball2
-        local lastTick = damageCooldowns[hashSum]
-        --If the balls have collided before, within iTime ticks, deal no damage and reset the cooldown timer
-        if lastTick and tick - lastTick <= iTime then
-            damageCooldowns[hashSum] = tick
-            return
-        end
-        
-        
-        local ball1 = self:getByID(ID1)
-        local ball2 = self:getByID(ID2)
+local function calculateDamage(ID1,ID2,hashSum,dt)
 
-        local multi1 = self.multiSet:has(ID1)
-        local multi2 = self.multiSet:has(ID2)
-
-        local hole1 = self.holesSet:has(ID1)
-        local hole2 = self.holesSet:has(ID2)
-
-        --If ball1 is a hole and ball2 is a non-multi-shape ball then
-
-        if     hole1 and not hole2 and not multi2 then
-
-            ball2.stats["damage taken"] = ball2.stats["damage taken"] + ball2.health
-
-            --Adds damage taken for the reamaining ball health
-            local team2 = LobbyPlayer:getTeam(ball2.playerID)
-            if team2 then 
-                if objective:addScore("damage taken",team2,ball2.health) then 
-                    self.atGoal = true
-                    self.gameResults["winner"] = team2
-                end
-                table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
-            end
-
-            ball2.health = 0
-            local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
-            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
-
-            self:updateDeath({ball2})
-            return
-        
-        --If ball2 is a hole and ball1 is a non-multi-shape ball then
-        elseif hole2 and not hole1 and not multi1 then
-
-            ball1.stats["damage taken"] = ball1.stats["damage taken"] + ball1.health
-
-            --Adds damage taken for the reamaining ball health
-            local team1 = LobbyPlayer:getTeam(ball1.playerID)
-            if team1 then 
-                objective:addScore("damage taken",team1,ball1.health) 
-                table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
-            end
-
-            ball1.health = 0
-            local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
-            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
-
-            self:updateDeath({ball1})
-            return
-        end
-
-        local team1 = ball1.innateTeam
-        local team2 = ball2.innateTeam
-
-        local bullet1 = self.bulletsSet:has(ID1)
-        local bullet2 = self.bulletsSet:has(ID2)
-
-        
-
-        if bullet1 then
-            print(team2,ball1.innateTeam)
-            if ball1.innateTeam == team2 then return end
-        end
-
-        if bullet2 then
-            print(team1,ball2.innateTeam)
-            if ball2.innateTeam == team1 then return end
-        end
-
-        if bullet1 then
-            ball1.health = 0
-            local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
-            table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
-            self:updateDeath({ball1})
-        end
-
-        if bullet2 then
-            ball2.health = 0
-            local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
-            table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
-            self:updateDeath({ball2})
-        end
-        
-        --Update the damageCooldowns
+    --The tick of the last collision of ball1 and ball2
+    local lastTick = damageCooldowns[hashSum]
+    --If the balls have collided before, within iTime ticks, deal no damage and reset the cooldown timer
+    if lastTick and tick - lastTick <= iTime then
         damageCooldowns[hashSum] = tick
+        return
+    end
+    
+    
+    local ball1 = World:getByID(ID1)
+    local ball2 = World:getByID(ID2)
 
-        local dvx = ball1.vx*dt - ball2.vx*dt
-        local dvy = ball1.vy*dt - ball2.vy*dt
+    local multi1 = World.multiSet:has(ID1)
+    local multi2 = World.multiSet:has(ID2)
 
-        --Using manhattan distance to check the speed isn't too low, without needing a sqrt
-        local manhattan = Util:manhattanDistance(dvx,dvy)
-        if manhattan < 3 then return end
+    local hole1 = World.holesSet:has(ID1)
+    local hole2 = World.holesSet:has(ID2)
 
-        local dSpeed = Util:findDistance(dvx,dvy)
-        if dSpeed < 3 then return end
+    --If ball1 is a hole and ball2 is a non-multi-shape ball then
 
-        --Get the teams of the two balls, or nil if they aren't player controlled.
-        
+    if     hole1 and not hole2 and not multi2 then
 
-        --Get the true speed of the balls
-        local speed1 = Util:findDistance(ball1.vx,ball1.vy)
-        local speed2 = Util:findDistance(ball2.vx,ball2.vy)
+        ball2.stats["damage taken"] = ball2.stats["damage taken"] + ball2.health
 
-        --The faster ball (the aggressor) will take less damage and inflict more damage
-        local dampening       = 2
-        local aggeressionMult = 1.5
-
-        local oHealth1        = ball1.health
-        local oHealth2        = ball2.health
-
-        local nHealth1
-        local nHealth2
-
-        --If the speeds are similar, there is no aggressor so both balls lose equal health
-        if math.abs(speed1 - speed2) < 0.3 then
-            nHealth1 = ball1.health - (dSpeed * dSpeed / 10)
-            nHealth2 = ball2.health - (dSpeed * dSpeed / 10)
-
-        --If the speeds are unequal, the faster ball receives and deals more damage
-        elseif speed1 >= speed2 then
-            self:teamChange(ball1,ball2)
-            nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)
-            nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult)
-
-        elseif speed2 > speed1 then
-            self:teamChange(ball2,ball1)
-            nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult)
-            nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
-
-        end
-
-        --Damage taken = change in health
-        local damage1 = oHealth1 - nHealth1
-        local damage2 = oHealth2 - nHealth2
-
-        ball1.stats["damage taken"] = ball1.stats["damage taken"] + damage1
-        ball2.stats["damage taken"] = ball2.stats["damage taken"] + damage2
-
-        ball1.stats["damage dealt"] = ball1.stats["damage dealt"] + damage2
-        ball2.stats["damage dealt"] = ball2.stats["damage dealt"] + damage1
-
-
-        --Update the damage dealt scores, adding scores to objectiveMessages
-        if team1 and team1 ~= "" then
-            if objective:addScore("damage dealt",team1,damage2) then
-               
-                self.atGoal = true
-                self.gameResults["winner"] = team1
+        --Adds damage taken for the reamaining ball health
+        local team2 = LobbyPlayer:getTeam(ball2.playerID)
+        if team2 then 
+            if objective:addScore("damage taken",team2,ball2.health) then 
+                World.atGoal = true
+                World.gameResults["winner"] = team2
             end
-            if objective:addScore("damage taken",team1,damage1) then
-                self.atGoal = true
-                self.gameResults["winner"] = team1
-            end
-
-            table.insert(objectiveMessages,{"damage dealt",team1,objective:getScore("damage dealt",team1)})
-            table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
-        end
-
-        if team2 and team2 ~= "" then
-
-            if objective:addScore("damage dealt",team2,damage1) then
-                
-                self.atGoal = true 
-                self.gameResults["winner"] = team2
-            end
-            if objective:addScore("damage taken",team2,damage2) then 
-                self.atGoal = true 
-                self.gameResults["winner"] = team2
-            end
-
-            table.insert(objectiveMessages,{"damage dealt",team2,objective:getScore("damage dealt",team2)})
             table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
         end
 
-        local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
+        ball2.health = 0
+        local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
+        table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
 
-        if not multi1 then ball1.health = nHealth1 end
-        if not multi2 then ball2.health = nHealth2 end
+        World:updateDeath({ball2})
+        return
+    
+    --If ball2 is a hole and ball1 is a non-multi-shape ball then
+    elseif hole2 and not hole1 and not multi1 then
 
-        self:updateDeath({ball1,ball2},true)
+        ball1.stats["damage taken"] = ball1.stats["damage taken"] + ball1.health
 
-        if not (multi1 and multi2) then
-            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
-            self:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
+        --Adds damage taken for the reamaining ball health
+        local team1 = LobbyPlayer:getTeam(ball1.playerID)
+        if team1 then 
+            objective:addScore("damage taken",team1,ball1.health) 
+            table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
         end
-        local hexHealth
-        local hexSpeed  = Util:numToHex(math.max(0,dSpeed*10))
-        local hexX,hexY = Util:coordToHex(centre[1],centre[2])
-        if not multi1 then
-            hexHealth = Util:numToHex(math.max(0,nHealth1*10))
-            table.insert(damageMessages,"damg:"..ball1.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
-        end
-        if not multi2 then
-            hexHealth = Util:numToHex(math.max(0,nHealth2*10))
-            table.insert(damageMessages,"damg:"..ball2.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
-        end
+
+        ball1.health = 0
+        local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
+        table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
+
+        World:updateDeath({ball1})
+        return
+    end
+
+    local team1 = ball1.innateTeam
+    local team2 = ball2.innateTeam
+
+    local bullet1 = World.bulletsSet:has(ID1)
+    local bullet2 = World.bulletsSet:has(ID2)
+
+    
+
+    if bullet1 then
+        print(team2,ball1.innateTeam)
+        if ball1.innateTeam == team2 then return end
+    end
+
+    if bullet2 then
+        print(team1,ball2.innateTeam)
+        if ball2.innateTeam == team1 then return end
+    end
+
+    if bullet1 then
+        ball1.health = 0
+        local hexX,hexY = Util:coordToHex(ball1.x,ball1.y)
+        table.insert(damageMessages,"damg:"..ball1.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
+        World:updateDeath({ball1})
+    end
+
+    if bullet2 then
+        ball2.health = 0
+        local hexX,hexY = Util:coordToHex(ball2.x,ball2.y)
+        table.insert(damageMessages,"damg:"..ball2.ID.."_".."00".."_".."02".."_"..hexX.."_"..hexY)
+        World:updateDeath({ball2})
+    end
+    
+    --Update the damageCooldowns
+    damageCooldowns[hashSum] = tick
+
+    local dvx = ball1.vx*dt - ball2.vx*dt
+    local dvy = ball1.vy*dt - ball2.vy*dt
+
+    --Using manhattan distance to check the speed isn't too low, without needing a sqrt
+    local manhattan = Util:manhattanDistance(dvx,dvy)
+    if manhattan < 3 then return end
+
+    local dSpeed = Util:findDistance(dvx,dvy)
+    if dSpeed < 3 then return end
+
+    --Get the teams of the two balls, or nil if they aren't player controlled.
+    
+
+    --Get the true speed of the balls
+    local speed1 = Util:findDistance(ball1.vx,ball1.vy)
+    local speed2 = Util:findDistance(ball2.vx,ball2.vy)
+
+    --The faster ball (the aggressor) will take less damage and inflict more damage
+    local dampening       = 2
+    local aggeressionMult = 1.5
+
+    local oHealth1        = ball1.health
+    local oHealth2        = ball2.health
+
+    local nHealth1
+    local nHealth2
+
+    --If the speeds are similar, there is no aggressor so both balls lose equal health
+    if math.abs(speed1 - speed2) < 0.3 then
+        nHealth1 = ball1.health - (dSpeed * dSpeed / 10)
+        nHealth2 = ball2.health - (dSpeed * dSpeed / 10)
+
+    --If the speeds are unequal, the faster ball receives and deals more damage
+    elseif speed1 >= speed2 then
+        World:teamChange(ball1,ball2)
+        nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)
+        nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult)
+
+    elseif speed2 > speed1 then
+        World:teamChange(ball2,ball1)
+        nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult)
+        nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
 
     end
 
-    local function collision(ID1,ID2,hashSum)
-        local ball1 = self:getByID(ID1)
-        local ball2 = self:getByID(ID2)
-        
-        local manhattan = Util:manhattanDistance(ball1.x-ball2.x,ball1.y-ball2.y)
+    --Damage taken = change in health
+    local damage1 = oHealth1 - nHealth1
+    local damage2 = oHealth2 - nHealth2
 
-        local diameter = ball1.radius + ball2.radius
+    ball1.stats["damage taken"] = ball1.stats["damage taken"] + damage1
+    ball2.stats["damage taken"] = ball2.stats["damage taken"] + damage2
 
-        
-        --Using manhattan distance to skip unnessesary checks
-        if manhattan > (2^0.5) * diameter then return end
-        
-        manhattanChecks = manhattanChecks + 1
+    ball1.stats["damage dealt"] = ball1.stats["damage dealt"] + damage2
+    ball2.stats["damage dealt"] = ball2.stats["damage dealt"] + damage1
 
-        local collisionAxis = {x=0,y=0}
-        collisionAxis.x = ball1.x - ball2.x
-        collisionAxis.y = ball1.y - ball2.y
 
-        local distance = Util:findDistance(collisionAxis.x,collisionAxis.y)
-        --If they collide:
-        if distance > diameter then return end
-
-        checks = checks + 1
-
-        --Calulate the damage caused
-        calculateDamage(ID1,ID2,hashSum)
-
-        local n = collisionAxis
-        n.x = n.x / distance
-        n.y = n.y / distance
-
-        local weight1 = ball1:getWeight()
-        local weight2 = ball2:getWeight()
-
-        local maxWeight = math.max(weight1,weight2)
-        local minWeight = math.min(weight1,weight2)
-
-        local dWeight = minWeight / maxWeight
-
-        local delta = diameter - distance
-        local offset1
-        local offset2
-        if weight1 > weight2 then
-            offset1 = ball2.radius / ball1.radius * dWeight
-            offset2 = ball1.radius / ball2.radius / dWeight
-        else
-            offset1 = ball2.radius / ball1.radius / dWeight
-            offset2 = ball1.radius / ball2.radius * dWeight
+    --Update the damage dealt scores, adding scores to objectiveMessages
+    if team1 and team1 ~= "" then
+        if objective:addScore("damage dealt",team1,damage2) then
+           
+            World.atGoal = true
+            World.gameResults["winner"] = team1
+        end
+        if objective:addScore("damage taken",team1,damage1) then
+            World.atGoal = true
+            World.gameResults["winner"] = team1
         end
 
-        local function toCollide()
-
-            --If either ball is a hole, move neither ball
-            if self.holesSet:has(ID1) or self.holesSet:has(ID2) then return false,false end
-
-            --If both balls are bullets, move neither
-            if self.bulletsSet:has(ID1) and self.bulletsSet:has(ID2) then return false,false end
-
-            --If one ball is a bullet, move the non-bullet ball
-            if self.bulletsSet:has(ID1) then
-                --If the bullet hits it's owner, don't collide them
-                if self:getByID(ID1).innateTeam == self:getByID(ID2).innateTeam then return false,false end
-                offset2 = offset2 * 5
-                return false,true
-            end
-            if self.bulletsSet:has(ID2) then
-                --If the bullet hits it's owner, don't collide them
-                if self:getByID(ID2).innateTeam == self:getByID(ID1).innateTeam then return false,false end
-                offset1 = offset1 * 5
-                return true,false end
-
-            --If both balls are normal, move both
-            return true,true
-        end
-
-        local col1,col2 = toCollide()
-
-        if col1 then
-            ball1.x = ball1.x + bounce * offset1 * delta * n.x
-            ball1.y = ball1.y + bounce * offset1 * delta * n.y
-        end
-        if col2 then
-            ball2.x = ball2.x - bounce * offset2 * delta * n.x
-            ball2.y = ball2.y - bounce * offset2 * delta * n.y
-        end
+        table.insert(objectiveMessages,{"damage dealt",team1,objective:getScore("damage dealt",team1)})
+        table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
     end
+
+    if team2 and team2 ~= "" then
+
+        if objective:addScore("damage dealt",team2,damage1) then
+            
+            World.atGoal = true 
+            World.gameResults["winner"] = team2
+        end
+        if objective:addScore("damage taken",team2,damage2) then 
+            World.atGoal = true 
+            World.gameResults["winner"] = team2
+        end
+
+        table.insert(objectiveMessages,{"damage dealt",team2,objective:getScore("damage dealt",team2)})
+        table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
+    end
+
+    local centre = {(ball1.x + ball2.x) / 2,(ball1.y + ball2.y) / 2}
+
+    if not multi1 then ball1.health = nHealth1 end
+    if not multi2 then ball2.health = nHealth2 end
+
+    World:updateDeath({ball1,ball2},true)
+
+    if not (multi1 and multi2) then
+        World:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)*1.5,dSpeed/2)
+        World:newParticle("spark",centre[1],centre[2],math.floor(dSpeed)    ,1)
+    end
+    local hexHealth
+    local hexSpeed  = Util:numToHex(math.max(0,dSpeed*10))
+    local hexX,hexY = Util:coordToHex(centre[1],centre[2])
+    if not multi1 then
+        hexHealth = Util:numToHex(math.max(0,nHealth1*10))
+        table.insert(damageMessages,"damg:"..ball1.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
+    end
+    if not multi2 then
+        hexHealth = Util:numToHex(math.max(0,nHealth2*10))
+        table.insert(damageMessages,"damg:"..ball2.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
+    end
+
+end
+
+local function toCollide(ID1,ID2,offset1,offset2)
+
+    --If either ball is a hole, move neither ball
+    if World.holesSet:has(ID1) or World.holesSet:has(ID2) then return false,false end
+
+    --If both balls are bullets, move neither
+    if World.bulletsSet:has(ID1) and World.bulletsSet:has(ID2) then return false,false end
+
+    --If one ball is a bullet, move the non-bullet ball
+    if World.bulletsSet:has(ID1) then
+        --If the bullet hits it's owner, don't collide them
+        if World:getByID(ID1).innateTeam == World:getByID(ID2).innateTeam then return false,false end
+        offset2 = offset2 * 5
+        return false,true,offset1,offset2
+    end
+    if World.bulletsSet:has(ID2) then
+        --If the bullet hits it's owner, don't collide them
+        if World:getByID(ID2).innateTeam == World:getByID(ID1).innateTeam then return false,false end
+        offset1 = offset1 * 5
+        return true,false,offset1,offset2 end
+
+    --If both balls are normal, move both
+    return true,true,offset1,offset2
+end
+
+local function collision(bounce,ID1,ID2,hashSum,dt)
+    local ball1 = World:getByID(ID1)
+    local ball2 = World:getByID(ID2)
+    
+    local manhattan = Util:manhattanDistance(ball1.x-ball2.x,ball1.y-ball2.y)
+
+    local diameter = ball1.radius + ball2.radius
+
+    
+    --Using manhattan distance to skip unnessesary checks
+    if manhattan > (2^0.5) * diameter then return end
+    
+    manhattanChecks = manhattanChecks + 1
+
+    local collisionAxis = {x=0,y=0}
+    collisionAxis.x = ball1.x - ball2.x
+    collisionAxis.y = ball1.y - ball2.y
+
+    local distance = Util:findDistance(collisionAxis.x,collisionAxis.y)
+    --If they collide:
+    if distance > diameter then return end
+
+    checks = checks + 1
+
+    --Calulate the damage caused
+    calculateDamage(ID1,ID2,hashSum,dt)
+
+    local n = collisionAxis
+    n.x = n.x / distance
+    n.y = n.y / distance
+
+    local weight1 = ball1:getWeight()
+    local weight2 = ball2:getWeight()
+
+    local maxWeight = math.max(weight1,weight2)
+    local minWeight = math.min(weight1,weight2)
+
+    local dWeight = minWeight / maxWeight
+
+    local delta = diameter - distance
+    local offset1
+    local offset2
+    local col1
+    local col2
+    if weight1 > weight2 then
+        offset1 = ball2.radius / ball1.radius * dWeight
+        offset2 = ball1.radius / ball2.radius / dWeight
+    else
+        offset1 = ball2.radius / ball1.radius / dWeight
+        offset2 = ball1.radius / ball2.radius * dWeight
+    end
+
+    col1,col2,offset1,offset2 = toCollide(ID1,ID2,offset1,offset2)
+
+    if col1 then
+        ball1.x = ball1.x + bounce * offset1 * delta * n.x
+        ball1.y = ball1.y + bounce * offset1 * delta * n.y
+    end
+    if col2 then
+        ball2.x = ball2.x - bounce * offset2 * delta * n.x
+        ball2.y = ball2.y - bounce * offset2 * delta * n.y
+    end
+end
+
+function World:expensiveCollisions(ballIDs,dt)
+    local bounce = 1
 
     for i, ID1 in ipairs(ballIDs) do
         for j, ID2 in ipairs(ballIDs) do
             if i ~= j then
                 local hashedID, sum = Util:hashIDs({ID1,ID2},ballCountPrime)
                 if not collisionCache:getBySum(hashedID,sum) then
-                    collision(ID1,ID2,sum)
+                    collision(bounce,ID1,ID2,sum,dt)
                     collisionCache:add(hashedID,sum,true)
                 end
             end
