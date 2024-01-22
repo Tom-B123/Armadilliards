@@ -528,8 +528,6 @@ stateSwitch:addCase("hosting game",function(dt)
         local ball = World.focus
         local nx,ny,a,b,ap,bp = Util:processGameInputs(tick,aSuccess,bSuccess)
 
-        print(a,b)
-
         aPercentage = ap
         bPercentage = bp
 
