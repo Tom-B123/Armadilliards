@@ -51,6 +51,9 @@ local bPercentage = 0
 local aIcon       = dashIcon
 local bIcon       = ropeIcon
 
+local aAbility    = "dash"
+local bAbility    = "rope"
+
 local state    = {"main menu"}
 local lState   = {nil}
 -- Order of states, used to overlap menues ontop of eachother
@@ -89,12 +92,19 @@ local inputSum = {x=0,y=0,aHeld = 0,bHeld = 0,abilities = {}}
 
 -- To run every frame a state is active.
 local stateSwitch     = Switch:new()
+
 -- To run the first frame a state is active
 local newStateSwitch  = Switch:new()
+
 -- To draw every frame a state is active.
 local drawStateSwitch = Switch:new()
+
 -- Convert message to function
 local netSwitch       = Switch:new()
+
+--Converts the ability name into a function to process that abiltiy
+local abilitySwitch   = Switch:new()
+
 
 local function newMessage(sender,message)
     -- Append the name of the sender onto the message
@@ -532,21 +542,17 @@ stateSwitch:addCase("hosting game",function(dt)
         bPercentage = bp
 
         applyMove(ball,nx,ny)
+
+        --Passes the selected abilities into ability switch to be
+        --processed.
         if a == -1 then
-            local mx,my = love.mouse.getPosition()
-            local offsetX,offsetY = World:getOffset()
-            local bx,by = offsetX+ball.x,offsetY+ball.y
-            local angle = Util:yawAngle(mx-bx,my-by)
-            
-            aSuccess = ball:dash(angle,1000)
+            aSuccess = abilitySwitch(aAbility,ball)
         else
             aSuccess = false
         end
+
         if b == -1 then
-            local mx,my = love.mouse.getPosition()
-            local offsetX,offsetY = World:getOffset()
-            local rx,ry = mx - offsetX, my - offsetY
-            bSuccess = ball:rope(rx,ry)
+            bSuccess = abilitySwitch(bAbility,ball)
         else
             bSuccess = false
         end
@@ -791,6 +797,36 @@ newStateSwitch:addCase("hosting lobby",function()
 
     clearButtons()
 
+    --Initialises the switch statement to process game inputs.
+    --Different output for client and host players.
+    abilitySwitch = Switch:new()
+
+    abilitySwitch:addCase("dash",function(ball)
+        local mx,my = love.mouse.getPosition()
+        local offsetX,offsetY = World:getOffset()
+        local bx,by = offsetX+ball.x,offsetY+ball.y
+        local angle = Util:yawAngle(mx-bx,my-by)
+        
+        return ball:dash(angle,1000)
+    end)
+
+    abilitySwitch:addCase("rope",function(ball)
+        local mx,my = love.mouse.getPosition()
+        local offsetX,offsetY = World:getOffset()
+        local rx,ry = mx - offsetX, my - offsetY
+
+        return ball:rope(rx,ry)
+    end)
+
+    abilitySwitch:addCase("shoot",function(ball)
+        local mx,my = love.mouse.getPosition()
+        local offsetX,offsetY = World:getOffset()
+        local bx,by = offsetX+ball.x,offsetY+ball.y
+        local angle = Util:yawAngle(mx-bx,my-by)
+        
+        return ball:shoot(angle,1000)
+    end)
+
     love.graphics.setBackgroundColor( 0,0,0 )
 
     if lState[1] ~= "in game"  then
@@ -862,6 +898,8 @@ newStateSwitch:addCase("in lobby",function()
         LobbyPlayer:setReady(player.ID,not ready)
         player:send("updt:"..player.ID.."_ready_"..tostring(not ready).."_\n")
     end)
+
+    abilitySwitch = Switch:new()
 
     lState[1] = state[1]
 end)
