@@ -17,6 +17,7 @@ local FPS             = 60
 local timeToRespawn   = 0
 
 local ballCountPrime  = 1
+local ropeCountPrime  = Util:nearPrime(1000)
 
 local grid = Grid:new(4098,32)
 
@@ -547,7 +548,6 @@ function World:updateBallPrime()
     if self.ballsList.length^2 > ballCountPrime then
         ballCountPrime = Util:nearPrime(self.ballsList.length^2)
         print("changed ball prime to: "..ballCountPrime)
-        self.ropes:rehash(ballCountPrime)
     end
 end
 
@@ -706,7 +706,7 @@ function World:newRope(ID1,ID2,length,elasticity,isPlayer)
 
 
     --Create an ID for the rope unique to the two connected balls. creating a new rope with the same ID will alter the existing rope connection
-    local hashedID,sum       = Util:hashIDs({ID1,ID2},ballCountPrime)
+    local hashedID,sum       = Util:hashIDs({ID1,ID2},ropeCountPrime)
     local nRope          = {ID1,ID2,length,elasticity}
 
     local function isSameRope(rope1,rope2)
@@ -759,7 +759,7 @@ function World:removeRopes(ID)
     for ballID,val in self.ropedBalls:pairs() do
         --Loop through every ball that is roped, if that ID combined with the removing ball's ID exists, they must be roped. Remove all
         --rope connections found
-        hashedID,sum = Util:hashIDs({ID,ballID},ballCountPrime)
+        hashedID,sum = Util:hashIDs({ID,ballID},ropeCountPrime)
 
         removeRope(hashedID,sum)
     end
