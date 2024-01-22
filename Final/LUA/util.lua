@@ -131,13 +131,20 @@ function Util:processGameInputs(tick,aSuccess,bSuccess)
     if love.keyboard.isDown("d") then x = x + 1 end
 
     --a and b incriment while they are held, then set to -1 for 1 tick.
+    --If a is released, set held time to 0, or -1 if it is off cooldown
     if love.mouse.isDown(1)      then a = a + 1
-    elseif a > 0 and tick - aTick >= aCooldown then
-        a = -1
+    
+    elseif a > 0 then
+        if tick - aTick >= aCooldown then a = -1
+        else a = 0 end
     end
+
+    --If b is released, set held time to 0, or -1 if it is off cooldown
     if love.mouse.isDown(2)      then b = b + 1
-    elseif b > 0 and tick - bTick >= bCooldown then
-        b = -1
+    
+    elseif b > 0 then 
+        if tick - bTick >= bCooldown then b = -1
+        else b = 0 end
     end
 
     return x,y,a,b,math.min(1,(tick-aTick) / aCooldown),math.min(1,(tick-bTick) / bCooldown)
