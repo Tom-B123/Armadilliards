@@ -1193,8 +1193,9 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
     local dSpeed = Util:findDistance(dvx,dvy)
     if dSpeed < 3 then return end
 
-    --Get the teams of the two balls, or nil if they aren't player controlled.
-    
+    --Get the tempTeam of balls to use for score tracking of damage dealt
+    local tTeam1 = World:getTeam(ball1)
+    local tTeam2 = World:getTeam(ball2)
 
     --Get the true speed of the balls
     local speed1 = Util:findDistance(ball1.vx,ball1.vy)
@@ -1210,41 +1211,52 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
     local nHealth1
     local nHealth2
 
+    --Divisor to dampen friendly damage
+    local friendly = {1,1}
+
+    --If one ball is innate and the other is temporary, reduce the damage to the innate
+    if tTeam1 == team2 then friendly = {1,3}
+    elseif team1 == tTeam2 then friendly = {3,1} end
+
+    if team1 == team2  then friendly = {2,2} end
+
     --If the speeds are similar, there is no aggressor so both balls lose equal health
     if math.abs(speed1 - speed2) < 0.3 then
-        nHealth1 = ball1.health - (dSpeed * dSpeed / 10)
-        nHealth2 = ball2.health - (dSpeed * dSpeed / 10)
+        nHealth1 = ball1.health - (dSpeed * dSpeed / 10) / friendly[1]
+        nHealth2 = ball2.health - (dSpeed * dSpeed / 10) / friendly[2]
 
     --If the speeds are unequal, the faster ball receives and deals more damage
     elseif speed1 >= speed2 then
         World:teamChange(ball1,ball2)
-        nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)
-        nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult)
+        nHealth1 = ball1.health - (dSpeed / dampening / aggeressionMult)   / friendly[1]
+        nHealth2 = ball2.health - (dSpeed * dSpeed / 10 * aggeressionMult) / friendly[2]
 
     elseif speed2 > speed1 then
         World:teamChange(ball2,ball1)
-        nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult)
-        nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)
-
+        nHealth1 = ball1.health - (dSpeed * dSpeed / 10 * aggeressionMult) / friendly[1]
+        nHealth2 = ball2.health - (dSpeed / dampening / aggeressionMult)   / friendly[2]
     end
 
     --Damage taken = change in health
     local damage1 = oHealth1 - nHealth1
     local damage2 = oHealth2 - nHealth2
 
+    --The ID of the player sourcing the damage
+    local source1 = World:getByID(tTeam1[3])
+    local source2 = World:getByID(tTeam2[3])
+
     ball1.stats["damage taken"] = ball1.stats["damage taken"] + damage1
     ball2.stats["damage taken"] = ball2.stats["damage taken"] + damage2
 
-    ball1.stats["damage dealt"] = ball1.stats["damage dealt"] + damage2
-    ball2.stats["damage dealt"] = ball2.stats["damage dealt"] + damage1
-
+    source1.stats["damage dealt"] = source1.stats["damage dealt"] + damage2
+    source2.stats["damage dealt"] = source2.stats["damage dealt"] + damage1
 
     --Update the damage dealt scores, adding scores to objectiveMessages
-    if team1 and team1 ~= "" then
-        if objective:addScore("damage dealt",team1,damage2) then
+    if tTeam1[1] and tTeam1[1] ~= "" then
+        if objective:addScore("damage dealt",tTeam1[1],damage2) then
            
             World.atGoal = true
-            World.gameResults["winner"] = team1
+            World.gameResults["winner"] = tTeam1[1]
         end
         if objective:addScore("damage taken",team1,damage1) then
             World.atGoal = true
@@ -1255,12 +1267,12 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
         table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
     end
 
-    if team2 and team2 ~= "" then
+    if tTeam2[1] and tTeam2[1] ~= "" then
 
-        if objective:addScore("damage dealt",team2,damage1) then
+        if objective:addScore("damage dealt",tTeam2[1],damage1) then
             
             World.atGoal = true 
-            World.gameResults["winner"] = team2
+            World.gameResults["winner"] = tTeam2[1]
         end
         if objective:addScore("damage taken",team2,damage2) then 
             World.atGoal = true 
