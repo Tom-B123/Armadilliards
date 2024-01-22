@@ -68,6 +68,14 @@ local function updateAbility()
     Util:setAbility(2,bAbility)
 end
 
+local function changeAbiltiy(slot,forward)
+    if slot == 1 and forward then     aAbilities:next() end
+    if slot == 1 and not forward then aAbilities:prev() end
+    if slot == 2 and forward then     bAbilities:next() end
+    if slot == 2 and not forward then bAbilities:prev() end
+    updateAbility()
+end
+
 updateAbility()
 
 local state    = {"main menu"}
