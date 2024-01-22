@@ -547,6 +547,7 @@ function World:updateBallPrime()
     if self.ballsList.length^2 > ballCountPrime then
         ballCountPrime = Util:nearPrime(self.ballsList.length^2)
         print("changed ball prime to: "..ballCountPrime)
+        self.ropes:rehash(ballCountPrime)
     end
 end
 
@@ -842,6 +843,7 @@ function World:clear()
     self.holes         = {}
     self.holesSet:       clear()
     self.multiSet:       clear()
+    self.bulletsSet:     clear() 
     self.eliminatedTeams:clear()
     self.playableBalls:  clear()
     self.ballIDDict    = {}

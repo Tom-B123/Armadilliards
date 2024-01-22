@@ -162,4 +162,12 @@ function hashMap:clear()
     self.keys = {}
 end
 
+function hashMap:rehash(nHash)
+    local nMap = hashMap:new()
+    for h,value,sum in self:pairs() do
+        nMap:add(nHash,sum,value)
+    end
+    self = nMap
+end
+
 return hashMap
