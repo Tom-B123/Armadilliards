@@ -42,6 +42,12 @@ local dashIcon     = love.graphics.newImage("Assets/dashIcon.png")
 local ropeIcon     = love.graphics.newImage("Assets/ropeIcon.png")
 local shootIcon    = love.graphics.newImage("Assets/shootIcon.png")
 
+local iconDict = {
+    ["dash"]  = dashIcon,
+    ["rope"]  = ropeIcon,
+    ["shoot"] = shootIcon
+}
+
 local editingText  = nil
 local editingIndex = 1
 
@@ -399,12 +405,6 @@ end
 
 local function drawIcons()
     local bright = {1,1,1}
-
-    local iconDict = {
-        ["dash"]  = dashIcon,
-        ["rope"]  = ropeIcon,
-        ["shoot"] = shootIcon
-    }
 
     local aIcon = iconDict[aAbility]
     local bIcon = iconDict[bAbility]
@@ -860,6 +860,20 @@ newStateSwitch:addCase("hosting lobby",function()
         return ball:shoot(angle,3000)
     end)
 
+    --Buttons for changing the selected abilities
+    newButton(1,"<",63,434,95,466,function()
+        changeAbiltiy(1,false)
+    end)
+    newButton(1,">",137,434,169,466,function()
+        changeAbiltiy(1,true)
+    end)
+    newButton(1,"<",63,470,95,502,function()
+        changeAbiltiy(2,false)
+    end)
+    newButton(1,">",137,470,169,502,function()
+        changeAbiltiy(2,true)
+    end)
+
     love.graphics.setBackgroundColor( 0,0,0 )
 
     if lState[1] ~= "in game"  then
@@ -1213,7 +1227,11 @@ drawStateSwitch:addCase("hosting lobby",function()
         end
     end
 
-    love.graphics.print("map: "..getMap(),50,400)
+    love.graphics.draw(iconDict[aAbility],100,434,0,0.5,0.5)
+    love.graphics.draw(iconDict[bAbility],100,470,0,0.5,0.5)
+
+    love.graphics.print("map",100,500)
+    love.graphics.print(getMap(),100,520)
 
 end)
 
