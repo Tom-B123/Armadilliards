@@ -104,15 +104,32 @@ function Util:hexToCoord(hexX,hexY)
     return numX,numY
 end
 
+
+local cooldownsDict = {
+    ["dash"]  = 30,
+    ["rope"]  = 120,
+    ["shoot"] = 120
+}
+
 local a = 0
 local b = 0
 
-local aCooldown = 240
+local aCooldown
 local aTick     = 0
 local aPercentage = 0
-local bCooldown = 120
+
+local bCooldown
 local bTick     = 0
 local bPercentage = 0
+
+function Util:setAbility(slot,ability)
+    if slot == 1 then
+        aCooldown = cooldownsDict[ability]
+    end
+    if slot == 2 then
+        bCooldown = cooldownsDict[ability]
+    end
+end
 
 function Util:processGameInputs(tick,aSuccess,bSuccess)
     local x = 0

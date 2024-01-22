@@ -49,7 +49,10 @@ local aPercentage = 0
 local bPercentage = 0
 
 local aAbility    = "dash"
-local bAbility    = "rope"
+local bAbility    = "shoot"
+
+Util:setAbility(1,aAbility)
+Util:setAbility(2,bAbility)
 
 local function selectAbility(slot,ability)
     if slot == 1 then aAbility = ability end
@@ -835,7 +838,7 @@ newStateSwitch:addCase("hosting lobby",function()
         local bx,by = offsetX+ball.x,offsetY+ball.y
         local angle = Util:yawAngle(mx-bx,my-by)
         
-        return ball:shoot(angle,1000)
+        return ball:shoot(angle,3000)
     end)
 
     love.graphics.setBackgroundColor( 0,0,0 )
