@@ -622,13 +622,9 @@ function World:updateDeath(balls,kill,isClient)
                 if team2 then
                     --Get the scoring player's ID
                     local scoringID = self:getTeam(balls[2])[3]
-                    for i,d in ipairs(self:getTeam(balls[2])) do
-                        print(d)
-                    end
                     local scoringBall = self:getByID(scoringID)
                     if scoringBall then
                         scoringBall.stats["kills"] = scoringBall.stats["kills"] + 1
-                        print(scoringID.." has "..scoringBall.stats["kills"].." kills")
                     end
                     if objective:addScore("kills",team2,1) then
                         self.atGoal = true
@@ -645,15 +641,10 @@ function World:updateDeath(balls,kill,isClient)
                 if team1 then
                     --Get the scoring player's ID
                     local scoringID = self:getTeam(balls[1])[3]
-                    for i,d in ipairs(self:getTeam(balls[1])) do
-                        print(d)
-                    end
                     local scoringBall = self:getByID(scoringID)
                     if scoringBall then
                         scoringBall.stats["kills"] = scoringBall.stats["kills"] + 1
-                        print(scoringID.." has "..scoringBall.stats["kills"].." kills")
                     end
-                    -- balls[1].stats["kills"] = balls[1].stats["kills"] + 1
                     if objective:addScore("kills",team1,1) then
                         self.atGoal = true
                         self.gameResults["winner"] = team1
