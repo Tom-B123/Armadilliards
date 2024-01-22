@@ -48,16 +48,27 @@ local editingIndex = 1
 local aPercentage = 0
 local bPercentage = 0
 
-local aAbility    = "dash"
-local bAbility    = "shoot"
+local abilities   = {"dash","rope","shoot"}
 
-Util:setAbility(1,aAbility)
-Util:setAbility(2,bAbility)
+local aAbilities  = List:new()
+local bAbilities  = List:new()
 
-local function selectAbility(slot,ability)
-    if slot == 1 then aAbility = ability end
-    if slot == 2 then bAbility = ability end
+for i,ability in ipairs(abilities) do
+    aAbilities:append(ability)
+    bAbilities:append(ability)
 end
+
+local aAbility
+local bAbility
+
+local function updateAbility()
+    aAbility    = aAbilities:getVal()
+    bAbility    = bAbilities:getVal()
+    Util:setAbility(1,aAbility)
+    Util:setAbility(2,bAbility)
+end
+
+updateAbility()
 
 local state    = {"main menu"}
 local lState   = {nil}
