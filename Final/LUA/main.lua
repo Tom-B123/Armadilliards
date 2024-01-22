@@ -495,6 +495,9 @@ stateSwitch:addCase("in lobby",function()
     processReceived()
 end)
 
+local aSuccess = false
+local bSuccess = false
+
 stateSwitch:addCase("in game",function(dt)
     if not player then return end
 
@@ -505,7 +508,9 @@ stateSwitch:addCase("in game",function(dt)
     World:update(dt,true)
 
     if order == 1 and not editingText then
-        local x,y,a,b,ap,bp = Util:processGameInputs(tick)
+        local x,y,a,b,ap,bp = Util:processGameInputs(tick,aSuccess,bSuccess)
+
+        local ball = World.focus
 
         aPercentage = ap
         bPercentage = bp
@@ -514,20 +519,17 @@ stateSwitch:addCase("in game",function(dt)
         inputSum.y = inputSum.y + y
         inputSum.aHeld = tonumber(a > 0)
         if a == -1 then
-            local ball = World.focus
-            local mx,my = love.mouse.getPosition()
-            local offsetX,offsetY = World:getOffset()
-            local bx,by = offsetX+ball.x,offsetY+ball.y
-            local angle = Util:yawAngle(mx-bx,my-by)
-            table.insert(inputSum.abilities,"plin:dash"..ball.ID.."_"..angle.."_"..(1000).."_\n")
+            table.insert(inputSum.abilities,abilitySwitch:case(aAbility,ball))
+            aSuccess = true
+        else
+            aSuccess = false
         end
         inputSum.bHeld = tonumber(b > 0)
         if b == -1 then
-            local ball = World.focus
-            local mx,my = love.mouse.getPosition()
-            local offsetX,offsetY = World:getOffset()
-            local rx,ry = mx - offsetX, my - offsetY
-            table.insert(inputSum.abilities,"plin:rope_"..ball.ID.."_"..rx.."_"..ry.."_\n")
+            table.insert(inputSum.abilities,abilitySwitch:case(bAbility,ball))
+            aSuccess = true
+        else
+            bSuccess = false
         end
     end
 
@@ -544,9 +546,6 @@ stateSwitch:addCase("in game",function(dt)
         inputSum.abilities = {}
     end
 end)
-
-local aSuccess = false
-local bSuccess = false
 
 stateSwitch:addCase("hosting game",function(dt)
     if not server then return end
@@ -938,6 +937,48 @@ newStateSwitch:addCase("in lobby",function()
 
     clearButtons()
 
+    abilitySwitch = Switch:new()
+
+    abilitySwitch:addCase("dash",function(ball)
+        local mx,my = love.mouse.getPosition()
+        local offsetX,offsetY = World:getOffset()
+        local bx,by = offsetX+ball.x,offsetY+ball.y
+        local angle = Util:yawAngle(mx-bx,my-by)
+
+        return "plin:dash"..ball.ID.."_"..angle.."_"..(1000).."_\n"
+    end)
+
+    abilitySwitch:addCase("rope",function(ball)
+        local mx,my = love.mouse.getPosition()
+        local offsetX,offsetY = World:getOffset()
+        local rx,ry = mx - offsetX, my - offsetY
+
+        return "plin:rope_"..ball.ID.."_"..rx.."_"..ry.."_\n"
+    end)
+
+    abilitySwitch:addCase("shoot",function(ball)
+        local mx,my = love.mouse.getPosition()
+        local offsetX,offsetY = World:getOffset()
+        local bx,by = offsetX+ball.x,offsetY+ball.y
+        local angle = Util:yawAngle(mx-bx,my-by)
+
+        return "plin:dash"..ball.ID.."_"..angle.."_"..(3000).."_\n"
+    end)
+
+    --Buttons for changing the selected abilities
+    newButton(1,"<",63,434,95,466,function()
+        changeAbiltiy(1,false)
+    end)
+    newButton(1,">",137,434,169,466,function()
+        changeAbiltiy(1,true)
+    end)
+    newButton(1,"<",63,470,95,502,function()
+        changeAbiltiy(2,false)
+    end)
+    newButton(1,">",137,470,169,502,function()
+        changeAbiltiy(2,true)
+    end)
+
     love.graphics.setBackgroundColor( 0,0,0 )
 
     newButton(1,"ready",600,500,750,550,function()
@@ -1261,6 +1302,10 @@ drawStateSwitch:addCase("in lobby",function()
             love.graphics.print(team,400,20*i)
         end
     end
+
+    love.graphics.draw(iconDict[aAbility],100,434,0,0.5,0.5)
+    love.graphics.draw(iconDict[bAbility],100,470,0,0.5,0.5)
+
 end)
 
 drawStateSwitch:addCase("editing message",function()
