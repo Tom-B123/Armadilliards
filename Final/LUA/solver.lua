@@ -240,23 +240,24 @@ function Ball:shoot(angle,velocity)
 end
 
 --Rope a ball at the given position
-function Ball:rope(rx,ry)
-    local function getNeighbours(searchX,searchY)
-        local neighbors = {}
-        for gridY = -1,1 do
-            for gridX = -1,1 do
-                local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
-                if type(cell) == "table" then
-                    for j,ID in ipairs(cell) do
-                        if not World:getByID(ID).death then
-                            table.insert(neighbors,ID)
-                        end
+local function getNeighbours(searchX,searchY)
+    local neighbors = {}
+    for gridY = -1,1 do
+        for gridX = -1,1 do
+            local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
+            if type(cell) == "table" then
+                for j,ID in ipairs(cell) do
+                    if not World:getByID(ID).death then
+                        table.insert(neighbors,ID)
                     end
                 end
             end
         end
-        return neighbors
     end
+    return neighbors
+end
+function Ball:rope(rx,ry)
+    
 
     local function isClicked(ID,x,y)
         local ball      = World:getByID(ID)
@@ -516,7 +517,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = false,
+    debugTracking = true,
 
     --Globals, gameplay settings
     respawnTime   = 240,
@@ -1435,35 +1436,30 @@ function World:populate()
 end
 
 --Optimised collisions to only check nearby balls
+local function processNeighbours(neighbours,existingNeighbours,dt)
+    if #neighbours > 1 then
+        local hashedID,sum = Util:hashIDs(neighbours,ballCountPrime)
+
+        if not existingNeighbours:getBySum(hashedID,sum) then
+            World:expensiveCollisions(neighbours,dt)
+            existingNeighbours:add(hashedID,sum,true)
+        end
+    end
+    return existingNeighbours
+end
+
 function World:optimisedCollisions(dt)
     local found = grid:search()
-    --Stores a dictionary of the sum of ball IDs. Should prevent double entry of IDs.
-    --The IDs are mutliplied by 17 to avoid collisions
+    --Store the existing neighbour pairs in a hashMap
     local existingNeighbours = hashMap:new()
     for i,searchBall in ipairs(found) do
         local searchX   = searchBall[1]
         local searchY   = searchBall[2]
-        local neighbors = {}
-        for gridY = -1,1 do
-            for gridX = -1,1 do
-                local cell = grid:lookup(gridX + searchX,gridY + searchY,grid.levels)
-                if type(cell) == "table" then
-                    for j,ID in ipairs(cell) do
-                        if not self:getByID(ID).death then
-                            table.insert(neighbors,ID)
-                        end
-                    end
-                end
-            end
-        end
-        if #neighbors > 1 then
-            local hashedID,sum = Util:hashIDs(neighbors,ballCountPrime)
-
-            if not existingNeighbours:getBySum(hashedID,sum) then
-                self:expensiveCollisions(neighbors,dt)
-                existingNeighbours:add(hashedID,sum,true) 
-            end
-        end
+        --Get the balls from neighbouring cells to the ball
+        local neighbours = getNeighbours(searchX,searchY)
+        --Process collisions on the neighbours, add all collisions found to
+        --ExistingNeighbours
+        existingNeighbours = processNeighbours(neighbours,existingNeighbours,dt)
     end
 end
 
