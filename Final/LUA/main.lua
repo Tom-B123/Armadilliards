@@ -48,11 +48,13 @@ local editingIndex = 1
 local aPercentage = 0
 local bPercentage = 0
 
-local aIcon       = dashIcon
-local bIcon       = ropeIcon
-
 local aAbility    = "dash"
 local bAbility    = "rope"
+
+local function selectAbility(slot,ability)
+    if slot == 1 then aAbility = ability end
+    if slot == 2 then bAbility = ability end
+end
 
 local state    = {"main menu"}
 local lState   = {nil}
@@ -376,6 +378,15 @@ end
 local function drawIcons()
     local bright = {1,1,1}
 
+    local iconDict = {
+        ["dash"]  = dashIcon,
+        ["rope"]  = ropeIcon,
+        ["shoot"] = shootIcon
+    }
+
+    local aIcon = iconDict[aAbility]
+    local bIcon = iconDict[bAbility]
+
     if aPercentage < 1 then
         drawIconCooldown(aIcon,300,500,aPercentage)
     else
@@ -546,13 +557,13 @@ stateSwitch:addCase("hosting game",function(dt)
         --Passes the selected abilities into ability switch to be
         --processed.
         if a == -1 then
-            aSuccess = abilitySwitch(aAbility,ball)
+            aSuccess = abilitySwitch:case(aAbility,ball)
         else
             aSuccess = false
         end
 
         if b == -1 then
-            bSuccess = abilitySwitch(bAbility,ball)
+            bSuccess = abilitySwitch:case(bAbility,ball)
         else
             bSuccess = false
         end
