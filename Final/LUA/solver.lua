@@ -1247,9 +1247,12 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
 
     ball1.stats["damage taken"] = ball1.stats["damage taken"] + damage1
     ball2.stats["damage taken"] = ball2.stats["damage taken"] + damage2
-
-    source1.stats["damage dealt"] = source1.stats["damage dealt"] + damage2
-    source2.stats["damage dealt"] = source2.stats["damage dealt"] + damage1
+    if source1 then
+        source1.stats["damage dealt"] = source1.stats["damage dealt"] + damage2
+    end
+    if source2 then
+        source2.stats["damage dealt"] = source2.stats["damage dealt"] + damage1
+    end
 
     --Update the damage dealt scores, adding scores to objectiveMessages
     if tTeam1[1] and tTeam1[1] ~= "" then
@@ -1258,12 +1261,15 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
             World.atGoal = true
             World.gameResults["winner"] = tTeam1[1]
         end
+
+        table.insert(objectiveMessages,{"damage dealt",tTeam1[1],objective:getScore("damage dealt",tTeam1[1])})
+    end
+    if team1 and team1 ~= "" then
         if objective:addScore("damage taken",team1,damage1) then
             World.atGoal = true
             World.gameResults["winner"] = team1
         end
 
-        table.insert(objectiveMessages,{"damage dealt",team1,objective:getScore("damage dealt",team1)})
         table.insert(objectiveMessages,{"damage taken",team1,objective:getScore("damage taken",team1)})
     end
 
@@ -1274,12 +1280,15 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
             World.atGoal = true 
             World.gameResults["winner"] = tTeam2[1]
         end
+
+        table.insert(objectiveMessages,{"damage dealt",tTeam2[1],objective:getScore("damage dealt",tTeam2[1])})
+    end
+    if team2 and not team2 == "" then
         if objective:addScore("damage taken",team2,damage2) then 
             World.atGoal = true 
             World.gameResults["winner"] = team2
         end
 
-        table.insert(objectiveMessages,{"damage dealt",team2,objective:getScore("damage dealt",team2)})
         table.insert(objectiveMessages,{"damage taken",team2,objective:getScore("damage taken",team2)})
     end
 
@@ -1297,6 +1306,7 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
     local hexHealth
     local hexSpeed  = Util:numToHex(math.max(0,dSpeed*10))
     local hexX,hexY = Util:coordToHex(centre[1],centre[2])
+    
     if not multi1 then
         hexHealth = Util:numToHex(math.max(0,nHealth1*10))
         table.insert(damageMessages,"damg:"..ball1.ID.."_"..hexHealth.."_"..hexSpeed.."_"..hexX.."_"..hexY)
