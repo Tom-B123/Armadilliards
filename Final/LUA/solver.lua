@@ -1751,6 +1751,7 @@ function World:draw()
 
     track:start("polygons")
     for i,shape in ipairs(self.shapes) do
+        love.graphics.setColor(1,1,1)
         shape:draw(offsetX,offsetY)
     end
     track:finish("polygons")
