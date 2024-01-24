@@ -529,7 +529,7 @@ stateSwitch:addCase("in game",function(dt)
         inputSum.bHeld = tonumber(b > 0)
         if b == -1 then
             table.insert(inputSum.abilities,abilitySwitch:case(bAbility,ball))
-            aSuccess = true
+            bSuccess = true
         else
             bSuccess = false
         end
@@ -947,7 +947,7 @@ newStateSwitch:addCase("in lobby",function()
         local bx,by = offsetX+ball.x,offsetY+ball.y
         local angle = Util:yawAngle(mx-bx,my-by)
 
-        return "plin:dash"..ball.ID.."_"..angle.."_"..(1000).."_\n"
+        return "plin:dash_"..ball.ID.."_"..angle.."_"..(1000).."_\n"
     end)
 
     abilitySwitch:addCase("rope",function(ball)
@@ -964,7 +964,7 @@ newStateSwitch:addCase("in lobby",function()
         local bx,by = offsetX+ball.x,offsetY+ball.y
         local angle = Util:yawAngle(mx-bx,my-by)
 
-        return "plin:dash"..ball.ID.."_"..angle.."_"..(3000).."_\n"
+        return "plin:shoot_"..ball.ID.."_"..angle.."_"..(3000).."_\n"
     end)
 
     --Buttons for changing the selected abilities
@@ -988,8 +988,6 @@ newStateSwitch:addCase("in lobby",function()
         LobbyPlayer:setReady(player.ID,not ready)
         player:send("updt:"..player.ID.."_ready_"..tostring(not ready).."_\n")
     end)
-
-    abilitySwitch = Switch:new()
 
     lState[1] = state[1]
 end)
@@ -1739,7 +1737,6 @@ netSwitch:addCase("upgm",function(args)
         end
         table.insert(polyCoords,coords)
     elseif objType == "bult" then
-        print("a bullet exists")
         local offsetX,offsetY = World:getOffset()
         local ascX = splitData[2]
         local ascY = splitData[3]
