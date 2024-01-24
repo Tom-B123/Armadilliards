@@ -1157,12 +1157,10 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
     
 
     if bullet1 then
-        print(team2,ball1.innateTeam)
         if ball1.innateTeam == team2 then return end
     end
 
     if bullet2 then
-        print(team1,ball2.innateTeam)
         if ball2.innateTeam == team1 then return end
     end
 
@@ -1799,7 +1797,7 @@ end
 function World:getUpgm()
     local out = {}
     for i, ball in self.ballsList:iterator() do
-        if not self.multiSet:has(ball.ID) then
+        if not (self.multiSet:has(ball.ID) or self.bulletsSet:has(ball.ID)) then
             local hexX,hexY = Util:coordToHex(ball.x,ball.y)
             table.insert(out,"upgm:ball_"..ball.ID.."_"..hexX.."_"..hexY.."_\n")
         end
@@ -1813,6 +1811,13 @@ function World:getUpgm()
             local hexX,hexY = Util:coordToHex(x,y)
             msg = msg..hexX.."_"..hexY.."_"
         end
+        table.insert(out,msg)
+    end
+    for ID,v in self.bulletsSet:pairs() do
+        local ball = self:getByID(ID)
+        local msg = "upgm:bult_"
+        local hexX,hexY = Util:coordToHex(ball.x,ball.y)
+        msg = msg..hexX.."_"..hexY.."_"
         table.insert(out,msg)
     end
     return out

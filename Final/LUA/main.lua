@@ -107,7 +107,8 @@ end
 
 nextTeam["team "..teamCount] = "team "..(1)
 
-local polyCoords     = {}
+local polyCoords       = {}
+local bulletCoords     = {}
 
 local lobbyScroll    = 0
 local lobbyScrollVel = 0
@@ -501,7 +502,8 @@ local bSuccess = false
 stateSwitch:addCase("in game",function(dt)
     if not player then return end
 
-    polyCoords = {}
+    polyCoords   = {}
+    bulletCoords = {}
 
     processReceived()
 
@@ -1328,6 +1330,10 @@ drawStateSwitch:addCase("in game",function()
             love.graphics.polygon("fill",poly)
         end
     end
+    for i,bullet in ipairs(bulletCoords) do
+        love.graphics.setColor(1,0,0)
+        love.graphics.circle("fill",bullet[1],bullet[2],8)
+    end
     drawIcons()
     drawMessages()
 end)
@@ -1732,6 +1738,13 @@ netSwitch:addCase("upgm",function(args)
             end
         end
         table.insert(polyCoords,coords)
+    elseif objType == "bult" then
+        print("a bullet exists")
+        local offsetX,offsetY = World:getOffset()
+        local ascX = splitData[2]
+        local ascY = splitData[3]
+        local x,y  = Util:hexToCoord(ascX,ascY)
+        table.insert(bulletCoords,{x + offsetX,y + offsetY})
     end
 end)
 
