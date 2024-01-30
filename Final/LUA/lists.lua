@@ -199,3 +199,5 @@ function List:removeItem(item)
     local ind = self:find(item)
     if ind > -1 then self:removeInd(ind) end
 end
+
+return List

@@ -37,3 +37,5 @@ end
 function Set:pairs()
     return pairs(self.dict)
 end
+
+return Set

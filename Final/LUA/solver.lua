@@ -519,7 +519,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = true,
+    debugTracking = false,
 
     --Globals, gameplay settings
     respawnTime   = 240,
@@ -1341,6 +1341,8 @@ local function toCollide(ID1,ID2,offset1,offset2)
     return true,true,offset1,offset2
 end
 
+local root2 = 2^0.5
+
 local function collision(bounce,ID1,ID2,hashSum,dt)
     local ball1 = World:getByID(ID1)
     local ball2 = World:getByID(ID2)
@@ -1351,7 +1353,7 @@ local function collision(bounce,ID1,ID2,hashSum,dt)
 
     
     --Using manhattan distance to skip unnessesary checks
-    if manhattan > (2^0.5) * diameter then return end
+    if manhattan > (root2) * diameter then return end
     
     manhattanChecks = manhattanChecks + 1
 

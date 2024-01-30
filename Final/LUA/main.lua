@@ -27,7 +27,7 @@ local tempTick        = 0
 
 local server = nil
 
--- number of ticks between each lobby refresh
+-- numbesr of ticks between each lobby refresh
 local refreshRate = 120
 
 local canQuit     = false
@@ -448,7 +448,7 @@ local function getMap()
 end
 
 updateMaps()
-
+ 
 -- ============================================================================================-- 
 -- ============================================================================================-- 
 
