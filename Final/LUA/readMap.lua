@@ -54,7 +54,7 @@ end
 function readMap:open(filename)
     local file = love.filesystem.lines("Maps/"..filename)
     if not file then
-        print("invalid map name")
+        print("invalid spanner name")
         return nil
     end
     for line in file do
