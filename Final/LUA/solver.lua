@@ -614,10 +614,7 @@ end
 
 
 function World:updateDeath(balls,kill,isClient)
-    print(self:getTeam(balls[1])[3])
     if not isClient and kill and #balls == 2 then
-        print(self:getTeam(balls[1])[3])
-        print(self:getTeam(balls[2])[3])
         --Logic for detecting which team got a kill
         if balls[1].health <= 0 then
             if balls[2] and self:getTeam(balls[2])[1] then
@@ -951,6 +948,7 @@ function World:newBullet(team,x,y,angle,velocity)
     local salt   = x+y+angle+velocity
     local ID     = self:assignID(nBall,Util:calculateID(6,salt))
     nBall.innateTeam = team
+    self:teamChange(self.focus,nBall)
     self.ballsList:push(nBall)
     self.bulletsSet:add(ID)
     return nBall
