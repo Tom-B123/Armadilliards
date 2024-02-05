@@ -145,21 +145,25 @@ function Ball:edgeConstraint()
         self.x   = self.radius
         self.vx  = -self.vx
         self.lvx = -self.lvx
+        newCollisionSound("quiet"):play()
     end
     if self.x + self.radius > 4096 then
         self.x   = 4096 - self.radius
         self.vx  = -self.vx
         self.lvx = -self.lvx
+        newCollisionSound("quiet"):play()
     end
     if self.y - self.radius < 0 then
         self.y   = self.radius
         self.vy  = -self.vy
         self.lvy = -self.lvy
+        newCollisionSound("quiet"):play()
     end
     if self.y + self.radius > 4096 then
         self.y   = 4096 - self.radius
         self.vy  = -self.vy
         self.lvy = -self.lvy
+        newCollisionSound("quiet"):play()
     end
 end
 
