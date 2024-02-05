@@ -140,30 +140,42 @@ function Ball:verlet(dt)
     if math.abs(self.vy) < 0.02 then self.vy = 0 end
 end
 
-function Ball:edgeConstraint()
+function Ball:edgeConstraint(dt)
+    local vx,vy = self.vx * dt, self.vy * dt
+    local speed = Util:findDistance(self.vx,self.vy)
+    local volume = "quiet"
+
     if self.x - self.radius < 0 then
+        if math.abs(vx) > 4 then volume = "mid"
+        elseif math.abs(vx) > 6 then volume = "loud" end
         self.x   = self.radius
         self.vx  = -self.vx
         self.lvx = -self.lvx
-        newCollisionSound("quiet"):play()
+        if math.abs(vx) > 2 then newCollisionSound(volume):play() end
     end
     if self.x + self.radius > 4096 then
+        if math.abs(vx) > 4 then volume = "mid"
+        elseif math.abs(vx) > 6 then volume = "loud" end
         self.x   = 4096 - self.radius
         self.vx  = -self.vx
         self.lvx = -self.lvx
-        newCollisionSound("quiet"):play()
+        if math.abs(vx) > 2 then newCollisionSound(volume):play() end
     end
     if self.y - self.radius < 0 then
+        if math.abs(vy) > 4 then volume = "mid"
+        elseif math.abs(vy) > 6 then volume = "loud" end
         self.y   = self.radius
         self.vy  = -self.vy
         self.lvy = -self.lvy
-        newCollisionSound("quiet"):play()
+        if math.abs(vy) > 2 then newCollisionSound(volume):play() end
     end
     if self.y + self.radius > 4096 then
+        if math.abs(vy) > 4 then volume = "mid"
+        elseif math.abs(vy) > 6 then volume = "loud" end
         self.y   = 4096 - self.radius
         self.vy  = -self.vy
         self.lvy = -self.lvy
-        newCollisionSound("quiet"):play()
+        if math.abs(vy) > 2 then newCollisionSound(volume):play() end
     end
 end
 
@@ -1638,7 +1650,7 @@ function World:update(dt,isClient)
     track:start("verlet")
     for i, ball in self.ballsList:iterator() do
         if not self.holesSet:has(ball) then
-            ball:edgeConstraint()
+            ball:edgeConstraint(dt)
             ball:verlet(dt)
         end
     end
