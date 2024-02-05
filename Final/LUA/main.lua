@@ -42,6 +42,8 @@ local dashIcon     = love.graphics.newImage("Assets/dashIcon.png")
 local ropeIcon     = love.graphics.newImage("Assets/ropeIcon.png")
 local shootIcon    = love.graphics.newImage("Assets/shootIcon.png")
 
+
+
 local iconDict = {
     ["dash"]  = dashIcon,
     ["rope"]  = ropeIcon,

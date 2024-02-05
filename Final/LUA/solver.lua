@@ -29,6 +29,21 @@ local damageMessages     = {}
 local objectiveMessages  = {}
 local ropeMessages       = {}
 
+local collisionsSounds = {["quiet"] = {}, ["mid"] = {}, ["loud"] = {}}
+for i = 1,5 do
+    table.insert(collisionsSounds["quiet"], "Assets/Sound/quiet "..i..".mp3")
+end
+for i = 1,5 do
+    table.insert(collisionsSounds["mid"], "Assets/Sound/mid "..i..".mp3")
+end
+for i = 1,5 do
+    table.insert(collisionsSounds["loud"], "Assets/Sound/loud "..i..".mp3")
+end
+
+local function newCollisionSound(volume)
+    return love.audio.newSource(collisionsSounds[volume][1 + tick%5],"static")
+end
+
 local Ball    = {}
 Ball.__index  = Ball
 
@@ -519,7 +534,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = false,
+    debugTracking = true,
 
     --Globals, gameplay settings
     respawnTime   = 240,
@@ -849,7 +864,7 @@ end
 
 --Used for i-frames to prevent many collisions with the same ball
 local damageCooldowns = {}
-local iTime           = 5
+local iTime           = 15
 
 --Clears all balls
 function World:clear()
@@ -1183,13 +1198,23 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
     local dvx = ball1.vx*dt - ball2.vx*dt
     local dvy = ball1.vy*dt - ball2.vy*dt
 
+    
     --Using manhattan distance to check the speed isn't too low, without needing a sqrt
     local manhattan = Util:manhattanDistance(dvx,dvy)
+
+    if manhattan > 0.5 then
+        newCollisionSound("quiet"):play()
+        damageCooldowns[hashSum] = tick + 10
+    end
+
     if manhattan < 3 then return end
 
     local dSpeed = Util:findDistance(dvx,dvy)
     if dSpeed < 3 then return end
 
+    if dSpeed > 8 then newCollisionSound("loud"):play()
+
+    elseif dSpeed > 5 then newCollisionSound("mid"):play() end
     --Update the damageCooldowns
     damageCooldowns[hashSum] = tick
 
