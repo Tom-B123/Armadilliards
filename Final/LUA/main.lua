@@ -470,7 +470,7 @@ stateSwitch:addCase("hosting lobby",function()
     if not (server and mainClient) then return end
     processReceived()
 
-    if order == 1 then 
+    if order == 1 then
         updateKickButtons()
         updateTeamButtons()
     end

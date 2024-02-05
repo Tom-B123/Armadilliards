@@ -614,7 +614,10 @@ end
 
 
 function World:updateDeath(balls,kill,isClient)
+    print(self:getTeam(balls[1])[3])
     if not isClient and kill and #balls == 2 then
+        print(self:getTeam(balls[1])[3])
+        print(self:getTeam(balls[2])[3])
         --Logic for detecting which team got a kill
         if balls[1].health <= 0 then
             if balls[2] and self:getTeam(balls[2])[1] then
@@ -1178,8 +1181,6 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
         World:updateDeath({ball2})
     end
     
-    --Update the damageCooldowns
-    damageCooldowns[hashSum] = tick
 
     local dvx = ball1.vx*dt - ball2.vx*dt
     local dvy = ball1.vy*dt - ball2.vy*dt
@@ -1190,6 +1191,9 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
 
     local dSpeed = Util:findDistance(dvx,dvy)
     if dSpeed < 3 then return end
+
+    --Update the damageCooldowns
+    damageCooldowns[hashSum] = tick
 
     --Get the tempTeam of balls to use for score tracking of damage dealt
     local tTeam1 = World:getTeam(ball1)
@@ -1223,6 +1227,7 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
         nHealth1 = ball1.health - (dSpeed * dSpeed / 10) / friendly[1]
         nHealth2 = ball2.health - (dSpeed * dSpeed / 10) / friendly[2]
 
+        
     --If the speeds are unequal, the faster ball receives and deals more damage
     elseif speed1 >= speed2 then
         World:teamChange(ball1,ball2)
