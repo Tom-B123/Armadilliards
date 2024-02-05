@@ -1202,7 +1202,8 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
     --Using manhattan distance to check the speed isn't too low, without needing a sqrt
     local manhattan = Util:manhattanDistance(dvx,dvy)
 
-    if manhattan > 0.5 then
+    local toMakeSound = not(multi1 and multi2)
+    if manhattan > 0.5 and toMakeSound then
         newCollisionSound("quiet"):play()
         damageCooldowns[hashSum] = tick + 10
     end
@@ -1212,9 +1213,9 @@ local function calculateDamage(ID1,ID2,hashSum,dt)
     local dSpeed = Util:findDistance(dvx,dvy)
     if dSpeed < 3 then return end
 
-    if dSpeed > 8 then newCollisionSound("loud"):play()
+    if dSpeed > 8 and toMakeSound then newCollisionSound("loud"):play()
 
-    elseif dSpeed > 5 then newCollisionSound("mid"):play() end
+    elseif dSpeed > 5 and toMakeSound then newCollisionSound("mid"):play() end
     --Update the damageCooldowns
     damageCooldowns[hashSum] = tick
 
