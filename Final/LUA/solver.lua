@@ -550,7 +550,7 @@ World = {
     debugChecks   = false,
     debugGrid     = true,
     debugShapes   = false,
-    debugTracking = true,
+    debugTracking = false,
 
     --Globals, gameplay settings
     respawnTime   = 240,

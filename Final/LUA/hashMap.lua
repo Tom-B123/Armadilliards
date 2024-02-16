@@ -133,7 +133,7 @@ function hashMap:keyPairs(hashKey)
     local values = self:get(hashKey)
     local ind    = 0
     --return a generator for just one value
-    if values == nil then 
+    if values == nil then
         return function()
             if ind == 0 then
                 ind = ind + 1
