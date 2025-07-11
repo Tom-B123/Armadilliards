@@ -11,3 +11,5 @@ The particle system used is made from scratch, adapting existing code I wrote fo
 
 There are a significant number of bugs, which taught me the valuable lesson that new features should only be added after existing ones have been thoroughly tested, otherwise you end up in a knot of strange UI bugs and crashes.
 
+## How To Play
+Start by downloading the sourcecode zip.
